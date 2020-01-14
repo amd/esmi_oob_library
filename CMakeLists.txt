@@ -88,6 +88,18 @@ set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_mailbox.c")
 set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_rmi.c")
 set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_tsi.c")
 
+set(SMI_EXAMPLE_EXE "esmi_oob_ex")
+set(SMI_TOOL "esmi_oob_tool")
+set(SMI_CPUID "esmi_oob_cpuid_tool")
+
+add_executable(${SMI_EXAMPLE_EXE} "example/esmi_oob_example.c")
+add_executable(${SMI_TOOL} "example/esmi_oob_tool.c")
+add_executable(${SMI_CPUID} "example/esmi_oob_cpuid_tool.c")
+
+target_link_libraries(${SMI_EXAMPLE_EXE} ${ESMI_OOB_TARGET})
+target_link_libraries(${SMI_TOOL} ${ESMI_OOB_TARGET})
+target_link_libraries(${SMI_CPUID} ${ESMI_OOB_TARGET})
+
 add_library(${ESMI_OOB_TARGET} SHARED ${ESMI_OOB_SRC_LIST} ${SMI_INC_LIST})
 target_link_libraries(${ESMI_OOB_TARGET} pthread rt m i2c)
 
