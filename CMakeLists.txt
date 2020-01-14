@@ -129,3 +129,15 @@ install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_rmi.h
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_tsi.h
                                         DESTINATION esmi_oob/include/esmi_oob)
 
+# Generate Doxygen documentation
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/esmi_oob_doxygen.cfg
+                                   ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc
+         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                  COMMENT "Generating API documentation with Doxygen" VERBATIM)
+else()
+  message("Doxygen is not found. Will not generate documents.")
+endif(DOXYGEN_FOUND)
