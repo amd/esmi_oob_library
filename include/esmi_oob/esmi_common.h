@@ -94,6 +94,7 @@ typedef enum {
 	OOB_ARG_PTR_NULL,	//!< Parsed argument ptr null
 	OOB_NO_MEMORY,		//!< Not enough memory to allocate
 	OOB_NOT_INITIALIZED,	//!< ESMI-OOB object not initialized
+	OOB_TRY_AGAIN,          //!< No match Try again
 	OOB_NO_I2C_ADDR,	//!< i2c address not available
 	OOB_RD_LENGTH_ERR,	//!< read bytes from cpuid or msr failed
 	OOB_RMI_STATUS_ERR,	//!< cpuid or msr read status failed

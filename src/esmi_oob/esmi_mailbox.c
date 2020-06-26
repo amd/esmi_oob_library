@@ -127,6 +127,9 @@ oob_status_t read_dram_throttle(int socket_ind, uint32_t *buffer)
 
 oob_status_t write_dram_throttle(int socket_ind, uint32_t limit)
 {
+	if (limit < 0 || limit > 80) {
+		return OOB_INVALID_INPUT;
+	}
         return esmi_oob_write_mailbox(socket_ind, WRITE_DRAM_THROTTLE, limit);
 }
 
@@ -148,9 +151,12 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer)
 				     0, buffer);
 }
 
-oob_status_t read_nbio_error_logging_register(int socket_ind, uint32_t input,
-					      uint32_t *buffer)
+oob_status_t read_nbio_error_logging_register(int socket_ind, uint8_t quadrant,
+					      uint32_t offset, uint32_t *buffer)
 {
+	uint32_t input;
+
+	input = (quadrant << 24) | (offset & 0xFFFFFF);
 	return esmi_oob_read_mailbox(socket_ind,
 				     READ_NBIO_ERROR_LOGGING_REGISTER,
 				     input, buffer);

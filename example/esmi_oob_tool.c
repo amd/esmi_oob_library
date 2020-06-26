@@ -232,6 +232,7 @@ oob_status_t set_apml_boostlimit(uint32_t socket, uint32_t core_id,
 			esmi_get_err_msg(ret));
 		return ret;
 	}
+	usleep(1000);
 	ret = read_esb_boost_limit(socket, core_id, &blimit);
 	if (ret == OOB_SUCCESS) {
 		if (blimit < boostlimit) {
@@ -256,6 +257,7 @@ oob_status_t set_apml_socket_boostlimit(uint32_t socket, uint32_t boostlimit)
 			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return ret;
 	}
+	usleep(1000);
 	ret = read_esb_boost_limit(socket, 0, &blimit);
 	if (ret == OOB_SUCCESS) {
 		if (blimit < boostlimit) {
@@ -265,6 +267,28 @@ oob_status_t set_apml_socket_boostlimit(uint32_t socket, uint32_t boostlimit)
 		}
 	}
 	printf("apml_boostlimit for all cores set successfully\n");
+	return OOB_SUCCESS;
+}
+
+oob_status_t set_and_verify_dram_throttle(uint32_t socket, uint32_t dram_thr)
+{
+	oob_status_t ret;
+	uint32_t limit = 0;
+
+	ret = write_dram_throttle(socket, dram_thr);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set DRAM throttle, "
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	usleep(1000);
+	ret = read_dram_throttle(socket, &limit);
+	if (ret == OOB_SUCCESS) {
+		if (dram_thr != limit) {
+			return OOB_TRY_AGAIN;
+		}
+	}
+	printf("Set and Verify Success\n");
 	return OOB_SUCCESS;
 }
 
@@ -359,7 +383,7 @@ oob_status_t get_apml_tsi_access(uint32_t socket)
 	usleep(1000);
 	if (read_sbtsi_cputempoffsetdecimal(socket, &buf) == 0)
 	printf("_TSI_CPUTEMPOFFSETDEC	| %6d | %#14x |\n",
-		socket, buf);
+		socket, (uint8_t)buf);
 
 	usleep(1000);
 	if (read_sbtsi_hitempdecimal(socket, &buf) == 0)
@@ -416,6 +440,8 @@ static void show_usage(char *exe_name) {
 	"APML boostlimit for a given socket/core\n"
 	"\t-a, (--setapmlsocketboostlimit)  [SOCKET][BOOSTLIMIT]   Set "
 	"APML boostlimit for all cores in a socket\n"
+	"\t--set_and_verify_dramthrottle    [SOCKET][0 to 80%]     Set "
+	"DRAM THROTTLE for a given socket\n"
 	"\t--showrmicommandregisters [SOCKET]\t\t\tGet the values of different"
 	" commands of SB-RMI registers for a given socket\n"
 	"\t--showtsicommandregisters [SOCKET]\t\t\tGet the values of different"
@@ -444,6 +470,8 @@ void show_smi_parameters(void)
 	/*sb_tsi*/
 	int8_t buf;
 	static int i;
+	uint8_t quadrant;
+	uint32_t reg_offset;
 	uint32_t power_avg, power_cap, power_max;
 	uint32_t tdp_avg, tdp_min, tdp_max;
 	uint32_t cclk, residency;
@@ -534,7 +562,7 @@ void show_smi_parameters(void)
 	}
 
 	usleep(1000);
-	printf("_DRAM_THROTTLE	(MHz)\t|");
+	printf("_DRAM_THROTTLE	(in %)\t|");
 	if (read_dram_throttle(i, &dram_thr) == 0) {
 		printf(" %u\n", dram_thr);
 	}
@@ -559,7 +587,10 @@ void show_smi_parameters(void)
 
 	usleep(1000);
 	printf("_NBIO_Error_Logging_Reg\t|");
-	if (read_nbio_error_logging_register(i, 0x03000020, &nbio) == 0) {
+	quadrant = 0x03;
+	reg_offset = 0x20;
+	if (read_nbio_error_logging_register(i, quadrant,
+					     reg_offset, &nbio) == 0) {
 		printf(" %u\n", nbio);
 	}
 	usleep(1000);
@@ -701,7 +732,7 @@ void show_smi_parameters(void)
 	printf("\n_TSI_CPUTEMPOFFSETDEC\t|");
 	for (i = 0; i < 2; i++) {
 		if (read_sbtsi_cputempoffsetdecimal(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
+			printf("\t%#x\t|", (uint8_t)buf);
 	}
 	usleep(1000);
 	printf("\n_TSI_HITEMP_DECIMAL\t|");
@@ -775,6 +806,7 @@ oob_status_t parseesb_args(int argc,char **argv)
 	int opt = 0; /* option character */
 	uint32_t socket = 0, power = 0;
 	uint32_t boostlimit = 0, thread_ind = 0;
+	uint32_t dram_thr;
 
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -787,6 +819,7 @@ oob_status_t parseesb_args(int argc,char **argv)
 		{"showboostlimit",	required_argument,	0,	'b'},
 		{"setapmlboostlimit",	required_argument,	0,	'd'},
 		{"setapmlsocketboostlimit", required_argument,	0,	'a'},
+		{"set_and_verify_dramthrottle", required_argument, 0,   'l'},
 		{"showrmicommandregisters", required_argument,	&flag,	1},
 		{"showtsicommandregisters", required_argument,	&flag,	2},
 		{0,			0,			0,	0},
@@ -813,6 +846,7 @@ oob_status_t parseesb_args(int argc,char **argv)
 	    opt == 'b' ||
 	    opt == 'd' ||
 	    opt == 'a' ||
+	    opt == 'l' ||
 	    opt == 0) {
 		if (is_string_number(optarg)) {
 			printf("Option '-%c' require a valid numeric value"
@@ -824,6 +858,7 @@ oob_status_t parseesb_args(int argc,char **argv)
 	if (opt == 's' ||
 	    opt == 'b' ||
 	    opt == 'a' ||
+	    opt == 'l' ||
 	    opt == 'd') {
 		// make sure optind is valid  ... or another option
 		if (optind >= argc || *argv[optind] == '-') {
@@ -904,6 +939,11 @@ oob_status_t parseesb_args(int argc,char **argv)
 			socket = atoi(optarg);
 			boostlimit = atoi(argv[optind++]);
 			set_apml_socket_boostlimit(socket, boostlimit);
+			break;
+		case 'l':
+			socket = atoi(optarg);
+			dram_thr = atoi(argv[optind++]);
+			set_and_verify_dram_throttle(socket, dram_thr);
 			break;
 		case 'h' :
 			show_usage(argv[0]);

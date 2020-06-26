@@ -88,6 +88,8 @@ char * esmi_get_err_msg(oob_status_t oob_err)
 			return "Read bytes from cpuid or msr failed.";
 		case OOB_RMI_STATUS_ERR:
 			return "cpuid or msr read status failed";
+		case OOB_TRY_AGAIN:
+			return "Doesnot match Try Again";
 		case OOB_INVALID_INPUT:
 			return "Input value is invalid";
                 default:
@@ -112,6 +114,7 @@ oob_status_t errno_to_oob_status(int err)
                 case EINTR:     return OOB_INTERRUPTED;
                 case EIO:       return OOB_UNEXPECTED_SIZE;
                 case ENOMEM:    return OOB_NO_MEMORY;
+		case EAGAIN:    return OOB_TRY_AGAIN;
                 case EDESTADDRREQ:    return OOB_NO_I2C_ADDR;
                 default:        return OOB_UNKNOWN_ERROR;
         }

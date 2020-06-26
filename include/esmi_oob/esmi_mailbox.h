@@ -445,7 +445,7 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
  *
  *  @param[in] socket_ind is a particular package in the system.
  *
- *  @param[in] input Quadrant[31:24], register offset[23:0]
+ *  @param[in] input value is Quadrant[31:24] and register offset[23:0]
  *
  *  @param[out] buffer is to read NBIOErrorLoggingRegiter(register value).
  *
@@ -453,7 +453,8 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_nbio_error_logging_register(int socket_ind, uint32_t input,
+oob_status_t read_nbio_error_logging_register(int socket_ind, uint8_t quadrant,
+					      uint32_t offset,
 					      uint32_t *buffer);
 
 /**
