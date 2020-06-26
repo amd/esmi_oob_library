@@ -292,6 +292,190 @@ oob_status_t set_and_verify_dram_throttle(uint32_t socket, uint32_t dram_thr)
 	return OOB_SUCCESS;
 }
 
+oob_status_t set_and_verify_apml_socket_uprate(uint32_t socket, float uprate)
+{
+	oob_status_t ret;
+	float rduprate;
+
+	ret = write_sbtsi_updateratehz(socket, uprate);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set Update rate for a socket"
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	usleep(1000);
+	if (read_sbtsi_updateratehz(socket, &rduprate) == 0) {
+		if (uprate != rduprate) {
+			return OOB_TRY_AGAIN;
+		} else {
+			printf("Set and verify Success\n");
+		}
+	}
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_high_temp_threshold(uint32_t socket, float temp)
+{
+	oob_status_t ret;
+	int temp_int;
+	float temp_dec;
+	if (temp < 0 || temp > 70) {
+		printf("Invalid temp, please mention temp between 0 and 70\n");
+		return OOB_INVALID_INPUT;
+	}
+	temp_int = temp;
+	temp_dec = (temp - temp_int);
+
+	ret = sbtsi_set_hightemp_threshold(socket, temp_int, temp_dec);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set Higher Temp threshold limit"
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set Success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_low_temp_threshold(uint32_t socket, float temp)
+{
+	oob_status_t ret;
+	int temp_int;
+	float temp_dec;
+	if (temp < 0 || temp > 70) {
+		printf("Invalid temp, please mention temp between 0 and 70\n");
+		return OOB_INVALID_INPUT;
+	}
+	temp_int = temp;
+	temp_dec = (temp - temp_int);
+
+	ret = sbtsi_set_lowtemp_threshold(socket, temp_int, temp_dec);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set Lower Temp threshold limit"
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set Success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_temp_offset(uint32_t socket, float temp)
+{
+	oob_status_t ret;
+
+	ret = write_sbtsi_cputempoffset(socket, temp);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set Temp offset, "
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set CPU temp offset success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_timeout_config(uint32_t socket, int value)
+{
+	oob_status_t ret;
+
+	printf("VALUE: %d", value);
+	if (value < 0 || value > 1) {
+		printf("Invalid Value. Argument = 0 : disable timeout \
+				Argument = 1 : enable timeout\n");
+		return OOB_INVALID_INPUT;
+	}
+	ret = sbtsi_set_timeout_config(socket, value);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set timeout config, "
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set timeout config success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_alert_threshold(uint32_t socket, int value)
+{
+	oob_status_t ret;
+
+	if (value < 1 || value > 8) {
+		printf("Value => number of sample, value = [1, 8]\n");
+		return OOB_INVALID_INPUT;
+	}
+	ret = sbtsi_set_alert_threshold(socket, value);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set alert threshold sample, "
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set alert threshold success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_alert_config(uint32_t socket, int value)
+{
+	oob_status_t ret;
+
+	if (value < 0 || value > 1) {
+		printf("Invalid Value. Argument = 0 : Alert config disable \
+				Argument = 1 : Alert config enable\n");
+		return OOB_INVALID_INPUT;
+	}
+
+	ret = sbtsi_set_alert_config(socket, value);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to set alert config, "
+			"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("Set alert config success\n");
+	return OOB_SUCCESS;
+}
+
+static oob_status_t set_tsi_config(uint32_t socket, int value, const char check)
+{
+	oob_status_t ret;
+
+	if (value < 0 || value > 1) {
+		printf("Invalid Value. Argument = 0 : Alert config disable \
+				Argument = 1 : Alert config enable\n");
+		return OOB_INVALID_INPUT;
+	}
+	switch(check) {
+		case 'k':
+			ret = sbtsi_set_tsi_config(socket, value, ALERTMASK_MASK);
+			if (ret != OOB_SUCCESS) {
+				printf("Failed: to set tsi config alert_mask, "
+					"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+				return ret;
+			}
+			break;
+		case 'm':
+			ret = sbtsi_set_tsi_config(socket, value, RUNSTOP_MASK);
+			if (ret != OOB_SUCCESS) {
+				printf("Failed: to set tsi config runstop_mask, "
+					"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+				return ret;
+			}
+			break;
+		case 'n':
+			ret = sbtsi_set_tsi_config(socket, value, READORDER_MASK);
+			if (ret != OOB_SUCCESS) {
+				printf("Failed: to set tsi config radorder_mask, "
+					"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+				return ret;
+			}
+			break;
+		case 'o':
+			ret = sbtsi_set_tsi_config(socket, value, ARA_MASK);
+			if (ret != OOB_SUCCESS) {
+				printf("Failed: to set tsi config ara_mask, "
+					"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+				return ret;
+			}
+	}
+	printf("Set TSI config bit success\n");
+	return OOB_SUCCESS;
+}
+
 oob_status_t get_apml_rmi_access(uint32_t socket)
 {
 	int8_t buf;
@@ -333,119 +517,174 @@ oob_status_t get_apml_rmi_access(uint32_t socket)
 		(uint8_t)buf);
 }
 
-oob_status_t get_apml_tsi_access(uint32_t socket)
+oob_status_t get_apml_tsi_register_descriptions(uint32_t socket)
 {
-	int8_t buf;
-	oob_status_t ret;
+	uint8_t lowalert, hialert;
+	uint8_t al_mask, run_stop, read_ord, ara;
+	uint8_t timeout;
+	int8_t intr;
+	float dec;
+	float temp_value;
+	float uprate;
+	uint8_t id, buf;
 
-	printf("_FUNCTION		| Socket |    Value Units |\n");
-	ret = read_sbtsi_cpuinttemp(socket, &buf);
-	if (ret != 0) {
-		printf("Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
-		return ret;
+	if (sbtsi_get_cputemp(socket, &temp_value) == 0) {
+		printf("_CPUTEMP\t\t| %.3f °C \n", temp_value);
 	}
-	printf("_TSI_CPUTEMP		| %6d | %11d °C |\n", socket, buf);
 
 	usleep(1000);
-	if (read_sbtsi_status(socket, &buf) == 0)
-	printf("_TSI_STATUS		| %6d | %#14x |\n", socket, buf);
+	if (sbtsi_get_htemp_threshold(socket, &intr, &dec) == 0) {
+		temp_value = intr + dec;
+		printf("_HIGH_THRESHOLD_TEMP\t| %.3f °C \n", temp_value);
+	}
 
 	usleep(1000);
-	if (read_sbtsi_config(socket, &buf) == 0)
-	printf("_TSI_CONFIG		| %6d | %#14x |\n", socket, buf);
+	if (sbtsi_get_ltemp_threshold(socket, &intr, &dec) == 0) {
+		temp_value = intr + dec;
+		printf("_LOW_THRESHOLD_TEMP \t| %.3f °C \n", temp_value);
+	}
 
 	usleep(1000);
-	if (read_sbtsi_updaterate(socket, &buf) == 0)
-	printf("_TSI_UPDATERATE		| %6d | %#14x |\n", socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_hitempint(socket, &buf) == 0)
-	printf("_TSI_HITEMPINT		| %6d | %#14x |\n", socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_lotempint(socket, &buf) == 0)
-	printf("_TSI_LOTEMPINT		| %6d | %#14x |\n", socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_configwrite(socket, &buf) == 0)
-	printf("_TSI_CONFIGWRITE	| %6d | %#14x |\n", socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_cputempdecimal(socket, &buf) == 0)
-	printf("_TSI_CPUTEMPDECIMAL	| %6d | %#14x |\n",
-		socket, (uint8_t)buf);
-
-	usleep(1000);
-	if (read_sbtsi_cputempoffsethibyte(socket, &buf) == 0)
-	printf("_TSI_CPUTEMPOFFSETHIBYTE| %6d | %#14x |\n",
-		socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_cputempoffsetdecimal(socket, &buf) == 0)
-	printf("_TSI_CPUTEMPOFFSETDEC	| %6d | %#14x |\n",
-		socket, (uint8_t)buf);
-
-	usleep(1000);
-	if (read_sbtsi_hitempdecimal(socket, &buf) == 0)
-	printf("_TSI_HITEMP_DECIMAL	| %6d | %#14x |\n",
-		socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_lotempdecimal(socket, &buf) == 0)
-	printf("_TSI_LOTEMP_DECIMAL	| %6d | %#14x |\n",
-		socket, buf);
-
-	usleep(1000);
-	if (read_sbtsi_timeoutconfig(socket, &buf) == 0)
-	printf("_TSI_TIMEOUT_CONFIG	| %6d | %#14x |\n",
-		socket, (uint8_t)buf);
+	if (read_sbtsi_updateratehz(socket, &uprate) == 0)
+		printf("_TSI_UPDATERATE\t\t| %.3f Hz\n", uprate);
 
 	usleep(1000);
 	if (read_sbtsi_alertthreshold(socket, &buf) == 0)
-	printf("_TSI_ALERT_THRESHOLD	| %6d | %#14x |\n",
-		socket, buf);
+		printf("_THRESHOLD_SAMPLE\t| %#d\n", buf);
 
 	usleep(1000);
-	if (read_sbtsi_alertconfig(socket, &buf) == 0)
-	printf("_TSI_ALERT_CONFIG	| %6d | %#14x |\n",
-		socket, buf);
+	if (read_sbtsi_cputempoffset(socket, &dec) == 0) {
+		printf("_TEMP_OFFSET\t\t| %.3f °C \n", dec);
+	}
 
 	usleep(1000);
-	if (read_sbtsi_manufid(socket, &buf) == 0)
-	printf("_TSI_MANUFACTURE_ID	| %6d | %#14x |\n",
-		socket, buf);
+	if (sbtsi_get_temp_status(socket, &lowalert, &hialert) == 0) {
+		printf("_STATUS\t\t\t| ");
+		if (lowalert) {
+			printf("CPU Temp Low Alert\n");
+		} else if (hialert) {
+			printf("CPU Temp Hi Alert\n");
+		} else {
+			printf("No Temp Alert\n");
+		}
+	}
 
 	usleep(1000);
-	if (read_sbtsi_revision(socket, &buf) == 0)
-	printf("_TSI_REVISION		| %6d | %#14x |\n",
-		socket, buf);
+	if (sbtsi_get_config(socket, &al_mask, &run_stop,
+			     &read_ord, &ara) == 0) {
+		printf("_CONFIG\t\t\t| \n");
+		if (al_mask) {
+			printf("\tALERT_L pin\t| Disabled\n");
+		} else {
+			printf("\tALERT_L pin\t| Enabled\n");
+		}
+		if(run_stop) {
+			printf("\tRunstop\t\t| Disabled\n");
+		} else {
+			printf("\tRunstop\t\t| Enabled\n");
+		}
+		if (read_ord) {
+			printf("\tAtomic rd order\t| Enabled\n");
+		} else {
+			printf("\tAtomic rd order\t| Disabled\n");
+		}
+		if (ara) {
+			printf("\tARA response\t| Disabled\n");
+		} else {
+			printf("\tARA response\t| Enabled\n");
+		}
+	}
+
+	usleep(1000);
+	if (sbtsi_get_timeout(socket, &timeout) == 0) {
+		printf("_TIMEOUT_CONFIG\t\t| ");
+		if (timeout) {
+			printf("Enabled\n");
+		} else {
+			printf("Disabled\n");
+		}
+	}
+
+	usleep(1000);
+	if (read_sbtsi_alertconfig(socket, &buf) == 0) {
+		if (buf == 0)
+			printf("_TSI_ALERT_CONFIG\t| Disabled\n");
+		else
+			printf("_TSI_ALERT_CONFIG\t| Enabled\n");
+	}
+
+	usleep(1000);
+	if (read_sbtsi_manufid(socket, &id) == 0)
+		printf("_TSI_MANUFACTURE_ID\t| %#x\n", id);
+
+	usleep(1000);
+	if (read_sbtsi_revision(socket, &id) == 0)
+		printf("_TSI_REVISION\t\t| %#x\n", id);
+
+}
+
+oob_status_t get_apml_tsi_access(uint32_t socket)
+{
+
+	printf("\t\t *** SB-TSI UPDATE ***  \t\t \n");
+	printf("Socket:%d\n", socket);
+	printf("------------------------------------------------------------"
+		"--------------------\n");
+	get_apml_tsi_register_descriptions(socket);
+	printf("-----------------------------------------------------------"
+		"--------------------\n");
 }
 
 static void show_usage(char *exe_name) {
 	printf("Usage: %s [Option<s>] SOURCES\n"
 	"Option<s>:\n"
+	"< MAILBOX COMMANDS >:\n"
 	"\t-p, (--showpower)\t [SOCKET]\t\t\tGet Power for a given"
-	" socket\n"
+	" socket in Watt\n"
 	"\t-t, (--showtdp)\t\t [SOCKET]\t\t\tGet TDP for a given"
-	" socket\n"
+	" socket in Watt\n"
 	"\t-s, (--setpowerlimit)\t [SOCKET][POWER]\t\tSet powerlimit for a"
-	" given socket\n"
+	" given socket in mWatt\n"
 	"\t-c, (--showcclkfreqlimit)[SOCKET]\t\t\tGet cclk freqlimit for a"
-	" given socket\n"
+	" given socket in MHz\n"
 	"\t-r, (--showc0residency)\t [SOCKET]\t\t\tShow socket c0_residency"
 	" given socket\n"
 	"\t-b, (--showboostlimit)   [SOCKET][THREAD]\t\tGet APML and BIOS"
-	" boostlimit for a given socket and core index\n"
+	" boostlimit for a given socket and core index in MHz\n"
 	"\t-d, (--setapmlboostlimit)[SOCKET][THREAD][BOOSTLIMIT]   Set "
-	"APML boostlimit for a given socket/core\n"
+	"APML boostlimit for a given socket and core in MHz\n"
 	"\t-a, (--setapmlsocketboostlimit)  [SOCKET][BOOSTLIMIT]   Set "
-	"APML boostlimit for all cores in a socket\n"
+	"APML boostlimit for all cores in a socket in MHz\n"
 	"\t--set_and_verify_dramthrottle    [SOCKET][0 to 80%]     Set "
 	"DRAM THROTTLE for a given socket\n"
+	"< SB-RMI COMMANDS >:\n"
 	"\t--showrmicommandregisters [SOCKET]\t\t\tGet the values of different"
 	" commands of SB-RMI registers for a given socket\n"
+	"< SB-TSI COMMANDS >:\n"
 	"\t--showtsicommandregisters [SOCKET]\t\t\tGet the values of different"
 	" commands of SB-TSI registers for a given socket\n"
+	"\t--set_verify_updaterate	  [SOCKET][Hz]\t\t\tSet "
+	"APML Frequency Update rate for a socket\n"
+	"\t--sethightempthreshold	  [SOCKET][TEMP(°C)]\t\tSet "
+	"APML High Temp Threshold\n"
+	"\t--setlowtempthreshold	  [SOCKET][TEMP(°C)]\t\tSet "
+	"APML Low Temp Threshold\n"
+	"\t--settempoffset\t	  [SOCKET][VALUE]\t\tSet "
+	"APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 °C]\n"
+	"\t--settimeoutconfig	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU timeout config, VALUE = 0 or 1\n"
+	"\t--setalertthreshold	  [SOCKET][VALUE]\t\tSet "
+	"APML CPU alert threshold sample, VALUE = 1 to 8\n"
+	"\t--setalertconfig	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU alert config, VALUE = 0 or 1\n"
+	"\t--setalertmask\t	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU alert mask, VALUE = 0 or 1\n"
+	"\t--setrunstop\t	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU runstop, VALUE = 0 or 1\n"
+	"\t--setreadorder\t	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU read order, VALUE = 0 or 1\n"
+	"\t--setara\t	  [SOCKET][VALUE]\t\tSet/Reset "
+	"APML CPU ARA, VALUE = 0 or 1\n"
 	"\t-h, (--help)\t\t\t\t\t\tShow this help message\n", exe_name);
 }
 
@@ -463,12 +702,6 @@ void show_smi_end_message(void)
 void show_smi_parameters(void)
 {
 	oob_status_t ret;
-	uint32_t core_id = 0;
-	uint32_t buffer = 0, mca = 0xc0002004;
-	uint64_t mca_value;
-	uint32_t eax, ebx, ecx, edx;
-	/*sb_tsi*/
-	int8_t buf;
 	static int i;
 	uint8_t quadrant;
 	uint32_t reg_offset;
@@ -478,35 +711,16 @@ void show_smi_parameters(void)
 	uint32_t bios_boost, esb_boost;
 	uint32_t dram_thr, prochot, prochot_res;
 	uint32_t vddio, nbio, iod, ccd, ccx;
-
-
-	printf("_FUNCTION		| 	Value		    |\n");
-	eax = 0; //cpuid function
-	ecx = 0; //cpuid extended function
-	if ((ret = esmi_oob_cpuid(core_id, &eax, &ebx,
-				  &ecx, &edx)) == 0) {
-		printf("_CPUID(Fn 00000000)	| %x %x %x %x|\n",
-		       eax, ebx, ecx, edx);
-	} else {
-                printf("Failed to access CPUID, Err[%d]: %s\n", ret,
-			esmi_get_err_msg(ret));
-	}
+	float uprat;
 
 	usleep(1000);
-	if ((ret = esmi_oob_read_msr(0, mca, &mca_value)) == 0) {
-		printf("_MCA_READ[0x%x]	| 0x%lx\t\t\t    |\n", mca, mca_value);
-	} else {
-                printf("Failed to access MCA MSR, Err[%d]: %s\n", ret,
-			esmi_get_err_msg(ret));
-	}
-	printf("\n\n");
-
-	usleep(1000);
-	printf("\t\t*** SB-RMI Mailbox Service Access ***");
 	for (i = 0; i < 2; i++) {
-	printf("\nSocket %d:\n", i);
 	printf("---------------------------------------------------------------"
 		"-----------------\n");
+	printf("\t\t\tSOCKET %d\n", i);
+	printf("---------------------------------------------------------------"
+		"-----------------\n");
+	printf("*** SB-RMI Mailbox Service Access ***\n");
 	printf("_POWER	(Watts)\t\t|");
 	if (read_socket_power(i, &power_avg) == 0) {
 		printf(" Avg : %.03f, ", (double)power_avg/1000);
@@ -610,174 +824,11 @@ void show_smi_parameters(void)
 	if (read_ccx_bist_result(i, 0x2, &ccx) == 0) {
 		printf(" %u\n",ccx);
 	}
+	printf("\n*** SB-TSI UPDATE ***\n");
+	get_apml_tsi_register_descriptions(i);
+	}
 	printf("---------------------------------------------------------------"
 		"-----------------\n");
-	}
-
-	printf("\n\t*** SB-RMI Register Byte Read Access ***\n");
-	printf("---------------------------------------------------------------"
-		"-----------------\n");
-	printf("COMMAND\t\t\t|   SOCKET[0]   |   SOCKET[1]   |\n");
-	printf("_RMI_REVISION\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_revision(i, &buf) == 0) {
-			printf("\t%2d\t|", buf);
-		}
-	}
-
-	usleep(1000);
-	printf("\n_RMI_CONTROL\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_control(i, &buf) == 0) {
-			printf("\t%#x\t|", buf);
-		}
-	}
-	usleep(1000);
-	printf("\n_RMI_STATUS\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_status(i, &buf) == 0) {
-			printf("\t%#x\t|", buf);
-		}
-	}
-	usleep(1000);
-	printf("\n_RMI_READSIZE\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_readsize(i, &buf) == 0) {
-			printf("\t%#x\t|", buf);
-		}
-	}
-	usleep(1000);
-	printf("\n_RMI_THREADENABLESTATUS\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_threadenablestatus(i, &buf) == 0) {
-			printf("\t%#x\t|", (uint8_t)buf);
-		}
-	}
-	usleep(1000);
-	printf("\n_RMI_SWINTERTUPT\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_swinterrupt(i, &buf) == 0) {
-			printf("\t%#x\t|", buf);
-		}
-	}
-	usleep(1000);
-	printf("\n_RMI_THREADNUMBER\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbrmi_threadnumber(i, &buf) == 0) {
-			printf("\t%#x\t|", (uint8_t)buf);
-		}
-	}
-	printf("\n------------------------------------------------------------"
-		"--------------------\n");
-
-	printf("\n\t*** SBTSI Register Byte Read Access ***\n");
-	printf("---------------------------------------------------------------"
-		"-----------------\n");
-	printf("COMMAND\t\t\t|   SOCKET[0]   |   SOCKET[1]   |\n");
-	printf("_TSI_CPUINTTEMP\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_cpuinttemp(i, &buf) == 0)
-			printf("\t%d°C\t|", buf);
-		}
-	usleep(1000);
-	printf("\n_TSI_STATUS\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_status(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-		}
-	usleep(1000);
-	printf("\n_TSI_CONFIG\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_config(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-		}
-	usleep(1000);
-	printf("\n_TSI_UPDATERATE\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_updaterate(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-
-	usleep(1000);
-	printf("\n_TSI_HITEMPINT\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_hitempint(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_LOTEMPINT\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_lotempint(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_CONFIGWRITE\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_configwrite(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_CPUTEMPDECIMAL\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_cputempdecimal(i, &buf) == 0)
-			printf("\t%#x\t|", (uint8_t)buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_CPUTEMPOFFSETHIBYTE|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_cputempoffsethibyte(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_CPUTEMPOFFSETDEC\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_cputempoffsetdecimal(i, &buf) == 0)
-			printf("\t%#x\t|", (uint8_t)buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_HITEMP_DECIMAL\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_hitempdecimal(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_LOTEMP_DECIMAL\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_lotempdecimal(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_TIMEOUT_CONFIG\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_timeoutconfig(i, &buf) == 0)
-			printf("\t%#x\t|", (uint8_t)buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_ALERT_THRESHOLD\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_alertthreshold(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_ALERT_CONFIG\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_alertconfig(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_MANUFACTURE_ID\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_manufid(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	usleep(1000);
-	printf("\n_TSI_REVISION\t\t|");
-	for (i = 0; i < 2; i++) {
-		if (read_sbtsi_revision(i, &buf) == 0)
-			printf("\t%#x\t|", buf);
-	}
-	printf("\n------------------------------------------------------------"
-		"--------------------\n");
 }
 
 /*
@@ -807,6 +858,9 @@ oob_status_t parseesb_args(int argc,char **argv)
 	uint32_t socket = 0, power = 0;
 	uint32_t boostlimit = 0, thread_ind = 0;
 	uint32_t dram_thr;
+	float uprate;
+	float temp;
+	int value;
 
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -822,11 +876,22 @@ oob_status_t parseesb_args(int argc,char **argv)
 		{"set_and_verify_dramthrottle", required_argument, 0,   'l'},
 		{"showrmicommandregisters", required_argument,	&flag,	1},
 		{"showtsicommandregisters", required_argument,	&flag,	2},
+		{"set_verify_updaterate",   required_argument,	0,	'u'},
+		{"sethightempthreshold", required_argument,	0,	'v'},
+		{"setlowtempthreshold",	required_argument,	0,	'w'},
+		{"settempoffset",	required_argument,	0,	'x'},
+		{"settimeoutconfig",	required_argument,	0,	'f'},
+		{"setalertthreshold",	required_argument,	0,	'g'},
+		{"setalertconfig",	required_argument,	0,	'j'},
+		{"setalertmask",	required_argument,	0,	'k'},
+		{"setrunstop",		required_argument,	0,	'm'},
+		{"setreadorder",	required_argument,	0,	'n'},
+		{"setara",		required_argument,	0,	'o'},
 		{0,			0,			0,	0},
 	};
 
 	int long_index = 0;
-	char *helperstring = "+hp:t:s:c:r:b:d:a:";
+	char *helperstring = "+hp:t:s:c:r:b:d:a:u:v:w:x:f:g:j:k:m:n:o:";
 
 	/* Is someone trying without passing anything ? */
 	if (argc <= 1) {
@@ -847,6 +912,17 @@ oob_status_t parseesb_args(int argc,char **argv)
 	    opt == 'd' ||
 	    opt == 'a' ||
 	    opt == 'l' ||
+	    opt == 'u' ||
+	    opt == 'v' ||
+	    opt == 'w' ||
+	    opt == 'x' ||
+	    opt == 'f' ||
+	    opt == 'g' ||
+	    opt == 'j' ||
+	    opt == 'k' ||
+	    opt == 'm' ||
+	    opt == 'n' ||
+	    opt == 'o' ||
 	    opt == 0) {
 		if (is_string_number(optarg)) {
 			printf("Option '-%c' require a valid numeric value"
@@ -859,7 +935,14 @@ oob_status_t parseesb_args(int argc,char **argv)
 	    opt == 'b' ||
 	    opt == 'a' ||
 	    opt == 'l' ||
-	    opt == 'd') {
+	    opt == 'd' ||
+	    opt == 'f' ||
+	    opt == 'g' ||
+	    opt == 'k' ||
+	    opt == 'm' ||
+	    opt == 'n' ||
+	    opt == 'o' ||
+	    opt == 'j') {
 		// make sure optind is valid  ... or another option
 		if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO or more arguments"
@@ -870,6 +953,14 @@ oob_status_t parseesb_args(int argc,char **argv)
 		if(is_string_number(argv[optind])) {
 			printf("Option '-%c' require 2nd argument as valid"
 				" numeric value\n\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+	}
+	if (opt == 'u' || opt == 'x'|| opt == 'v' || opt == 'w') {
+		if (optind >= argc) {
+			printf("\nOption '-%c' require TWO or more arguments"
+				"\n\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
@@ -944,6 +1035,61 @@ oob_status_t parseesb_args(int argc,char **argv)
 			socket = atoi(optarg);
 			dram_thr = atoi(argv[optind++]);
 			set_and_verify_dram_throttle(socket, dram_thr);
+			break;
+		case 'u':
+			socket = atoi(optarg);
+			uprate = atof(argv[optind++]);
+			set_and_verify_apml_socket_uprate(socket, uprate);
+			break;
+		case 'v':
+			socket = atoi(optarg);
+			temp = atof(argv[optind++]);
+			set_high_temp_threshold(socket, temp);
+			break;
+		case 'w':
+			socket = atoi(optarg);
+			temp = atof(argv[optind++]);
+			set_low_temp_threshold(socket, temp);
+			break;
+		case 'x':
+			socket = atoi(optarg);
+			temp = atof(argv[optind++]);
+			set_temp_offset(socket, temp);
+			break;
+		case 'f':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_timeout_config(socket, value);
+			break;
+		case 'g':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_alert_threshold(socket, value);
+			break;
+		case 'j':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_alert_config(socket, value);
+			break;
+		case 'k':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_tsi_config(socket, value, 'k');
+			break;
+		case 'm':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_tsi_config(socket, value, 'm');
+			break;
+		case 'n':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_tsi_config(socket, value, 'n');
+			break;
+		case 'o':
+			socket = atoi(optarg);
+			value = atoi(argv[optind++]);
+			set_tsi_config(socket, value, 'o');
 			break;
 		case 'h' :
 			show_usage(argv[0]);

@@ -79,6 +79,14 @@ typedef enum {
 	SBTSI_REVISION = 0xFF
 } sbtsi_registers;
 
+#define TEMP_ENC 0.125
+
+typedef enum {
+	ARA_MASK = 0x2,
+	READORDER_MASK = 0x20,
+	RUNSTOP_MASK = 0x40,
+	ALERTMASK_MASK = 0x80
+} sbtsi_config_write;
 /*****************************************************************************/
 /** @defgroup SB-TSIRegisterAccess SBTSI Register Read Byte Protocol
 
@@ -131,8 +139,30 @@ oob_status_t read_sbtsi_config(int socket, int8_t *buffer);
  * @brief This register value specifies the rate at which CPU temperature
  * is compared against the temperature thresholds to determine if an alert
  * event has occurred.
+ * @buffer: value return in raw format
  */
 oob_status_t read_sbtsi_updaterate(int socket, int8_t *buffer);
+/**
+ * @brief This register value specifies the rate at which CPU temperature
+ * is compared against the temperature thresholds to determine if an alert
+ * event has occurred.
+ * @buffer: value converted and return in Hz
+ */
+oob_status_t read_sbtsi_updateratehz(int socket, float *buffer);
+/**
+ * @brief This register value specifies the rate at which CPU temperature
+ * is compared against the temperature thresholds to determine if an alert
+ * event has occurred.
+ * @buffer: value write in raw format
+ */
+oob_status_t write_sbtsi_updaterate(int socket, int8_t buffer);
+/**
+ * @brief This register value specifies the rate at which CPU temperature
+ * is compared against the temperature thresholds to determine if an alert
+ * event has occurred.
+ * @buffer: value passed in HZ and converted to write in raw format
+ */
+oob_status_t write_sbtsi_updateratehz(int socket, float uprate);
 /**
  * @brief This value specifies the integer  portion of the high temperature
  * threshold.
@@ -187,17 +217,17 @@ oob_status_t read_sbtsi_lotempdecimal(int socket, uint8_t *buffer);
  */
 oob_status_t read_sbtsi_timeoutconfig(int socket, uint8_t *buffer);
 /**
+ * @brief Specifies the number of consecutive CPU temperature
+ * samples for which a temperature alert condition needs to remain valid
+ * before the corresponding alert bit is set.
+ */
+oob_status_t read_sbtsi_alertthreshold(int socket, int8_t *buffer);
+/**
  * @brief Status register is Read-only, volatile field
  * If SBTSI::AlertConfig[AlertCompEn] == 0 , the temperature alert is latched
  * high until the alert is read. If SBTSI::AlertConfig[AlertCompEn] == 1,
  * the alert is cleared when the temperature does not meet the threshold
  * conditions for temperature and number of samples.
- */
-oob_status_t read_sbtsi_alertthreshold(int socket, int8_t *buffer);
-/**
- * @brief Specifies the number of consecutive CPU temperature
- * samples for which a temperature alert condition needs to remain valid
- * before the corresponding alert bit is set.
  */
 oob_status_t read_sbtsi_alertconfig(int socket, int8_t *buffer);
 /**
@@ -209,6 +239,133 @@ oob_status_t read_sbtsi_manufid(int socket, int8_t *buffer);
  */
 oob_status_t read_sbtsi_revision(int socket, int8_t *buffer);
 
+/* Extra API's for bit parsing */
+/**
+ *  @brief CPU temperature value
+ *  The CPU temperature is calculated by adding SBTSI::CpuTempInt
+ *  and SBTSI::CpuTempDec combine to return the CPU temperature.
+ *  @temp_value: temperature of the CPU
+ */
+oob_status_t sbtsi_get_cputemp(int socket, float *temp_value);
+/**
+ * @brief Status register is Read-only, volatile field
+ * If SBTSI::AlertConfig[AlertCompEn] == 0 , the temperature alert is latched
+ * high until the alert is read. If SBTSI::AlertConfig[AlertCompEn] == 1,
+ * the alert is cleared when the temperature does not meet the threshold
+ * conditions for temperature and number of samples.
+ * @loalert: 1=> CPU temp is less than or equal to low temperature
+ * 	     threshold for consecutive samples
+ * @hialert: 1=> CPU temp is greater than or equal to high temperature
+ * 	     threshold for consecutive samples
+ */
+oob_status_t sbtsi_get_temp_status(int socket, uint8_t *loalert, uint8_t *hialert);
+/**
+ * @brief The bits in this register are Read-only and can be written
+ * by Writing to the corresponding bits in SBTSI::ConfigWr
+ * @al_mask: 0=> ALERT_L pin enabled. 1=> ALERT_L pin disabled
+ * 	     and does not assert.
+ * @run_stop: 0=> Updates to CpuTempInt and CpuTempDec and alert comparisons
+ * 	      are enabled. 1=> Updates are disabled and alert comparisons
+ * 	      are disabled.
+ * @read_ord: 0=> Reading CpuTempInt causes the satate of CpuTempDec to be
+ * 	      latched. 1=> Reading CpuTempInt causes the satate of CpuTempDec
+ * 	      to be latched.
+ * @ara: 1=> ARA response disabled.
+ */
+oob_status_t sbtsi_get_config(int socket, uint8_t *al_mask,
+			      uint8_t *run_stop, uint8_t *read_ord,
+			      uint8_t *ara);
+/**
+ * @brief The bits in this register are Read-only and can be written
+ * by Writing to the corresponding bits in SBTSI::ConfigWr
+ * @value: value to update 0 or 1
+ * @check: which bit need to update
+ */
+oob_status_t sbtsi_set_tsi_config(int socket, int value, int check);
+/**
+ * @brief To verify if timeout support enabled or disabled
+ * @timeout: 0=>SMBus defined timeout support disabled.
+ * 	     1=SMBus defined timeout support enabled. SMBus timeout enable.
+ * 	     If SB-RMI is in use, SMBus timeouts should
+ * 	     be enabled or disabled in a consistent manner on both interfaces.
+ * 	     SMBus defined timeouts are not disabled for SB-RMI when this bit is set
+ * 	     to 0.
+ */
+oob_status_t sbtsi_get_timeout(int socket, uint8_t *timeout);
+/**
+ * @brief To enable/disable timeout support
+ * @value:  0=>SMBus defined timeout support disabled.
+ *	    1=>SMBus defined timeout support enabled. SMBus timeout enable.
+ *	    If SB-RMI is in use, SMBus timeouts should
+ *	    be enabled or disabled in a consistent manner on both interfaces.
+ *	    SMBus defined timeouts are not disabled for SB-RMI when
+ *	    this bit is set to 0.
+ */
+oob_status_t sbtsi_set_timeout_config(int socket, int value);
+/**
+ * @brief This value set the high temperature threshold.
+ * The high temperature threshold specifies the CPU temperature that
+ * causes ALERT_L to assert if the CPU temperature is greater than or
+ * equal to the threshold.
+ * @temp_int: Specifies the integer part of threshold
+ * @temp_dec: Specifies the decimal part of threshold
+ */
+oob_status_t sbtsi_set_hightemp_threshold(int socket, int temp_int, float temp_dec);
+/**
+ * @brief This value set the low temperature threshold.
+ * The low temperature threshold specifies the CPU temperature that
+ * causes ALERT_L to assert if the CPU temperature is less than or
+ * equal to the threshold.
+ * @temp_int: Specifies the integer part of threshold
+ * @temp_dec: Specifies the decimal part of threshold
+ */
+oob_status_t sbtsi_set_lowtemp_threshold(int socket, int temp_int, float temp_dec);
+/**
+ * @brief This value specifies the high temperature threshold.
+ * The high temperature threshold specifies the CPU temperature that
+ * causes ALERT_L to assert if the CPU temperature is greater than or
+ * equal to the threshold.
+ * @integer: Specifies the integer part of threshold
+ * @decimal: Specifies the decimal part of threshold
+ */
+oob_status_t sbtsi_get_htemp_threshold(int socket, int8_t *integer, float *decimal);
+/**
+ * @brief This value specifies the low temperature threshold.
+ * The low temperature threshold specifies the CPU temperature that
+ * causes ALERT_L to assert if the CPU temperature is less than or
+ * equal to the threshold.
+ * @integer: Specifies the integer part of threshold
+ * @decimal: Specifies the decimal part of threshold
+ */
+oob_status_t sbtsi_get_ltemp_threshold(int socket, int8_t *integer, float *decimal);
+/**
+ * @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
+ * the CPU temperature offset
+ */
+oob_status_t read_sbtsi_cputempoffset(int socket, float *temp_offset);
+/**
+ * @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to set
+ * the CPU temperature offset
+ */
+oob_status_t write_sbtsi_cputempoffset(uint32_t socket, float temp_offset);
+/**
+ * @brief Specifies the number of consecutive CPU temperature
+ * samples for which a temperature alert condition needs to remain valid
+ * before the corresponding alert bit is set.
+ * @value: Number of samples
+ * 	0h: 1 sample
+ *	6h-1h: (value + 1) sample
+ *	7h: 8 sample
+ */
+oob_status_t sbtsi_set_alert_threshold(int socket, int value);
+/**
+ * @brief Alert comparator mode enable
+ * @value 0=> SBTSI::Status[TempHighAlert] & SBTSI::Status[TempLowAlert] are
+ * 	  read-clear. 1=>  SBTSI::Status[TempHighAlert] &
+ * 	  SBTSI::Status[TempLowAlert] are read-only. ARA response
+ * 	  disabled.
+ */
+oob_status_t sbtsi_set_alert_config(int socket, int value);
 /** @} */  // end of SB-TSI Register access
 /*****************************************************************************/
 
