@@ -128,7 +128,7 @@ set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/esmi_oob"
 ## Add the install directives for the runtime library.
 install(TARGETS ${ESMI_OOB_TARGET}
           LIBRARY DESTINATION ${ESMI_OOB}/lib COMPONENT ${ESMI_OOB_COMPONENT})
-install(FILES ${SOURCE_DIR}/include/esmi_oob/common.h
+install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_common.h
                                         DESTINATION esmi_oob/include/esmi_oob)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_i2c.h
                                         DESTINATION esmi_oob/include/esmi_oob)

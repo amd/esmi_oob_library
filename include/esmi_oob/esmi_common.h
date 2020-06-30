@@ -41,7 +41,7 @@
 #ifndef INCLUDE_ESMI_OOB_COMMON_H_
 #define INCLUDE_ESMI_OOB_COMMON_H_
 
-/** \file common.h
+/** \file esmi_common.h
  *  Header file for the ESMI-OOB library common functions.
  *  use of this library is to init the functionality and exit after use.
  *

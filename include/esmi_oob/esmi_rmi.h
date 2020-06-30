@@ -43,7 +43,7 @@
 
 #include "esmi_common.h"
 
-/** \file rmi.h
+/** \file esmi_rmi.h
  *  Header file for the E-SMI-OOB library for SB-RMI functionality access.
  *  All required function, structure, enum, etc. definitions should be defined
  *  in this file for SB-RMI Register accessing.

@@ -43,7 +43,7 @@
 
 #include "esmi_common.h"
 
-/** \file cpuid_msr.h
+/** \file esmi_cpuid_msr.h
  *  Header file for the ESMI-OOB library cpuid and msr read functions.
  *  All required function, structure, enum and protocol specific data etc.
  *  definitions should be defined in this header.

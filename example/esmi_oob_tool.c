@@ -550,7 +550,7 @@ oob_status_t get_apml_tsi_register_descriptions(uint32_t socket)
 
 	usleep(1000);
 	if (read_sbtsi_alertthreshold(socket, &buf) == 0)
-		printf("_THRESHOLD_SAMPLE\t| %#d\n", buf);
+		printf("_THRESHOLD_SAMPLE\t| %d\n", buf);
 
 	usleep(1000);
 	if (read_sbtsi_cputempoffset(socket, &dec) == 0) {
@@ -655,7 +655,7 @@ static void show_usage(char *exe_name) {
 	"APML boostlimit for a given socket and core in MHz\n"
 	"\t-a, (--setapmlsocketboostlimit)  [SOCKET][BOOSTLIMIT]   Set "
 	"APML boostlimit for all cores in a socket in MHz\n"
-	"\t--set_and_verify_dramthrottle    [SOCKET][0 to 80%]     Set "
+	"\t--set_and_verify_dramthrottle    [SOCKET][0 to 80%%]     Set "
 	"DRAM THROTTLE for a given socket\n"
 	"< SB-RMI COMMANDS >:\n"
 	"\t--showrmicommandregisters [SOCKET]\t\t\tGet the values of different"
@@ -759,7 +759,7 @@ void show_smi_parameters(void)
 	}
 
 	usleep(1000);
-	printf("_C0_RESIDENCY (in %)\t|");
+	printf("_C0_RESIDENCY (in %%)\t|");
 	if (read_socket_c0_residency(i, &residency) == 0) {
 		printf(" %u%%\n", residency);
 	}
@@ -776,7 +776,7 @@ void show_smi_parameters(void)
 	}
 
 	usleep(1000);
-	printf("_DRAM_THROTTLE	(in %)\t|");
+	printf("_DRAM_THROTTLE	(in %%) \t|");
 	if (read_dram_throttle(i, &dram_thr) == 0) {
 		printf(" %u\n", dram_thr);
 	}
