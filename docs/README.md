@@ -16,8 +16,7 @@ In order to build the E-SMI-OOB library, the following components are required. 
 * i2c-tools, libi2c-dev
 
 #### Dowloading the source
-The source code for E-SMI-OOB is available esmi-oob-library.tar.gz in the current directory.
- Note: This will be hosted on a GitHub later.
+The source code for E-SMI library is available on [Github](https://github.com/amd/esmi_oob_library).
 
 #### Directory stucture of the source
 Once the E-SMI-OOB library source has been cloned to a local Linux machine, the directory structure of source is as below:
@@ -29,7 +28,7 @@ Once the E-SMI-OOB library source has been cloned to a local Linux machine, the 
 Building the library is achieved by following the typical CMake build sequence, as follows.
 ##### ```$ mkdir -p build```
 ##### ```$ cd build```
-##### ```$ cmake <location of root of E-SMI-OOB library CMakeLists.txt>```
+##### ```$ cmake -DCMAKE_INSTALL_PREFIX=${PWD}/install <location of root of E-SMI-OOB library CMakeLists.txt>```
 ##### ```$ make```
 The built library will appear in the `build` folder.
 
@@ -54,8 +53,8 @@ Below is a simple "Hello World" type program that displays the Core energy of de
 ```
 #include <stdio.h>
 #include <stdint.h>
-#include <esmi_oob/common.h>
-#include <esmi_oob/mailbox.h>
+#include <esmi_oob/esmi_common.h>
+#include <esmi_oob/esmi_mailbox.h>
 
 int main() {
 	oob_status_t ret;
@@ -74,4 +73,136 @@ x:
 	esmi_oob_exit();
 	return ret;
 }
+```
+# Usage
+## Tool Usage
+E-SMI tool is a C program based on the E-SMI Out-of-band Library, the executable "esmi_oob_tool" will be generated in the build/ folder.
+This tool provides options to Monitor and Control System Management functionality.
+
+Below is a sample usage to dump the functionality, with default core/socket available.
+```
+esmi_oob_library/build> ./esmi_oob_tool
+=============== APML System Management Interface ===============
+
+--------------------------------------------------------------------------------
+			SOCKET 0
+--------------------------------------------------------------------------------
+*** SB-RMI Mailbox Service Access ***
+_POWER	(Watts)		| Avg : 56.068,  Limit : 200.000,  Max : 240.000
+_TDP	(Watts)		| Avg : 225.000,  Minim : 225.000,  Max : 240.000
+_CCLK_FREQ_LIMIT (MHz)	| 3200
+_C0_RESIDENCY (in %)	| 0%
+_BOOST_LIMIT (MHz)	| BIOS: 3200,  APML: 3200
+_DRAM_THROTTLE	(in %)	| 50
+_PROCHOT STATUS		| NOT_PROCHOT
+_PROCHOT RESIDENCY (MHz)| 0
+_VDDIOMem_POWER (mWatts)| 36460
+_NBIO_Error_Logging_Reg	| 0
+_IOD_Bist_RESULT	| Bist pass
+_CCD_Bist_RESULT	| Bist pass
+_CCX_Bist_RESULT	| 0
+
+*** SB-TSI UPDATE ***
+_CPUTEMP		| 20.625 °C
+_HIGH_THRESHOLD_TEMP	| 70.000 °C
+_LOW_THRESHOLD_TEMP 	| 2.125 °C
+_TSI_UPDATERATE		| 0.125 Hz
+_THRESHOLD_SAMPLE	| 1
+_TEMP_OFFSET		| -21.125 °C
+_STATUS			| No Temp Alert
+_CONFIG			|
+	ALERT_L pin	| Enabled
+	Runstop		| Enabled
+	Atomic rd order	| Disabled
+	ARA response	| Enabled
+_TIMEOUT_CONFIG		| Enabled
+_TSI_ALERT_CONFIG	| Enabled
+_TSI_MANUFACTURE_ID	| 0
+_TSI_REVISION		| 0x4
+--------------------------------------------------------------------------------
+Try './esmi_oob_tool --help' for more information.
+
+====================== End of APML SMI Log =====================
+```
+
+For detailed and up to date usage information, we recommend consulting the help:
+
+For convenience purposes, following is the output from the -h flag:
+```
+esmi_oob_library/build> ./esmi_oob_tool --help
+Usage: ./esmi_oob_tool [Option<s>] SOURCES
+Option<s>:
+< MAILBOX COMMANDS >:
+	-p, (--showpower)	 [SOCKET]			Get Power for a given socket in Watt
+	-t, (--showtdp)		 [SOCKET]			Get TDP for a given socket in Watt
+	-s, (--setpowerlimit)	 [SOCKET][POWER]		Set powerlimit for a given socket in mWatt
+	-c, (--showcclkfreqlimit)[SOCKET]			Get cclk freqlimit for a given socket in MHz
+	-r, (--showc0residency)	 [SOCKET]			Show socket c0_residency given socket
+	-b, (--showboostlimit)   [SOCKET][THREAD]		Get APML and BIOS boostlimit for a given socket and core index in MHz
+	-d, (--setapmlboostlimit)[SOCKET][THREAD][BOOSTLIMIT]   Set APML boostlimit for a given socket and core in MHz
+	-a, (--setapmlsocketboostlimit)  [SOCKET][BOOSTLIMIT]   Set APML boostlimit for all cores in a socket in MHz
+	--set_and_verify_dramthrottle    [SOCKET][0 to 80%]     Set DRAM THROTTLE for a given socket
+< SB-RMI COMMANDS >:
+	--showrmicommandregisters [SOCKET]			Get the values of different commands of SB-RMI registers for a given socket
+< SB-TSI COMMANDS >:
+	--showtsicommandregisters [SOCKET]			Get the values of different commands of SB-TSI registers for a given socket
+	--set_verify_updaterate	  [SOCKET][Hz]			Set APML Frequency Update rate for a socket
+	--sethightempthreshold	  [SOCKET][TEMP(°C)]		Set APML High Temp Threshold
+	--setlowtempthreshold	  [SOCKET][TEMP(°C)]		Set APML Low Temp Threshold
+	--settempoffset		  [SOCKET][VALUE]		Set APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 °C]
+	--settimeoutconfig	  [SOCKET][VALUE]		Set/Reset APML CPU timeout config, VALUE = 0 or 1
+	--setalertthreshold	  [SOCKET][VALUE]		Set APML CPU alert threshold sample, VALUE = 1 to 8
+	--setalertconfig	  [SOCKET][VALUE]		Set/Reset APML CPU alert config, VALUE = 0 or 1
+	--setalertmask		  [SOCKET][VALUE]		Set/Reset APML CPU alert mask, VALUE = 0 or 1
+	--setrunstop		  [SOCKET][VALUE]		Set/Reset APML CPU runstop, VALUE = 0 or 1
+	--setreadorder		  [SOCKET][VALUE]		Set/Reset APML CPU read order, VALUE = 0 or 1
+	--setara		  [SOCKET][VALUE]		Set/Reset APML CPU ARA, VALUE = 0 or 1
+	-h, (--help)						Show this help message
+```
+
+Below is a sample usage to get the individual library functionality API's.
+We can pass arguments either any of the ways "./esmi_oob_tool -p 0" or "./esmi_oob_tool --showpower=0"
+```
+1.	esmi_oob_library/build> ./esmi_oob_tool -p 0
+	=============== APML System Management Interface ===============
+
+	socket[0]/power:           56.155 Watts
+	socket[0]/powerlimit:      200.000 Watts
+	socket[0]/max_power_limit: 240.000 Watts
+
+
+	====================== End of APML SMI Log =====================
+
+2.	esmi_oob_library/build> ./esmi_oob_tool --setpowerlimit 0 220000
+	=============== APML System Management Interface ===============
+
+	Set socket[0]/power_limit :          220.000 Watts successfully
+
+	====================== End of APML SMI Log =====================
+
+3.	esmi_oob_library/build> ./esmi_oob_tool --showtsicommandregisters 0
+	=============== APML System Management Interface ===============
+
+			 *** SB-TSI UPDATE ***
+	Socket:0
+	--------------------------------------------------------------------------------
+	_CPUTEMP		| 20.625 °C
+	_HIGH_THRESHOLD_TEMP	| 70.000 °C
+	_LOW_THRESHOLD_TEMP 	| 2.125 °C
+	_TSI_UPDATERATE		| 0.125 Hz
+	_THRESHOLD_SAMPLE	| 1
+	_TEMP_OFFSET		| -21.125 °C
+	_STATUS			| No Temp Alert
+	_CONFIG			|
+		ALERT_L pin	| Enabled
+		Runstop		| Enabled
+		Atomic rd order	| Disabled
+		ARA response	| Enabled
+	_TIMEOUT_CONFIG		| Enabled
+	_TSI_ALERT_CONFIG	| Enabled
+	_TSI_MANUFACTURE_ID	| 0
+	_TSI_REVISION		| 0x4
+	-------------------------------------------------------------------------------
+
+	====================== End of APML SMI Log =====================
 ```

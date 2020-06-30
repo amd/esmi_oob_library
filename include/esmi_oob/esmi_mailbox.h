@@ -43,7 +43,7 @@
 
 #include "esmi_common.h"
 
-/** \file mailbox.h
+/** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by E-SMI OOB library.
  *  All required function, structure, enum, etc. definitions should be defined
  *  in this file.
@@ -238,6 +238,8 @@ oob_status_t read_bios_boost_fmax(int socket_ind, uint32_t value,
  *
  *  @details This function will set the boostlimit to the provided value @p
  *  limit for a given cpu via Out-of-band.
+ *  NOTE: Currently the limit is setting for all the cores instead of a
+ *  particular cpu. Testing in Progress.
  *
  *  @param[in] socket_ind a socket index
  *
@@ -445,7 +447,8 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
  *
  *  @param[in] socket_ind is a particular package in the system.
  *
- *  @param[in] input value is Quadrant[31:24] and register offset[23:0]
+ *  @param[in] quadrant value is Quadrant[31:24] and register offset[23:0]
+ *  @param[in] offset value is Quadrant[31:24] and register offset[23:0]
  *
  *  @param[out] buffer is to read NBIOErrorLoggingRegiter(register value).
  *

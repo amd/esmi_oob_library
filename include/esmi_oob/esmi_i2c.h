@@ -42,10 +42,10 @@
 #ifndef INCLUDE_ESMI_OOB_UTILS_H_
 #define INCLUDE_ESMI_OOB_UTILS_H_
 
-#include <linux/i2c-dev.h> 
+#include <linux/i2c-dev.h>
 #include "esmi_common.h"
 
-/** \file utils.h
+/** \file esmi_i2c.h
  *  Main header file for the ESMI-OOB library.
  *  All required function, structure, enum, etc. definitions should be defined
  *  in this file.
