@@ -25,13 +25,27 @@ Once the E-SMI-OOB library source has been cloned to a local Linux machine, the 
 * `$ include/esmi_oob` Contains the header files used by the E-SMI-OOB library
 * `$ src/esmi_oob` Contains library E-SMI-OOB source
 
-Building the library is achieved by following the typical CMake build sequence, as follows.
+#### Building the library is achieved by following the typical CMake build sequence for native build, as follows.
 ##### ```$ mkdir -p build```
 ##### ```$ mkdir -p install```
 ##### ```$ cd build```
 ##### ```$ cmake -DCMAKE_INSTALL_PREFIX=${PWD}/install <location of root of E-SMI-OOB library CMakeLists.txt>```
 ##### ```$ make```
 The built library will appear in the `build` folder.
+
+#### Cross compile the library for armhf
+Install cross-compiler for ubuntu as follows
+##### ```$ sudo apt-get install gcc-arm-linux-gnueabihf```
+Install libi2c-dev for armhf
+Compilation steps
+##### ```$ mkdir -p build```
+##### ```$ cd build```
+##### ```$ cmake -DCMAKE_TOOLCHAIN_FILE=../cross-arm-linux-gnueabihf.cmake <location of root of E-SMI-OOB library CMakeLists.txt>```
+##### ```$ make```
+The built library will appear in the `build` folder.
+Copy the required binaries and the dynamic linked library to raspberrypi(required) board.
+##### ```$ scp libesmi_oob64.so.0 rpi@10.x.x.x:/usr/lib```
+##### ```$ scp esmi_oob_tool rpi@10.x.x.x:/usr/bin```
 
 #### Building the Documentation
 The documentation PDF file can be built with the following steps (continued from the steps above):

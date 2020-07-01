@@ -2,6 +2,13 @@
 # Minimum version of cmake required
 #
 cmake_minimum_required(VERSION 3.5.0)
+#
+#   cmake command line options:
+#
+#   1) Set CMAKE_TOOLCHAIN_FILE=<path_of_toolchain_file>
+#      For Cross-compilation, Set the flag as mentioned.
+#
+#      example #cmake -DCMAKE_TOOLCHAIN_FILE=<path> ..
 
 ## Set default module path if not already set
 if(NOT DEFINED CMAKE_MODULE_PATH)
