@@ -44,49 +44,48 @@
 #include <esmi_oob/esmi_rmi.h>
 #include <esmi_oob/esmi_i2c.h>
 
-/* sb-rmi register read access functions */
-static oob_status_t esb_rmi_read_byte(int socket, int cmd, uint8_t *buffer)
-{
-	return esmi_oob_read_byte(socket, SLAVE_RMI, cmd, buffer);
-}
-
-static oob_status_t esb_rmi_write_byte(int socket, int cmd, uint8_t value)
-{
-	return esmi_oob_write_byte(socket, SLAVE_RMI, cmd, value);
-}
-
 /* sb-rmi register access */
-oob_status_t read_sbrmi_revision(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_REVISION, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBRMI_REVISION, buffer);
 }
 
-oob_status_t read_sbrmi_control(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_control(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_CONTROL, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBRMI_CONTROL, buffer);
 }
 
-oob_status_t read_sbrmi_status(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_status(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_STATUS, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBRMI_STATUS, buffer);
 }
 
-oob_status_t read_sbrmi_readsize(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_readsize(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_READSIZE, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBRMI_READSIZE, buffer);
 }
 
-oob_status_t read_sbrmi_threadenablestatus(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_threadenablestatus(uint32_t i2c_bus, uint32_t i2c_addr,
+					   uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_THREADENABLESTATUS, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr,
+				  SBRMI_THREADENABLESTATUS, buffer);
 }
 
-oob_status_t read_sbrmi_swinterrupt(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_swinterrupt(uint32_t i2c_bus, uint32_t i2c_addr,
+				    uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_SOFTWAREINTERRUPT, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr,
+				  SBRMI_SOFTWAREINTERRUPT, buffer);
 }
 
-oob_status_t read_sbrmi_threadnumber(int socket, uint8_t *buffer)
+oob_status_t read_sbrmi_threadnumber(uint32_t i2c_bus, uint32_t i2c_addr,
+				     uint8_t *buffer)
 {
-	return esb_rmi_read_byte(socket, SBRMI_THREADNUMBER, buffer);
+	return esmi_oob_read_byte(i2c_bus, i2c_addr,
+				  SBRMI_THREADNUMBER, buffer);
 }

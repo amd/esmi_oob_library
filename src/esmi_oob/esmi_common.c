@@ -45,16 +45,6 @@
 #include <unistd.h>
 
 #include <esmi_oob/esmi_common.h>
-#include <esmi_oob/esmi_cpuid_msr.h>
-
-int fd = -1;
-/* Default values considered for calculating the below variables */
-uint32_t threads_per_socket = 1;
-uint32_t logical_cores_per_socket = 1;
-uint32_t threads_per_core  = 1;
-uint32_t cores_per_socket  = 1;
-uint32_t total_cores = 1;
-uint32_t total_threads = 1;
 
 /*
  * Get appropriate error strings for the esmi oob error numbers
@@ -112,6 +102,7 @@ oob_status_t errno_to_oob_status(int err)
                 case EOF:
                 case EISDIR:    return OOB_FILE_ERROR;
                 case EINTR:     return OOB_INTERRUPTED;
+		case EREMOTEIO:
                 case EIO:       return OOB_UNEXPECTED_SIZE;
                 case ENOMEM:    return OOB_NO_MEMORY;
 		case EAGAIN:    return OOB_TRY_AGAIN;
@@ -120,102 +111,3 @@ oob_status_t errno_to_oob_status(int err)
         }
 }
 
-uint32_t esmi_get_logical_cores_per_socket(void)
-{
-	return logical_cores_per_socket;
-}
-
-uint32_t esmi_get_threads_per_socket(void)
-{
-	return threads_per_socket;
-}
-
-uint32_t esmi_get_threads_per_core(void)
-{
-	return threads_per_core;
-}
-
-oob_status_t detect_topology()
-{
-	uint32_t value;
-	oob_status_t ret;
-	uint32_t thread_ind = 0;
-	uint32_t cpuid_fn = 1;
-	uint32_t cpuid_extd_fn = 0;
-
-	ret = esmi_oob_cpuid_ebx(thread_ind, cpuid_fn,
-				 cpuid_extd_fn, &value);
-
-	if (ret != OOB_SUCCESS) {
-		return ret;
-	}
-	/*
-	 * In CPUID_Fn00000001_EBX, Bits 23:16 logical processor count.
-	 * Specifies the number of threads in the processor
-	 */
-	threads_per_socket = (value >> 16) & 0xFF;
-
-	cpuid_fn = 0x8000001e; // CPUID_Fn8000001E_EBX [Core Identifiers]
-	ret = esmi_oob_cpuid_ebx(thread_ind, cpuid_fn,
-				 cpuid_extd_fn, &value);
-	if (ret != OOB_SUCCESS) {
-		return ret;
-	}
-	/*
-	 * bits 15:8 Threads per core. Read-only.
-	 * Reset: XXh. The number of threads per core is ThreadsPerCore+1.
-	 */
-	threads_per_core = ((value >> 8) & 0xFF) + 1;
-	cores_per_socket = threads_per_socket / threads_per_core;
-	total_cores = cores_per_socket * TOTAL_SOCKETS;
-	total_threads = threads_per_socket * TOTAL_SOCKETS;
-
-	/*
-	 * CPUID_Fn0000000B_EBX_x01 [Extended Topology Enumeration]
-	 */
-	cpuid_fn = 0xB;
-	cpuid_extd_fn = 1;
-	ret = esmi_oob_cpuid_ebx(thread_ind, cpuid_fn,
-				 cpuid_extd_fn, &value);
-	if (ret != OOB_SUCCESS) {
-		return ret;
-	}
-	logical_cores_per_socket = value & 0xFFFF;
-
-	return OOB_SUCCESS;
-}
-
-/*
- * Initialization step, where Opening the i2c device file.
- */
-oob_status_t esmi_oob_init(int i2c_channel)
-{
-	char i2c_path[FILEPATHSIZ];
-	oob_status_t ret;
-
-	snprintf(i2c_path, FILEPATHSIZ, "/dev/i2c-%d", i2c_channel);
-
-	if (fd < 0) {
-		fd = open(i2c_path, O_RDWR);
-		if (fd < 0) {
-			return errno_to_oob_status(errno);
-		}
-	}
-	ret = detect_topology();
-	if (ret != OOB_SUCCESS) {
-		return ret;
-	}
-	return errno_to_oob_status(errno);
-}
-
-/*
- * Close the i2c device file in the exit.
- */
-void esmi_oob_exit(void)
-{
-	if (fd >= 0) {
-		close(fd);
-	}
-
-	fd = -1;
-}

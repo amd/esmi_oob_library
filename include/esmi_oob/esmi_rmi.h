@@ -101,7 +101,9 @@ typedef enum {
  *  output at uint8_t @p buffer, this function will get the value from a
  *  particular command of SB_RMI register.
  *
- *  @param[in] socket a socket index
+ *  @param[in] i2c_bus i2c bus number
+ *
+ *  @param[in] i2c_addr device address on the i2c bus
  *
  *  @param[inout] buffer a pointer to a uint8_t that indicates value to hold
  *
@@ -113,34 +115,41 @@ typedef enum {
  *  @brief This value specifies the APML specification revision that the
  *  product is compliant to. 0x10 = 1.0x Revision.
  */
-oob_status_t read_sbrmi_revision(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t *buffer);
 /**
  *  @brief Read Control byte from SB_RMI register command.
  */
-oob_status_t read_sbrmi_control(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_control(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint8_t *buffer);
 /**
  *  @brief Read one byte of Status value from SB_RMI register command.
  */
-oob_status_t read_sbrmi_status(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_status(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint8_t *buffer);
 /**
  *  @brief This register specifies the number of bytes to return when using
  *  the block read protocol to read SBRMI_x[4F:10].
  */
-oob_status_t read_sbrmi_readsize(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_readsize(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t *buffer);
 /**
  *  @brief Read one byte of Thread Status from SB_RMI register command.
  */
-oob_status_t read_sbrmi_threadenablestatus(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_threadenablestatus(uint32_t i2c_bus, uint32_t i2c_addr,
+					   uint8_t *buffer);
 /**
  *  @brief This register is used by the SMBus master to generate an
  *  interrupt to the processor to indicate that a message is
  *  available..
  */
-oob_status_t read_sbrmi_swinterrupt(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_swinterrupt(uint32_t i2c_bus, uint32_t i2c_addr,
+				    uint8_t *buffer);
 /**
  *  @brief This register indicates the maximum number of threads present.
  */
-oob_status_t read_sbrmi_threadnumber(int socket, uint8_t *buffer);
+oob_status_t read_sbrmi_threadnumber(uint32_t i2c_bus, uint32_t i2c_addr,
+				     uint8_t *buffer);
 
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/

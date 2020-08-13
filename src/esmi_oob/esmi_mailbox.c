@@ -43,152 +43,192 @@
 #include <esmi_oob/esmi_common.h>
 #include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/esmi_i2c.h>
+#include <esmi_oob/esmi_cpuid_msr.h>
 
-extern uint32_t threads_per_socket;
-
-oob_status_t read_socket_power(int socket_ind, uint32_t *buffer)
+static oob_status_t validate_thread(uint32_t i2c_bus, uint32_t i2c_addr,
+				    uint32_t thread)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_PACKAGE_POWER_CONSUMPTION,
-				     0, buffer);
-}
+	uint32_t threads_per_socket;
 
-oob_status_t read_socket_power_limit(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_PACKAGE_POWER_LIMIT,
-				     0, buffer);
-}
-
-oob_status_t read_max_socket_power_limit(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_MAX_PACKAGE_POWER_LIMIT,
-				     0, buffer);
-}
-
-oob_status_t read_tdp(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_TDP, 0, buffer);
-}
-
-oob_status_t read_max_tdp(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_MAX_cTDP, 0, buffer);
-}
-
-oob_status_t read_min_tdp(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_MIN_cTDP, 0, buffer);
-}
-
-oob_status_t write_socket_power_limit(int socket_ind, uint32_t limit)
-{
-        return esmi_oob_write_mailbox(socket_ind, WRITE_PACKAGE_POWER_LIMIT,
-				      limit);
-}
-
-oob_status_t read_bios_boost_fmax(int socket_ind, uint32_t value,
-				  uint32_t *buffer)
-{
-	if (value >= threads_per_socket) {
+	threads_per_socket = esmi_get_threads_per_socket(i2c_bus, i2c_addr,
+							 &threads_per_socket);
+	if (thread >= threads_per_socket) {
 		return OOB_INVALID_INPUT;
 	}
-	return esmi_oob_read_mailbox(socket_ind,
+	return OOB_SUCCESS;
+}
+
+oob_status_t read_socket_power(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_PACKAGE_POWER_CONSUMPTION,
+				     0, buffer);
+}
+
+oob_status_t read_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				     uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_PACKAGE_POWER_LIMIT,
+				     0, buffer);
+}
+
+oob_status_t read_max_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+					 uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_MAX_PACKAGE_POWER_LIMIT,
+				     0, buffer);
+}
+
+oob_status_t read_tdp(uint32_t i2c_bus, uint32_t i2c_addr, uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_TDP, 0, buffer);
+}
+
+oob_status_t read_max_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
+			  uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_MAX_cTDP,
+				     0, buffer);
+}
+
+oob_status_t read_min_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
+			  uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_MIN_cTDP,
+				     0, buffer);
+}
+
+oob_status_t write_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				      uint32_t limit)
+{
+        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+				      WRITE_PACKAGE_POWER_LIMIT, limit);
+}
+
+oob_status_t read_bios_boost_fmax(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value,
+				  uint32_t *buffer)
+{
+	if (!validate_thread(i2c_bus, i2c_addr, value)) {
+		return OOB_INVALID_INPUT;
+	}
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
 				     READ_BIOS_BOOST_Fmax, value, buffer);
 }
 
-oob_status_t read_esb_boost_limit(int socket_ind, uint32_t value,
+oob_status_t read_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value,
 				  uint32_t *buffer)
 {
-	if (value >= threads_per_socket) {
+	if (!validate_thread(i2c_bus, i2c_addr, value)) {
 		return OOB_INVALID_INPUT;
 	}
-	return esmi_oob_read_mailbox(socket_ind,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
 				     READ_APML_BOOST_LIMIT, value, buffer);
 }
 
-oob_status_t write_esb_boost_limit(int socket_ind, int cpu_ind, uint32_t limit)
+oob_status_t write_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				   int cpu_ind, uint32_t limit)
 {
-	if (cpu_ind >= threads_per_socket) {
+	if (!validate_thread(i2c_bus, i2c_addr, cpu_ind)) {
 		return OOB_INVALID_INPUT;
 	}
-        return esmi_oob_write_mailbox(socket_ind, WRITE_APML_BOOST_LIMIT,
-				      limit);
+        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+				      WRITE_APML_BOOST_LIMIT, limit);
 }
 
-oob_status_t write_esb_boost_limit_allcores(int socket_ind, uint32_t limit)
+oob_status_t write_esb_boost_limit_allcores(uint32_t i2c_bus,
+					    uint32_t i2c_addr, uint32_t limit)
 {
-        return esmi_oob_write_mailbox(socket_ind,
+        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
 				      WRITE_APML_BOOST_LIMIT_ALLCORES, limit);
 }
 
-oob_status_t read_dram_throttle(int socket_ind, uint32_t *buffer)
+oob_status_t read_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t *buffer)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_DRAM_THROTTLE, 0, buffer);
-}
-
-oob_status_t write_dram_throttle(int socket_ind, uint32_t limit)
-{
-	if (limit < 0 || limit > 80) {
-		return OOB_INVALID_INPUT;
-	}
-        return esmi_oob_write_mailbox(socket_ind, WRITE_DRAM_THROTTLE, limit);
-}
-
-oob_status_t read_prochot_status(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_PROCHOT_STATUS,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_DRAM_THROTTLE,
 				     0, buffer);
 }
 
-oob_status_t read_prochot_residency(int socket_ind, uint32_t *buffer)
+oob_status_t write_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint32_t limit)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_PROCHOT_RESIDENCY,
+	/* As per SSP PPR, Write can be 0 to 80%, But read is 0 to 100% */
+        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+				      WRITE_DRAM_THROTTLE, limit);
+}
+
+oob_status_t read_prochot_status(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_PROCHOT_STATUS,
 				     0, buffer);
 }
 
-oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer)
+oob_status_t read_prochot_residency(uint32_t i2c_bus, uint32_t i2c_addr,
+				    uint32_t *buffer)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_VDDIO_MEM_POWER,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_PROCHOT_RESIDENCY,
 				     0, buffer);
 }
 
-oob_status_t read_nbio_error_logging_register(int socket_ind, uint8_t quadrant,
-					      uint32_t offset, uint32_t *buffer)
+oob_status_t read_vddio_mem_power(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_VDDIO_MEM_POWER,
+				     0, buffer);
+}
+
+oob_status_t
+read_nbio_error_logging_register(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t quadrant, uint32_t offset,
+				 uint32_t *buffer)
 {
 	uint32_t input;
 
 	input = (quadrant << 24) | (offset & 0xFFFFFF);
-	return esmi_oob_read_mailbox(socket_ind,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
 				     READ_NBIO_ERROR_LOGGING_REGISTER,
 				     input, buffer);
 }
 
-oob_status_t read_iod_bist(int socket_ind, uint32_t *buffer)
+oob_status_t read_iod_bist(uint32_t i2c_bus, uint32_t i2c_addr,
+			   uint32_t *buffer)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_IOD_BIST, 0, buffer);
-}
-
-oob_status_t read_ccd_bist_result(int socket_ind, uint32_t input,
-				  uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_CCD_BIST_RESULT,
-				     input, buffer);
-}
-
-oob_status_t read_ccx_bist_result(int socket_ind, uint32_t value,
-				  uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind,
-				     READ_CCX_BIST_RESULT, value, buffer);
-}
-
-oob_status_t read_cclk_freq_limit(int socket_ind, uint32_t *buffer)
-{
-	return esmi_oob_read_mailbox(socket_ind, READ_PACKAGE_CCLK_FREQ_LIMIT,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_IOD_BIST,
 				     0, buffer);
 }
 
-oob_status_t read_socket_c0_residency(int socket_ind, uint32_t *buffer)
+oob_status_t read_ccd_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t input, uint32_t *buffer)
 {
-	return esmi_oob_read_mailbox(socket_ind, READ_PACKAGE_C0_RESIDENCY,
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr, READ_CCD_BIST_RESULT,
+				     input, buffer);
+}
+
+oob_status_t read_ccx_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value, uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_CCX_BIST_RESULT, value, buffer);
+}
+
+oob_status_t read_cclk_freq_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_PACKAGE_CCLK_FREQ_LIMIT,
+				     0, buffer);
+}
+
+oob_status_t read_socket_c0_residency(uint32_t i2c_bus, uint32_t i2c_addr,
+				      uint32_t *buffer)
+{
+	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
+				     READ_PACKAGE_C0_RESIDENCY,
 				     0, buffer);
 }

@@ -46,29 +46,12 @@
  *  use of this library is to init the functionality and exit after use.
  *
  *  @details  This header file has init and exit functionalities to open
- *  and close the particular i2c channel.
+ *  and close the particular i2c bus.
  */
 
 #define TOTAL_SOCKETS 2 //!< Total number of sockets in the system.
 
 #define FILEPATHSIZ 128 //!< Buffer to hold size of file path
-
-/**
- * @brief I2C slave address for SB-RMI on socket P0 on SSP
- */
-#define P0_RMI_ADDR	0x3c	// 0x3c is 7-bit address[7:1] of 0x78(0x3c<<1)
-/**
- * @brief I2C slave address for SB-RMI on socket P1 on SSP
- */
-#define P1_RMI_ADDR	0x38	// 0x38 is 7-bit address[7:1] of 0x70(0x38<<1)
-/**
- * @brief I2C slave address for SB-TSI on socket P0 on SSP
- */
-#define P0_TSI_ADDR	0x4c 	// 0x4c is 7-bit address[7:1] of 0x98(0x4c<<1)
-/**
- * @brief I2C slave address for SB-TSI on socket P1 on SSP
- */
-#define P1_TSI_ADDR	0x48 	// 0x48 is 7-bit address[7:1] of 0x90(0x48<<1)
 
 /**
  * @brief Error codes retured by ESMI_OOB_COMMON functions
@@ -101,31 +84,6 @@ typedef enum {
 	OOB_INVALID_INPUT,	//!< Input value is invalid
 } oob_status_t;
 
-/****************************************************************************/
-/** @defgroup InitShut Initialization and Shutdown
- *  This function handles the i2c device file used by the APIs.
- *  @{
- */
-
-/**
- *  @brief maintain the file descriptor of i2c device.
- *
- *  @details get the file descriptor by opening the particular i2c channel.
- *
- *  @retval ::OOB_SUCCESS non-negative integer, file descriptor is returned upon
- *  	      successful call.
- *  @retval -1 is returned upon failure.
- *
- */
-oob_status_t esmi_oob_init(int i2c_channel);
-
-/**
- *  @brief Closes the i2c channel device which was opened during init.
- */
-void esmi_oob_exit(void);
-
-/** @} */  // end of InitShut
-
 /*****************************************************************************/
 /** @defgroup AuxilQuer Auxiliary functions
  *  Below functions provide interfaces to get the total number of cores,
@@ -144,36 +102,6 @@ void esmi_oob_exit(void);
  *
  */
 oob_status_t errno_to_oob_status(int err);
-
-/**
- *  @brief Get the number of logical cores per socket
- *
- *  @details Get the total number of logical cores in a socket.
- *
- *  @retval uint32_t is returned upon successful call.
- *
- */
-uint32_t esmi_get_logical_cores_per_socket(void);
-
-/**
- *  @brief Get the number of threads per socket
- *
- *  @details Get the total number of threads in a socket.
- *
- *  @retval uint32_t is returned upon successful call.
- *
- */
-uint32_t esmi_get_threads_per_socket(void);
-
-/**
- *  @brief Get number of threads per core.
- *
- *  @details Get the number of threads per core.
- *
- *  @retval uint32_t is returned upon successful call.
- */
-uint32_t esmi_get_threads_per_core(void);
-
 /**
  * @brief Get the error string message for esmi oob errors.
  *
@@ -189,4 +117,3 @@ char * esmi_get_err_msg(oob_status_t oob_err);
 /*****************************************************************************/
 
 #endif  // INCLUDE_ESMI_OOB_COMMON_H_
-

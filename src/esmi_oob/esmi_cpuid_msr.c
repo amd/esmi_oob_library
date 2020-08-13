@@ -52,11 +52,8 @@
 #define CPUID_RD_LEN	0xa
 #define CPUID_WR_LEN	0xa
 
-extern uint32_t threads_per_socket;
-extern uint32_t threads_per_core;
-extern uint32_t cores_per_socket;
-extern uint32_t total_cores;
-extern uint32_t total_threads;
+/* Size of CPU ID reg in bytes */
+#define REG_SIZE 4
 
 /*
  * Ref APML in PPR
@@ -90,19 +87,13 @@ extern uint32_t total_threads;
 	indata.ecx = (*ecx & 0xf) << 4; \
 }
 
-#define THREAD_NUM_IN_SOCKET(thread, thread_num_in_socket) { \
-	thread_num_in_socket = cores_per_socket * (thread / total_cores); \
-	thread_num_in_socket += (thread % cores_per_socket); \
-}
-
-static oob_status_t esb_rmi_read(int thread, int wr_len, int rd_len,
+static oob_status_t esb_rmi_read(uint32_t i2c_bus, uint32_t i2c_addr,
+				 int wr_len, int rd_len,
 				 rmi_indata *indata, rmi_outdata *outdata)
 {
 	oob_status_t ret;
-	int socket;
 
-        socket = (thread % total_cores) / cores_per_socket;
-	ret = esmi_oob_i2c_read(socket, wr_len, rd_len,
+	ret = esmi_oob_i2c_read(i2c_bus, i2c_addr, wr_len, rd_len,
 				(uint8_t *)indata, (uint8_t *)outdata);
 	if (ret != OOB_SUCCESS){
 		return ret;
@@ -117,17 +108,186 @@ static oob_status_t esb_rmi_read(int thread, int wr_len, int rd_len,
 	return OOB_SUCCESS;
 }
 
-oob_status_t esmi_oob_read_msr(uint32_t thread,
-			       uint32_t msraddr, uint64_t *buffer)
+static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
+{
+	int i;
+	char id_l[REG_SIZE +1];
+	oob_status_t ret;
+
+	for (i = 0; i < (sizeof(id_l) - 1) ; i++)
+	{
+		id_l[i] = reg;
+		reg = reg >> 8;
+	}
+
+	id_l[i] = '\0';
+
+	ret = snprintf(id, sizeof(id_l), "%s", id_l);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+
+}
+
+oob_status_t esmi_get_vendor_id(uint32_t i2c_bus, uint32_t i2c_addr,
+			        char *vendor_id)
+{
+	uint32_t eax, ebx, ecx, edx;
+	uint32_t core_id=0;
+	char ebx_id[REG_SIZE + 1], ecx_id[REG_SIZE + 1], edx_id[REG_SIZE + 1];
+	oob_status_t ret;
+
+	if(vendor_id == NULL)
+		return ENOMEM;
+
+	eax = 0;
+	ebx = 0;
+
+	ret = esmi_oob_cpuid(i2c_bus, i2c_addr, core_id,
+			     &eax, &ebx, &ecx, &edx);
+	if (ret != 0)
+		return ret;
+	/*
+	 * Processor Vendor EBX [(ASCII Bytes [3:0])]
+	 * Processor Vendor ECX [(ASCII Bytes [8:11])]
+	 * Processor Vendor EDX [(ASCII Bytes [4:7])]
+	 */
+	ret = esmi_convert_reg_val(ebx, ebx_id);
+	if (ret != 0)
+		return ret;
+	ret = esmi_convert_reg_val(edx, edx_id);
+	if (ret != 0)
+		return ret;
+	ret = esmi_convert_reg_val(ecx, ecx_id);
+	if (ret != 0)
+		return ret;
+
+	ret = snprintf(vendor_id, 4 * REG_SIZE + 1, "%s%s%s",
+			     ebx_id, edx_id, ecx_id);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static oob_status_t esmi_reg_offset_conv(uint32_t reg, uint32_t offset, uint32_t flag)
+{
+	oob_status_t ret;
+	ret = (reg >> offset) & flag;
+	return ret;
+}
+
+oob_status_t esmi_get_processor_info(uint32_t i2c_bus, uint32_t i2c_addr,
+			       struct processor_info *proc_info)
+{
+	oob_status_t ret;
+	uint32_t eax=1, ebx, ecx, edx;
+	uint32_t core_id=0;
+
+	ret = esmi_oob_cpuid(i2c_bus, i2c_addr, core_id,
+			     &eax, &ebx, &ecx, &edx);
+	if (ret != 0)
+		return ret;
+	/*
+	 * Family[7:0]=({0000b,BaseFamily[3:0]}+ExtendedFamily[7:0])
+	 */
+	proc_info->family = esmi_reg_offset_conv(eax, 8, 0xf) +
+			esmi_reg_offset_conv(eax, 20, 0xff);
+	/*
+	 * Model[7:0]={ExtendedModel[3:0],BaseModel[3:0]}
+	 */
+	proc_info->model = esmi_reg_offset_conv(eax, 16, 0xf) * 0x10 +
+			esmi_reg_offset_conv(eax, 4, 0xf);
+	/*
+	 * Stepping = Processor stepping (revision) for a specific model
+	 */
+	proc_info->step_id = esmi_reg_offset_conv(eax, 0, 0xf);
+
+	return ret;
+}
+
+oob_status_t esmi_get_threads_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
+					 uint32_t *threads_per_socket)
+{
+	oob_status_t ret;
+	uint32_t value;
+	uint32_t thread_ind = 0;
+	uint32_t cpuid_fn = 1;
+	uint32_t cpuid_extd_fn = 0;
+
+	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
+				 cpuid_extd_fn, &value);
+
+	if (ret != OOB_SUCCESS) {
+		return ret;
+	}
+	/*
+	 * In CPUID_Fn00000001_EBX, Bits 23:16 logical processor count.
+	 * Specifies the number of threads in the processor
+	 */
+	*threads_per_socket = (value >> 16) & 0xFF;
+	return ret;
+}
+
+oob_status_t esmi_get_threads_per_core(uint32_t i2c_bus, uint32_t i2c_addr,
+				       uint32_t *threads_per_core)
+{
+	oob_status_t ret;
+	uint32_t value;
+	uint32_t thread_ind = 0;
+	uint32_t cpuid_fn = 1;
+	uint32_t cpuid_extd_fn = 0;
+
+	cpuid_fn = 0x8000001e; // CPUID_Fn8000001E_EBX [Core Identifiers]
+	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
+				 cpuid_extd_fn, &value);
+	if (ret != OOB_SUCCESS) {
+		return ret;
+	}
+	/*
+	 * bits 15:8 Threads per core. Read-only.
+	 * Reset: XXh. The number of threads per core is ThreadsPerCore+1.
+	 */
+	*threads_per_core = ((value >> 8) & 0xFF) + 1;
+
+	return ret;
+}
+
+oob_status_t
+esmi_get_logical_cores_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *logical_cores_per_socket)
+{
+	oob_status_t ret;
+	uint32_t value;
+	uint32_t thread_ind = 0;
+	uint32_t cpuid_fn = 1;
+	uint32_t cpuid_extd_fn = 0;
+	/*
+	 * CPUID_Fn0000000B_EBX_x01 [Extended Topology Enumeration]
+	 */
+	cpuid_fn = 0xB;
+	cpuid_extd_fn = 1;
+	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
+				 cpuid_extd_fn, &value);
+	if (ret != OOB_SUCCESS) {
+		return ret;
+	}
+	*logical_cores_per_socket = value & 0xFFFF;
+
+	return ret;
+}
+
+oob_status_t esmi_oob_read_msr(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint32_t thread, uint32_t msraddr,
+			       uint64_t *buffer)
 {
 	rmi_indata indata;
 	rmi_outdata outdata;
 	oob_status_t ret;
-	uint32_t thread_num_in_socket;
 
-	THREAD_NUM_IN_SOCKET(thread, thread_num_in_socket);
-	PREPARE_MSR_MSG_IN(thread_num_in_socket, msraddr, indata);
-	ret = esb_rmi_read(thread, MSR_WR_LEN, MSR_RD_LEN,
+	PREPARE_MSR_MSG_IN(thread, msraddr, indata);
+	ret = esb_rmi_read(i2c_bus, i2c_addr, MSR_WR_LEN, MSR_RD_LEN,
 			   &indata, &outdata);
 	if (ret != OOB_SUCCESS) {
 		return ret;
@@ -137,24 +297,21 @@ oob_status_t esmi_oob_read_msr(uint32_t thread,
 	return outdata.status;
 }
 
-oob_status_t esmi_oob_cpuid(uint32_t thread,
-			    uint32_t *eax, uint32_t *ebx,
+oob_status_t esmi_oob_cpuid(uint32_t i2c_bus, uint32_t i2c_addr,
+			    uint32_t thread, uint32_t *eax, uint32_t *ebx,
 			    uint32_t *ecx, uint32_t *edx)
 {
 	rmi_indata indata;
 	rmi_outdata outdata;
 	oob_status_t ret;
-	uint32_t thread_num_in_socket;
-
-	THREAD_NUM_IN_SOCKET(thread, thread_num_in_socket);
 
 	/* TODO:
 	 * Bits [7:1] select the thread to address. 00h=thread0 ...
 	 * 7Fh=thread127. conform thread or logical core
 	 */
-	PREPARE_CPUID_MSG_IN(thread_num_in_socket, eax, ecx, indata);
+	PREPARE_CPUID_MSG_IN(thread, eax, ecx, indata);
 
-	ret = esb_rmi_read(thread, CPUID_WR_LEN, CPUID_RD_LEN,
+	ret = esb_rmi_read(i2c_bus, i2c_addr, CPUID_WR_LEN, CPUID_RD_LEN,
 			   &indata, &outdata);
 	if (ret != OOB_SUCCESS) {
 		return ret;
@@ -165,7 +322,7 @@ oob_status_t esmi_oob_cpuid(uint32_t thread,
 	// ecx LSB 1 is to read ecx and edx
 	indata.ecx = indata.ecx | 1;
 
-	ret = esb_rmi_read(thread, CPUID_WR_LEN, CPUID_RD_LEN,
+	ret = esb_rmi_read(i2c_bus, i2c_addr, CPUID_WR_LEN, CPUID_RD_LEN,
 			   &indata, &outdata);
 	if (ret != OOB_SUCCESS) {
 		return ret;
@@ -179,39 +336,51 @@ oob_status_t esmi_oob_cpuid(uint32_t thread,
 /*
  * CPUID functions returning a single datum
  */
-oob_status_t esmi_oob_cpuid_eax(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_eax(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *eax)
 {
 	uint32_t ebx, ecx, edx;
+
 	*eax = fn_eax;
 	ecx = fn_ecx;
-	return esmi_oob_cpuid(thread, eax, &ebx, &ecx, &edx);
+	return esmi_oob_cpuid(i2c_bus, i2c_addr, thread,
+			      eax, &ebx, &ecx, &edx);
 }
 
-oob_status_t esmi_oob_cpuid_ebx(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_ebx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ebx)
 {
 	uint32_t eax, ecx, edx;
+
 	eax = fn_eax;
 	ecx = fn_ecx;
-	return esmi_oob_cpuid(thread, &eax, ebx, &ecx, &edx);
+	return esmi_oob_cpuid(i2c_bus, i2c_addr, thread,
+			     &eax, ebx, &ecx, &edx);
 }
 
-oob_status_t esmi_oob_cpuid_ecx(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_ecx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ecx)
 {
 	uint32_t eax, ebx, edx;
+
 	eax = fn_eax;
 	*ecx = fn_ecx;
-	return esmi_oob_cpuid(thread, &eax, &ebx, ecx, &edx);
+	return esmi_oob_cpuid(i2c_bus, i2c_addr, thread,
+			     &eax, &ebx, ecx, &edx);
 }
 
-oob_status_t esmi_oob_cpuid_edx(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_edx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *edx)
 {
 	uint32_t eax, ebx, ecx;
+
 	eax = fn_eax;
 	ecx = fn_ecx;
-	return esmi_oob_cpuid(thread, &eax, &ebx, &ecx, edx);
+	return esmi_oob_cpuid(i2c_bus, i2c_addr, thread,
+			     &eax, &ebx, &ecx, edx);
 }
 

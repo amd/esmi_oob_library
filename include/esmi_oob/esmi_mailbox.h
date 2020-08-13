@@ -112,7 +112,8 @@ typedef enum {
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_socket_power(int socket_ind, uint32_t *ppower);
+oob_status_t read_socket_power(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint32_t *buffer);
 
 /**
  *  @brief Get the current power cap/limit value for a given socket.
@@ -130,7 +131,8 @@ oob_status_t read_socket_power(int socket_ind, uint32_t *ppower);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_socket_power_limit(int socket_ind, uint32_t *pcap);
+oob_status_t read_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				     uint32_t *buffer);
 
 /**
  *  @brief Get the maximum value that can be assigned as a power cap/limit for
@@ -149,7 +151,8 @@ oob_status_t read_socket_power_limit(int socket_ind, uint32_t *pcap);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_max_socket_power_limit(int socket_ind, uint32_t *pmax);
+oob_status_t read_max_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+					 uint32_t *buffer);
 /** @} */  // end of PowerQuer
 /*****************************************************************************/
 
@@ -173,7 +176,8 @@ oob_status_t read_max_socket_power_limit(int socket_ind, uint32_t *pmax);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t write_socket_power_limit(int socket_ind, uint32_t limit);
+oob_status_t write_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				      uint32_t limit);
 
 /** @} */  // end of PowerCont
 
@@ -203,7 +207,9 @@ oob_status_t write_socket_power_limit(int socket_ind, uint32_t limit);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_esb_boost_limit(int socket_ind, uint32_t cpu_ind, uint32_t *pboostlimit);
+oob_status_t read_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value,
+				  uint32_t *buffer);
 
 /**
  *  @brief Get the In-band maximum boostlimit value for a given core
@@ -222,7 +228,8 @@ oob_status_t read_esb_boost_limit(int socket_ind, uint32_t cpu_ind, uint32_t *pb
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_bios_boost_fmax(int socket_ind, uint32_t value,
+oob_status_t read_bios_boost_fmax(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value,
 				  uint32_t *buffer);
 /** @} */  // end of PerfQuer
 
@@ -252,7 +259,8 @@ oob_status_t read_bios_boost_fmax(int socket_ind, uint32_t value,
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t write_esb_boost_limit(int socket_ind, int cpu_id, uint32_t limit);
+oob_status_t write_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				   int cpu_ind, uint32_t limit);
 
 /**
  *  @brief Set the boostlimit value for the whole socket (whole system).
@@ -269,7 +277,8 @@ oob_status_t write_esb_boost_limit(int socket_ind, int cpu_id, uint32_t limit);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t write_esb_boost_limit_allcores(int socket_ind, uint32_t limit);
+oob_status_t write_esb_boost_limit_allcores(uint32_t i2c_bus,
+					    uint32_t i2c_addr, uint32_t limit);
 
 /** @} */  // end of PerfCont
 
@@ -298,7 +307,7 @@ oob_status_t write_esb_boost_limit_allcores(int socket_ind, uint32_t limit);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_tdp(int socket_ind, uint32_t *ptdp);
+oob_status_t read_tdp(uint32_t i2c_bus, uint32_t i2c_addr, uint32_t *buffer);
 
 /**
  *  @brief Get the Maximum Thermal Design Power limit TDP of the socket with
@@ -317,7 +326,8 @@ oob_status_t read_tdp(int socket_ind, uint32_t *ptdp);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_max_tdp(int socket_ind, uint32_t *ptdp);
+oob_status_t read_max_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
+			  uint32_t *buffer);
 
 /**
  *  @brief Get the Minimum Thermal Design Power limit TDP of the socket with
@@ -336,7 +346,8 @@ oob_status_t read_max_tdp(int socket_ind, uint32_t *ptdp);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_min_tdp(int socket_ind, uint32_t *ptdp);
+oob_status_t read_min_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
+			  uint32_t *buffer);
 
 /** @} */  // end of TdpQuer
 
@@ -363,7 +374,8 @@ oob_status_t read_min_tdp(int socket_ind, uint32_t *ptdp);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_prochot_status(int socket_ind, uint32_t *pstatus);
+oob_status_t read_prochot_status(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint32_t *buffer);
 
 /**
  *  @brief Get the Prochot Residency (since the boot time or last
@@ -382,7 +394,8 @@ oob_status_t read_prochot_status(int socket_ind, uint32_t *pstatus);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_prochot_residency(int socket_ind, uint32_t *presi);
+oob_status_t read_prochot_residency(uint32_t i2c_bus, uint32_t i2c_addr,
+				    uint32_t *buffer);
 
 /** @} */  // end of ProchotQuer
 
@@ -404,7 +417,8 @@ oob_status_t read_prochot_residency(int socket_ind, uint32_t *presi);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_dram_throttle(int socket_ind, uint32_t *buffer);
+oob_status_t read_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t *buffer);
 
 /**
  *  @brief Set Dram Throttle value in terms of  percentage.
@@ -414,14 +428,15 @@ oob_status_t read_dram_throttle(int socket_ind, uint32_t *buffer);
  *
  *  @param[in] socket_ind is a given socket
  *
- *  @param[in] limit a uint32t that indicates the desired limit to write
- *  for a given socket
+ *  @param[in] limit that indicates the desired limit as per SSP PPR write can be
+ *  between 0 to 80% to for a given socket
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t write_dram_throttle(int socket_ind, uint32_t limit);
+oob_status_t write_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint32_t limit);
 
 /**
  *  @brief Read VDDIOMem Power returns the estimated VDDIOMem power consumed
@@ -437,7 +452,8 @@ oob_status_t write_dram_throttle(int socket_ind, uint32_t limit);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
+oob_status_t read_vddio_mem_power(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *buffer);
 
 /**
  *  @brief Read NBIO Error Logging Register
@@ -447,8 +463,8 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
  *
  *  @param[in] socket_ind is a particular package in the system.
  *
- *  @param[in] quadrant value is Quadrant[31:24] and register offset[23:0]
- *  @param[in] offset value is Quadrant[31:24] and register offset[23:0]
+ *  @param[in] quadrant value is Quadrant[31:24] from NBIO register
+ *  @param[in] offset value is register offset[23:0] from NBIO register
  *
  *  @param[out] buffer is to read NBIOErrorLoggingRegiter(register value).
  *
@@ -456,9 +472,10 @@ oob_status_t read_vddio_mem_power(int socket_ind, uint32_t *buffer);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_nbio_error_logging_register(int socket_ind, uint8_t quadrant,
-					      uint32_t offset,
-					      uint32_t *buffer);
+oob_status_t
+read_nbio_error_logging_register(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint8_t quadrant, uint32_t offset,
+				 uint32_t *buffer);
 
 /**
  *  @brief Read IOD Bist status.
@@ -473,7 +490,8 @@ oob_status_t read_nbio_error_logging_register(int socket_ind, uint8_t quadrant,
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_iod_bist(int socket_ind, uint32_t *buffer);
+oob_status_t read_iod_bist(uint32_t i2c_bus, uint32_t i2c_addr,
+			   uint32_t *buffer);
 
 /**
  *  @brief Read CCD Bist status. Results are read for each CCD present in the
@@ -492,8 +510,9 @@ oob_status_t read_iod_bist(int socket_ind, uint32_t *buffer);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_ccd_bist_result(int socket_ind, uint32_t input,
-				  uint32_t *buffer);
+oob_status_t read_ccd_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t input, uint32_t *buffer);
+
 /**
  *  @brief Read CPU Core Complex Bist result. results are read for each Logical
  *  CCX instance number and returns a value which is the concatenation of L3
@@ -512,9 +531,8 @@ oob_status_t read_ccd_bist_result(int socket_ind, uint32_t input,
  *  @retval None-zero is returned upon failure.
  *
  */
-
-oob_status_t read_ccx_bist_result(int socket_ind, uint32_t input,
-				  uint32_t *buffer);
+oob_status_t read_ccx_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t value, uint32_t *buffer);
 
 /**
  *  @brief Provides the socket's CPU core clock (CCLK) frequency limit from
@@ -530,7 +548,8 @@ oob_status_t read_ccx_bist_result(int socket_ind, uint32_t input,
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_cclk_freq_limit(int socket_ind, uint32_t *buffer);
+oob_status_t read_cclk_freq_limit(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *buffer);
 
 /**
  *  @brief Provides the average C0 residency across all cores in the socket.
@@ -547,7 +566,8 @@ oob_status_t read_cclk_freq_limit(int socket_ind, uint32_t *buffer);
  *  @retval None-zero is returned upon failure.
  *
  */
-oob_status_t read_socket_c0_residency(int socket_ind, uint32_t *buffer);
+oob_status_t read_socket_c0_residency(uint32_t i2c_bus, uint32_t i2c_addr,
+				      uint32_t *buffer);
 /** @} */
 
 /** @} */  // end of MailboxMsg

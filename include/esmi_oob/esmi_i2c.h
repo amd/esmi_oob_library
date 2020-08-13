@@ -39,8 +39,8 @@
  *
  */
 
-#ifndef INCLUDE_ESMI_OOB_UTILS_H_
-#define INCLUDE_ESMI_OOB_UTILS_H_
+#ifndef INCLUDE_ESMI_OOB_I2C_H_
+#define INCLUDE_ESMI_OOB_I2C_H_
 
 #include <linux/i2c-dev.h>
 #include "esmi_common.h"
@@ -106,25 +106,20 @@ typedef union {
 	uint32_t value;
 } mailbox_word;
 
-/* I2C slave for communication */
-typedef enum {
-	SLAVE_RMI,
-	SLAVE_TSI,
-}slave_type_t;
+oob_status_t esmi_oob_read_byte(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t cmd, uint8_t *buffer);
 
-oob_status_t esmi_oob_read_byte(int thread, slave_type_t type,
-				int cmd, int8_t *buffer);
+oob_status_t esmi_oob_write_byte(uint32_t i2c_bus, uint32_t i2c_addr,
+				 uint32_t cmd, uint8_t value);
 
-oob_status_t esmi_oob_write_byte(int thread, slave_type_t type,
-				 int cmd, uint8_t value);
-
-oob_status_t esmi_oob_i2c_read(int thread, int wr_len,
+oob_status_t esmi_oob_i2c_read(uint32_t i2c_bus, uint32_t i2c_addr, int wr_len,
 			       int rd_len, uint8_t *input, uint8_t *output);
 
-oob_status_t esmi_oob_read_mailbox(int thread, int cmd,
+oob_status_t esmi_oob_read_mailbox(uint32_t i2c_bus, uint32_t i2c_addr, int cmd,
 				   uint32_t input, uint32_t *buffer);
 
-oob_status_t esmi_oob_write_mailbox(int thread, int cmd, uint32_t limit);
+oob_status_t esmi_oob_write_mailbox(uint32_t i2c_bus, uint32_t i2c_addr,
+				    int cmd, uint32_t limit);
 
 
-#endif  // INCLUDE_ESMI_OOB_UTILS_H_
+#endif  // INCLUDE_ESMI_OOB_I2C_H_

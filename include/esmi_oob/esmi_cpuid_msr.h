@@ -71,7 +71,7 @@ typedef struct sbrmi_indata {
 			//!< 0x8 bytes Number of CPUID bytes to read.
 	uint8_t regcmd;	//!< Read Processor Register command is 0x86
 			//!< read CPUID command is 0x91
-	uint8_t thread;	//!< bit 0 is reserved, bit 1:7 selects the 0x127 threads)
+	uint8_t thread;	//!< bit 0 is reserved, bit 1:7 selects the 127 threads)
 	union {
 		uint32_t value; //!< value
 		uint8_t reg[4]; //!< Register address or CPUID function
@@ -88,10 +88,79 @@ typedef struct sbrmi_outdata {
 	uint8_t num_bytes;   //!< Number of bytes returned = rd_ln + 1
 	uint8_t status;	     //!< status code
 	union {
-		uint64_t value;  //!< 8bytes, [4,4] bytes of [eax, ebx] or [ecx, edx]
-		uint8_t bytes[8]; //!< RdData 1 to RdData 8>
+		uint64_t value;	 //!< [4,4] bytes of [eax, ebx] or [ecx, edx]
+		uint8_t bytes[8];//!< [4,4] bytes of [eax, ebx] or [ecx, edx]
 	};
 } __attribute__((packed)) rmi_outdata;
+
+/*
+ * Structure to provide processor information to user
+ */
+struct processor_info {
+	uint32_t family;  //!< Processor Family in hexa
+	uint32_t model;	  //!< Processor Model in hexa
+	uint32_t step_id; //!< Stepping Identifier in hexa
+};
+
+/**
+ *  @brief Get the number of logical cores per socket
+ *
+ *  @details Get the processor vendor
+ *
+ *  @param[out] vendor_id to get the processor vendor, 12 byte RO value
+ *
+ *  @retval uint32_t is returned upon successful call.
+ *
+ */
+oob_status_t esmi_get_vendor_id(uint32_t i2c_bus, uint32_t i2c_addr, char *vendor_id);
+
+/**
+ *  @brief Get the number of logical cores per socket
+ *
+ *  @details Get the effective family, model and step_id of the processor.
+ *
+ *  @param[out] structure processor info to get family, model & stepping identifier
+ *
+ *  @retval uint32_t is returned upon successful call.
+ *
+ */
+
+oob_status_t esmi_get_processor_info(uint32_t i2c_bus, uint32_t i2c_addr,
+			       struct processor_info *proc_info);
+
+/**
+ *  @brief Get the number of logical cores per socket
+ *
+ *  @details Get the total number of logical cores in a socket.
+ *
+ *  @retval uint32_t is returned upon successful call.
+ *
+ */
+oob_status_t
+esmi_get_logical_cores_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
+				  uint32_t *logical_cores_per_socket);
+
+/**
+ *  @brief Get the number of threads per socket
+ *
+ *  @details Get the total number of threads in a socket.
+ *
+ *  @retval uint32_t is returned upon successful call.
+ *
+ */
+oob_status_t esmi_get_threads_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
+					 uint32_t *threads_per_socket);
+
+/**
+ *  @brief Get number of threads per core.
+ *
+ *  @details Get the number of threads per core.
+ *
+ *  @retval uint32_t is returned upon successful call.
+ */
+oob_status_t esmi_get_threads_per_core(uint32_t i2c_bus, uint32_t i2c_addr,
+				       uint32_t *threads_per_core);
+
 
 /** @} */  // end of SB-RMI-CPUID
 
@@ -117,8 +186,9 @@ typedef struct sbrmi_outdata {
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_read_msr(uint32_t thread,
-                               uint32_t msraddr, uint64_t *buffer);
+oob_status_t esmi_oob_read_msr(uint32_t i2c_bus, uint32_t i2c_addr,
+			       uint32_t thread, uint32_t msraddr,
+			       uint64_t *buffer);
 
 /** @} */  // end of ProcessorAccess
 
@@ -151,9 +221,9 @@ oob_status_t esmi_oob_read_msr(uint32_t thread,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid(uint32_t thread,
-                            uint32_t *eax, uint32_t *ebx,
-                            uint32_t *ecx, uint32_t *edx);
+oob_status_t esmi_oob_cpuid(uint32_t i2c_bus, uint32_t i2c_addr,
+			    uint32_t thread, uint32_t *eax, uint32_t *ebx,
+			    uint32_t *ecx, uint32_t *edx);
 
 /**
  *  @brief Read eax register on CPUID functionality.
@@ -173,7 +243,8 @@ oob_status_t esmi_oob_cpuid(uint32_t thread,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_eax(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_eax(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
                                 uint32_t fn_ecx, uint32_t *eax);
 
 /**
@@ -194,7 +265,8 @@ oob_status_t esmi_oob_cpuid_eax(uint32_t thread, uint32_t fn_eax,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_ebx(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_ebx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
                                 uint32_t fn_ecx, uint32_t *ebx);
 
 /**
@@ -215,7 +287,8 @@ oob_status_t esmi_oob_cpuid_ebx(uint32_t thread, uint32_t fn_eax,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_ecx(uint32_t thread, uint32_t fn_eax,
+oob_status_t esmi_oob_cpuid_ecx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
                                 uint32_t fn_ecx, uint32_t *ecx);
 
 /**
@@ -236,8 +309,9 @@ oob_status_t esmi_oob_cpuid_ecx(uint32_t thread, uint32_t fn_eax,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_edx(uint32_t thread, uint32_t fn_eax,
-                                uint32_t fn_ecx, uint32_t *edx);
+oob_status_t esmi_oob_cpuid_edx(uint32_t i2c_bus, uint32_t i2c_addr,
+				uint32_t thread, uint32_t fn_eax,
+				uint32_t fn_ecx, uint32_t *edx);
 
 /** @} */  // end of cpuidAccess
 
