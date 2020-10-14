@@ -55,6 +55,7 @@
 #include <esmi_oob/esmi_tsi.h>
 
 #define ARGS_MAX 64
+#define APML_SLEEP 100
 
 static void rerun_sudo(int argc, char **argv)
 {
@@ -77,42 +78,59 @@ Main program.
 */
 int main(int argc, char **argv)
 {
-	uint32_t power_avg, power_cap, power_max;
-	int i;
+	uint32_t power, power_cap, power_max;
+	uint32_t i2c_bus, i2c_addr;
+	char *end;
+	int ret;
 
-        if (getuid() !=0) {
+        if (getuid() != 0) {
                 rerun_sudo(argc, argv);
         }
-
-	esmi_oob_init(1);
-
-	usleep(1000);
-	for (i = 0; i < 2; i++) {
-	printf("\nSocket %d:\n", i);
-	printf("------------------------------------------------------------\n");
-	printf("_POWER(Watts) |");
-	power_avg = 0;
+	if (argc < 3) {
+		printf("Provide i2c_bus number and i2c_addr as arguments\n"
+			"Usage: %s <i2c_bus> <i2c_addr>\n"
+			"Where:  i2c_bus : 0 or 1\n"
+			"\ti2c_addr : 0x3c for Socket0 and 0x38 for Socket1\n",
+			argv[0]);
+		return 0;
+	}
+	i2c_bus = atoi(argv[1]);
+	i2c_addr = strtoul(argv[2], &end, 16);
+	if (*end || !*argv[2]) {
+		printf("Require a valid i2c_address in Hexa\n");
+		return 0;
+	}
+	power = 0;
 	power_cap = 0;
 	power_max = 0;
-	if (read_socket_power(i, &power_avg) != 0) {
-		continue;
+	ret = read_socket_power(i2c_bus, i2c_addr, &power);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to get i2c_addr[0x%x] power, Err[%d]: %s\n",
+			i2c_addr, ret, esmi_get_err_msg(ret));
+		return ret;
 	}
-	printf(" Avg:%.03f, ", (double)power_avg/1000);
+	printf("-----------------------------------------\n");
+	printf("Power(Watts) \t\t |");
+	printf(" %.03f \t|", (double)power/1000);
 
-	usleep(1000);
-	if (read_socket_power_limit(i, &power_cap) != 0) {
-		continue;
+	usleep(APML_SLEEP);
+	ret = read_socket_power_limit(i2c_bus, i2c_addr, &power_cap);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to get i2c_addr[0x%x] powerlimit,Err[%d]:%s\n",
+			i2c_addr, ret, esmi_get_err_msg(ret));
+		return ret;
 	}
-	printf(" Limit:%.03f, ", (double)power_cap/1000);
+	printf("\nPowerLimit(Watts)\t | %.03f \t|", (double)power_cap/1000);
 
-	usleep(1000);
-	if (read_max_socket_power_limit(i, &power_max) != 0) {
-		continue;
+	usleep(APML_SLEEP);
+	ret = read_max_socket_power_limit(i2c_bus, i2c_addr, &power_max);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed: to get i2c_addr[0x%x] maxpower, Err[%d]: %s\n",
+			i2c_addr, ret, esmi_get_err_msg(ret));
+		return ret;
 	}
-	printf(" Max:%.03f \n", (double)power_max/1000);
-	printf("----------------------------------------------------------\n");
-	}
-	esmi_oob_exit();
+	printf("\nPowerLimitMax(Watts) \t | %.03f \t|\n", (double)power_max/1000);
+	printf("-----------------------------------------\n");
 	/* Normal program termination */
-	return(0);
+	return 0;
 }
