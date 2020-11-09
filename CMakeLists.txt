@@ -152,11 +152,40 @@ install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_tsi.h
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/esmi_oob_doxygen.cfg
-                                   ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(doc
-         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                  COMMENT "Generating API documentation with Doxygen" VERBATIM)
+                        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
+        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/docs/esmi_oob_doxygen.cfg
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+        COMMAND make  > /dev/null
+        COMMAND cp  ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+                ${CMAKE_CURRENT_SOURCE_DIR}/ESMI_OOB_Manual.pdf
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex)
+
+  # To create directory "rel" to contain seprate latex
+  set(folder "rel")
+  add_custom_command(OUTPUT ${folder}
+        COMMAND mkdir ${folder}
+  )
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/release_notes_doxygen.cfg
+                        ${CMAKE_CURRENT_BINARY_DIR}/rel/Doxyfile @ONLY)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.tex
+        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/rel/Doxyfile
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/docs/release_notes_doxygen.cfg
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rel)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.pdf
+        COMMAND make  > /dev/null
+        COMMAND cp  ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.pdf
+                ${CMAKE_CURRENT_SOURCE_DIR}/ESMI_OOB_Release_Notes.pdf
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.tex
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rel/latex)
+
+  add_custom_target(doc DEPENDS ${folder} ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
+                        ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.pdf)
+
 else()
   message("Doxygen is not found. Will not generate documents.")
 endif(DOXYGEN_FOUND)

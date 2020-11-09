@@ -13,6 +13,7 @@ Once new development has leveled off, the major version will become greater than
 #### Additional Required software for building
 In order to build the E-SMI-OOB library, the following components are required. Note that the software versions listed are what is being used in development. Earlier versions are not guaranteed to work:
 * CMake (v3.5.0)
+* latex (pdfTeX 3.14159265-2.6-1.40.18)
 * i2c-tools, libi2c-dev
 
 #### Dowloading the source
@@ -33,60 +34,73 @@ Once the E-SMI-OOB library source has been cloned to a local Linux machine, the 
 ##### ```$ make```
 The built library will appear in the `build` folder.
 
-#### Cross compile the library for armhf
-Install cross-compiler for ubuntu as follows
+#### Cross compile the library for Target systems
+
+Before installing the cross compiler verfiy the target architecture
+##### ```$ uname -m```
+
+Eg: To cross compile for ARM32 processor:
 ##### ```$ sudo apt-get install gcc-arm-linux-gnueabihf```
-Install libi2c-dev for armhf
+
+Eg: To cross compile for AARCH64 processor: use 
+##### ```$ sudo apt-get install gcc-aarch64-linux-gnu```
+
+The ESMI_OOB Library depends on the libi2c-dev library, libi2c-dev package needs to be installed.
+##### ```$sudo apt-get install libi2c-dev```
 Compilation steps
 ##### ```$ mkdir -p build```
 ##### ```$ cd build```
-##### ```$ cmake -DCMAKE_TOOLCHAIN_FILE=../cross-arm-linux-gnueabihf.cmake <location of root of E-SMI-OOB library CMakeLists.txt>```
+##### ```$ cmake -DCMAKE_TOOLCHAIN_FILE=../cross-[arch..].cmake <location of root of E-SMI-OOB library CMakeLists.txt>```
 ##### ```$ make```
 The built library will appear in the `build` folder.
-Copy the required binaries and the dynamic linked library to raspberrypi(required) board.
-##### ```$ scp libesmi_oob64.so.0 rpi@10.x.x.x:/usr/lib```
-##### ```$ scp esmi_oob_tool rpi@10.x.x.x:/usr/bin```
+Copy the required binaries and the dynamic linked library to target board(BMC).
+##### ```$ scp libesmi_oob64.so.0 root@10.x.x.x:/usr/lib```
+##### ```$ scp esmi_oob_tool root@10.x.x.x:/usr/bin```
+
+NOTE: For cross compilation, cross-$ARCH.cmake file is provided for below Architectures:
+ - armhf
+ - aarch64
+
+#### Disclaimer
+ - User may not be able to use this library when the i2c addresses are reserved, this is observed when TSI driver is loaded
+ - Input arguments like i2c address and bus number passed by the user are not validated. It might result in unreliable system behavior
 
 #### Building the Documentation
 The documentation PDF file can be built with the following steps (continued from the steps above):
 ##### ```$ make doc```
-##### ```$ cd latex```
-##### ```$ make```
-The reference manual, `refman.pdf` will be in the `latex` directory and `refman.rtf` will be in the `rtf` directory upon a successful build.
+The reference manual (ESMI_OOB_Manual.pdf), release notes (ESMI_OOB_Release_Notes.pdf) upon a successful build.
 
 # Usage Basics
 ## Device Indices
-Many of the functions in the library take a "core or socket index". The core or socket index is a number greater than or equal to 0, and less than the number of cores or sockets on the system.
+Many of the functions in the library take I2C Bus and 7-bit address as index.
 
 # Hello E-SMI-OOB
-The only required E-SMI-OOB call for any program that wants to use E-SMI-OOB is the `esmi_oob_init()` call. This call initializes some internal data structures that will be used by subsequent E-SMI-OOB calls.
-
-When E-SMI-OOB is no longer being used, `esmi_oob_exit()` should be called. This provides a way to do any releasing of resources that E-SMI-OOB may have held. In many cases, this may have no effect, but may be necessary in future versions of the library.
-
-Below is a simple "Hello World" type program that displays the Core energy of detected cores.
+Below is a simple "Hello World" type program that displays power of required socket.
 
 ```
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <esmi_oob/esmi_common.h>
 #include <esmi_oob/esmi_mailbox.h>
+#include <esmi_oob/esmi_rmi.h>
 
-int main() {
-	oob_status_t ret;
-	int package = 0, buffer = 0;
+int main(int argc, char **argv) {
+	uint32_t power_avg = 0;
+	uint32_t i2c_bus, i2c_addr;
+	char *end;
 
-	ret = esmi_oob_init(1);
-	if (ret != OOB_SUCCESS) {
-		printf("I2CDEV INIT FAILED. Err[%d]\n", ret);
-		return ret;
+	i2c_bus = atoi(argv[1]);
+	i2c_addr = strtoul(argv[2], &end, 16);
+	if (*end || !*argv[2]) {
+		printf("Require a valid i2c_address in Hexa\n");
+		return 0;
 	}
-	if (read_min_tdp(package, &buffer) < 0)
-		goto x;
-	printf("package[%d] Min TDP: %lx\n", package, buffer);
 
-x:
-	esmi_oob_exit();
-	return ret;
+	read_socket_power(i2c_bus, i2c_addr, &power_avg);
+	printf(" Avg:%.03f, ", (double)power_avg/1000);
+
+	return 0;
 }
 ```
 # Usage
@@ -94,130 +108,141 @@ x:
 E-SMI tool is a C program based on the E-SMI Out-of-band Library, the executable "esmi_oob_tool" will be generated in the build/ folder.
 This tool provides options to Monitor and Control System Management functionality.
 
+In execution platform, user can cross-verfiy "i2c-dev" module is loaded or not, if not follow the below step:
+##### ```$ lsmod | grep i2c-dev```
+If not loaded, load the module as below
+##### ```$ insmod /lib/modules/`uname -r`/kernel/drivers/i2c/i2c-dev.ko``` or
+##### ```$ modprobe i2c-dev.ko```
+Check I2C addresses are enumerated as below, if not i2c connection is at fault.
+Pass the I2C bus number connected to socket for RMI or TSI
+```
+$ i2cdetect -y 1
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- 0c -- -- --
+10: 10 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: 20 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- 3c -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- 4c -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+```
+For 2p targets, additional I2C addresses are enumerated as:
+```
+$ i2cdetect -y 1
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- 0c -- -- --
+10: 10 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: 20 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- 38 -- -- -- 3c -- -- --
+40: -- -- -- -- -- -- -- -- 48 -- -- -- 4c -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+```
 Below is a sample usage to dump the functionality, with default core/socket available.
 ```
-esmi_oob_library/build> ./esmi_oob_tool
+$ ./esmi_oob_tool
+
 =============== APML System Management Interface ===============
 
---------------------------------------------------------------------------------
-			SOCKET 0
---------------------------------------------------------------------------------
-*** SB-RMI Mailbox Service Access ***
-_POWER	(Watts)		| Avg : 56.068,  Limit : 200.000,  Max : 240.000
-_TDP	(Watts)		| Avg : 225.000,  Minim : 225.000,  Max : 240.000
-_CCLK_FREQ_LIMIT (MHz)	| 3200
-_C0_RESIDENCY (in %)	| 0%
-_BOOST_LIMIT (MHz)	| BIOS: 3200,  APML: 3200
-_DRAM_THROTTLE	(in %)	| 50
-_PROCHOT STATUS		| NOT_PROCHOT
-_PROCHOT RESIDENCY (MHz)| 0
-_VDDIOMem_POWER (mWatts)| 36460
-_NBIO_Error_Logging_Reg	| 0
-_IOD_Bist_RESULT	| Bist pass
-_CCD_Bist_RESULT	| Bist pass
-_CCX_Bist_RESULT	| 0
-
-*** SB-TSI UPDATE ***
-_CPUTEMP		| 20.625 °C
-_HIGH_THRESHOLD_TEMP	| 70.000 °C
-_LOW_THRESHOLD_TEMP 	| 2.125 °C
-_TSI_UPDATERATE		| 0.125 Hz
-_THRESHOLD_SAMPLE	| 1
-_TEMP_OFFSET		| -21.125 °C
-_STATUS			| No Temp Alert
-_CONFIG			|
-	ALERT_L pin	| Enabled
-	Runstop		| Enabled
-	Atomic rd order	| Disabled
-	ARA response	| Enabled
-_TIMEOUT_CONFIG		| Enabled
-_TSI_ALERT_CONFIG	| Enabled
-_TSI_MANUFACTURE_ID	| 0
-_TSI_REVISION		| 0x4
---------------------------------------------------------------------------------
-Try './esmi_oob_tool --help' for more information.
+Usage: ./esmi_oob_tool <i2c_bus> <i2c_addr>
+Where:  i2c_bus : 0 or 1
+        Eg,  i2c_addr : SB-RMI addresses:       0x3c for Socket0 and 0x38 for Socket1
+                        SB-TSI addresses:       0x4c for Socket0 and 0x48 for Socket1
 
 ====================== End of APML SMI Log =====================
 ```
 
 For detailed and up to date usage information, we recommend consulting the help:
 
-For convenience purposes, following is the output from the -h flag:
+For convenience purposes, following is the output from the -h or --help flag:
 ```
-esmi_oob_library/build> ./esmi_oob_tool --help
+$ ./esmi_oob_tool --help
+
+=============== APML System Management Interface ===============
+
 Usage: ./esmi_oob_tool [Option<s>] SOURCES
 Option<s>:
 < MAILBOX COMMANDS >:
-	-p, (--showpower)	 [SOCKET]			Get Power for a given socket in Watt
-	-t, (--showtdp)		 [SOCKET]			Get TDP for a given socket in Watt
-	-s, (--setpowerlimit)	 [SOCKET][POWER]		Set powerlimit for a given socket in mWatt
-	-c, (--showcclkfreqlimit)[SOCKET]			Get cclk freqlimit for a given socket in MHz
-	-r, (--showc0residency)	 [SOCKET]			Show socket c0_residency given socket
-	-b, (--showboostlimit)   [SOCKET][THREAD]		Get APML and BIOS boostlimit for a given socket and core index in MHz
-	-d, (--setapmlboostlimit)[SOCKET][THREAD][BOOSTLIMIT]   Set APML boostlimit for a given socket and core in MHz
-	-a, (--setapmlsocketboostlimit)  [SOCKET][BOOSTLIMIT]   Set APML boostlimit for all cores in a socket in MHz
-	--set_and_verify_dramthrottle    [SOCKET][0 to 80%]     Set DRAM THROTTLE for a given socket
+  -p, (--showpower)               [I2C_BUS][I2C_ADDR]                    Get Power for a given socket in Watts
+  -t, (--showtdp)                 [I2C_BUS][I2C_ADDR]                    Get TDP for a given socket in Watts
+  -s, (--setpowerlimit)           [I2C_BUS][I2C_ADDR][POWER]             Set powerlimit for a given socket in mWatts
+  -c, (--showcclkfreqlimit)       [I2C_BUS][I2C_ADDR]                    Get cclk freqlimit for a given socket in MHz
+  -r, (--showc0residency)         [I2C_BUS][I2C_ADDR]                    Show c0_residency for a given socket
+  -b, (--showboostlimit)          [I2C_BUS][I2C_ADDR][THREAD]            Get APML and BIOS boostlimit for a given core index in MHz
+  -d, (--setapmlboostlimit)       [I2C_BUS][I2C_ADDR][THREAD][BOOSTLIMIT]Set APML boostlimit for a given core in MHz
+  -a, (--setapmlsocketboostlimit) [I2C_BUS][I2C_ADDR][BOOSTLIMIT]        Set APML boostlimit for all cores in a socket in MHz
+  --showddrbandwidth              [I2C_BUS][I2C_ADDR]                    Show DDR Bandwidth of a system
+  --set_and_verify_dramthrottle   [I2C_BUS][I2C_ADDR][0 to 80%]          Set DRAM THROTTLE for a given socket
 < SB-RMI COMMANDS >:
-	--showrmicommandregisters [SOCKET]			Get the values of different commands of SB-RMI registers for a given socket
+  --showrmicommandregisters       [I2C_BUS][I2C_ADDR]                    Get values of SB-RMI reg commands for a given socket
 < SB-TSI COMMANDS >:
-	--showtsicommandregisters [SOCKET]			Get the values of different commands of SB-TSI registers for a given socket
-	--set_verify_updaterate	  [SOCKET][Hz]			Set APML Frequency Update rate for a socket
-	--sethightempthreshold	  [SOCKET][TEMP(°C)]		Set APML High Temp Threshold
-	--setlowtempthreshold	  [SOCKET][TEMP(°C)]		Set APML Low Temp Threshold
-	--settempoffset		  [SOCKET][VALUE]		Set APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 °C]
-	--settimeoutconfig	  [SOCKET][VALUE]		Set/Reset APML CPU timeout config, VALUE = 0 or 1
-	--setalertthreshold	  [SOCKET][VALUE]		Set APML CPU alert threshold sample, VALUE = 1 to 8
-	--setalertconfig	  [SOCKET][VALUE]		Set/Reset APML CPU alert config, VALUE = 0 or 1
-	--setalertmask		  [SOCKET][VALUE]		Set/Reset APML CPU alert mask, VALUE = 0 or 1
-	--setrunstop		  [SOCKET][VALUE]		Set/Reset APML CPU runstop, VALUE = 0 or 1
-	--setreadorder		  [SOCKET][VALUE]		Set/Reset APML CPU read order, VALUE = 0 or 1
-	--setara		  [SOCKET][VALUE]		Set/Reset APML CPU ARA, VALUE = 0 or 1
-	-h, (--help)						Show this help message
-```
+  --showtsicommandregisters       [I2C_BUS][I2C_ADDR]                    Get values of SB-TSI reg commands for a given socket
+  --set_verify_updaterate         [I2C_BUS][I2C_ADDR][Hz]                Set APML Frequency Update rate for a given socket
+  --sethightempthreshold          [I2C_BUS][I2C_ADDR][TEMP(°C)]          Set APML High Temp Threshold
+  --setlowtempthreshold           [I2C_BUS][I2C_ADDR][TEMP(°C)]          Set APML Low Temp Threshold
+  --settempoffset                 [I2C_BUS][I2C_ADDR][VALUE]             Set APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 °C]
+  --settimeoutconfig              [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU timeout config, VALUE = 0 or 1
+  --setalertthreshold             [I2C_BUS][I2C_ADDR][VALUE]             Set APML CPU alert threshold sample, VALUE = 1 to 8
+  --setalertconfig                [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU alert config, VALUE = 0 or 1
+  --setalertmask                  [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU alert mask, VALUE = 0 or 1
+  --setrunstop                    [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU runstop, VALUE = 0 or 1
+  --setreadorder                  [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU read order, VALUE = 0 or 1
+  --setara                        [I2C_BUS][I2C_ADDR][VALUE]             Set/Reset APML CPU ARA, VALUE = 0 or 1
+  -h, (--help)                                                           Show this help message
 
+====================== End of APML SMI Log =====================
+
+```
 Below is a sample usage to get the individual library functionality API's.
-We can pass arguments either any of the ways "./esmi_oob_tool -p 0" or "./esmi_oob_tool --showpower=0"
+User can pass arguments either any of the ways "./esmi_oob_tool -p [bus_num] [7 bit adress]" or "./esmi_oob_tool --showpower [bus_num] [7 bit address]"
 ```
-1.	esmi_oob_library/build> ./esmi_oob_tool -p 0
-	=============== APML System Management Interface ===============
+	1. $ ./esmi_oob_tool -p 1 0x3c
 
-	socket[0]/power:           56.155 Watts
-	socket[0]/powerlimit:      200.000 Watts
-	socket[0]/max_power_limit: 240.000 Watts
+		=============== APML System Management Interface ===============
 
+		---------------------------------------------
+		| Power (Watts)          | 52.729           |
+		| PowerLimit (Watts)     | 225.000          |
+		| PowerLimitMax (Watts)  | 240.000          |
+		---------------------------------------------
 
-	====================== End of APML SMI Log =====================
+		====================== End of APML SMI Log =====================
 
-2.	esmi_oob_library/build> ./esmi_oob_tool --setpowerlimit 0 220000
-	=============== APML System Management Interface ===============
+	2. $ ./esmi_oob_tool --setpowerlimit 1 0x3c 200000
 
-	Set socket[0]/power_limit :          220.000 Watts successfully
+		=============== APML System Management Interface ===============
 
-	====================== End of APML SMI Log =====================
+		Set i2c_addr[0x3c]/power_limit :          200.000 Watts successfully
 
-3.	esmi_oob_library/build> ./esmi_oob_tool --showtsicommandregisters 0
-	=============== APML System Management Interface ===============
+		====================== End of APML SMI Log =====================
 
-			 *** SB-TSI UPDATE ***
-	Socket:0
-	--------------------------------------------------------------------------------
-	_CPUTEMP		| 20.625 °C
-	_HIGH_THRESHOLD_TEMP	| 70.000 °C
-	_LOW_THRESHOLD_TEMP 	| 2.125 °C
-	_TSI_UPDATERATE		| 0.125 Hz
-	_THRESHOLD_SAMPLE	| 1
-	_TEMP_OFFSET		| -21.125 °C
-	_STATUS			| No Temp Alert
-	_CONFIG			|
-		ALERT_L pin	| Enabled
-		Runstop		| Enabled
-		Atomic rd order	| Disabled
-		ARA response	| Enabled
-	_TIMEOUT_CONFIG		| Enabled
-	_TSI_ALERT_CONFIG	| Enabled
-	_TSI_MANUFACTURE_ID	| 0
-	_TSI_REVISION		| 0x4
-	-------------------------------------------------------------------------------
+	3. $ ./esmi_oob_tool --showtsicommandregisters 1 0x4c
 
-	====================== End of APML SMI Log =====================
+	       =============== APML System Management Interface ===============
+
+	       ----------------------------------------------------------------
+
+                               *** SB-TSI REGISTER SUMMARY ***
+	       ----------------------------------------------------------------
+	        _CPUTEMP                | 40.250 _C
+		_HIGH_THRESHOLD_TEMP    | 70.000 _C
+		_LOW_THRESHOLD_TEMP     | 0.000 _C
+		_TSI_UPDATERATE         | 16.000 Hz
+		_THRESHOLD_SAMPLE       | 1
+		_TEMP_OFFSET            | 0.000 _C
+		_STATUS                 | No Temp Alert
+		_CONFIG                 |
+		        ALERT_L pin     | Enabled
+		        Runstop         | Comparison Enabled
+		        Atomic Rd order | Integer latches Decimal
+		        ARA response    | Enabled
+		_TIMEOUT_CONFIG         | Enabled
+		_TSI_ALERT_CONFIG       | Disabled
+		_TSI_MANUFACTURE_ID     | 0
+		_TSI_REVISION           | 0x4
+		---------------------------------------------------------------
+
+		====================== End of APML SMI Log ====================
 ```
