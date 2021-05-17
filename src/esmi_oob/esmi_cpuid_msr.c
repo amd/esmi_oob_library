@@ -51,13 +51,25 @@
 #define MSR_WR_LEN	0x9
 #define CPUID_RD_LEN	0xa
 #define CPUID_WR_LEN	0xa
+#define STATUS_RD_LEN	0xa
+#define STATUS_WR_LEN	0x3
 
 /* Size of CPU ID reg in bytes */
 #define REG_SIZE 4
 
 /*
  * Ref APML in PPR
- * Table: SB-RMI Read Processor Register Command Protocol
+ * Table: SB-RMI Read Data/Status Command Protocol
+ */
+#define PREPARE_STATUS_MSG_IN(indata) { \
+	indata.cmd = 0x72; /* command protocol */\
+	indata.wr_ln = 0x1;  /* write length */\
+	indata.rd_ln = 0x8;  /* read length */ \
+}
+
+/*
+ * Ref APML in PPR
+ * Table 118: SB-RMI Read Processor Register Command Protocol
  */
 #define PREPARE_MSR_MSG_IN(thread_id, msraddr, indata) { \
 	indata.cmd = 0x73; /* command protocol*/ \
@@ -87,6 +99,69 @@
 	indata.ecx = (*ecx & 0xf) << 4; \
 }
 
+static int esb_status_read(uint32_t i2c_bus, uint32_t i2c_addr,
+			   rmi_outdata *outdata)
+{
+	rmi_indata indata;
+	int ret;
+
+	PREPARE_STATUS_MSG_IN(indata);
+	ret = esmi_oob_i2c_read(i2c_bus, i2c_addr, STATUS_WR_LEN, STATUS_RD_LEN,
+				(uint8_t *)&indata, (uint8_t *)outdata);
+	if (ret != 0)
+		return ret;
+	return OOB_SUCCESS;
+}
+
+
+static int verify_rmi_status(uint32_t i2c_bus, uint32_t i2c_addr,
+			     uint8_t status, rmi_outdata *outdata)
+{
+	int ret;
+
+	switch (status)	{
+	case 0x0:
+		break;
+	case 0x11:
+		printf("ErrorCode[%d], Command Timeout error. Retrying...\n",
+			status);
+		ret = esb_status_read(i2c_bus, i2c_addr, outdata);
+		return ret;
+	case 0x22:
+		printf("ErrorCode[%d], Warm Reset occur during Transaction\n",
+			status);
+		break;
+	case 0x40:
+		printf("ErrorCode[%d], Value in Command Format field is not \
+			recognized\n", status);
+		break;
+	case 0x41:
+		printf("ErrorCode[%d], value in RdDataLen is less than 1 or \
+			greater than 32\n", status);
+		break;
+	case 0x42:
+		printf("ErrorCode[%d], sum of the RdDataLen and WrDataLen is \
+			greater than 32 and RdDataLen is greater than or equal \
+			to 1 and less than or equal to 32\n", status);
+		break;
+	case 0x44:
+		printf("ErrorCode[%d], Invalid thread selected\n", status);
+		break;
+	case 0x45:
+		printf("ErrorCode[%d], Command not supported by the processor.\n",
+		       status);
+		break;
+	case 0x81:
+		printf("ErrorCode[%d], The processor core targeted by the \
+			command	could not start the command and was aborted \
+			by the processor\n", status);
+		break;
+	default:
+		printf("ErrorCode[%d], Unknown error in status\n", status);
+	}
+	return status;
+}
+
 static oob_status_t esb_rmi_read(uint32_t i2c_bus, uint32_t i2c_addr,
 				 int wr_len, int rd_len,
 				 rmi_indata *indata, rmi_outdata *outdata)
@@ -95,15 +170,14 @@ static oob_status_t esb_rmi_read(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	ret = esmi_oob_i2c_read(i2c_bus, i2c_addr, wr_len, rd_len,
 				(uint8_t *)indata, (uint8_t *)outdata);
-	if (ret != OOB_SUCCESS){
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
-	if (outdata->status != 0) {
+
+	ret = verify_rmi_status(i2c_bus, i2c_addr, outdata->status, outdata);
+	if (ret != OOB_SUCCESS)
 		return OOB_RMI_STATUS_ERR;
-	}
-	if (outdata->num_bytes != (rd_len - 1)) {
+	if (outdata->num_bytes != (rd_len - 1))
 		return OOB_RD_LENGTH_ERR;
-	}
 
 	return OOB_SUCCESS;
 }
@@ -219,9 +293,8 @@ oob_status_t esmi_get_threads_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
 	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
 				 cpuid_extd_fn, &value);
 
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	/*
 	 * In CPUID_Fn00000001_EBX, Bits 23:16 logical processor count.
 	 * Specifies the number of threads in the processor
@@ -242,9 +315,8 @@ oob_status_t esmi_get_threads_per_core(uint32_t i2c_bus, uint32_t i2c_addr,
 	cpuid_fn = 0x8000001e; // CPUID_Fn8000001E_EBX [Core Identifiers]
 	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
 				 cpuid_extd_fn, &value);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	/*
 	 * bits 15:8 Threads per core. Read-only.
 	 * Reset: XXh. The number of threads per core is ThreadsPerCore+1.
@@ -270,9 +342,8 @@ esmi_get_logical_cores_per_socket(uint32_t i2c_bus, uint32_t i2c_addr,
 	cpuid_extd_fn = 1;
 	ret = esmi_oob_cpuid_ebx(i2c_bus, i2c_addr, thread_ind, cpuid_fn,
 				 cpuid_extd_fn, &value);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	*logical_cores_per_socket = value & 0xFFFF;
 
 	return ret;
@@ -289,9 +360,8 @@ oob_status_t esmi_oob_read_msr(uint32_t i2c_bus, uint32_t i2c_addr,
 	PREPARE_MSR_MSG_IN(thread, msraddr, indata);
 	ret = esb_rmi_read(i2c_bus, i2c_addr, MSR_WR_LEN, MSR_RD_LEN,
 			   &indata, &outdata);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	*buffer = outdata.value;
 
 	return outdata.status;
@@ -313,9 +383,8 @@ oob_status_t esmi_oob_cpuid(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	ret = esb_rmi_read(i2c_bus, i2c_addr, CPUID_WR_LEN, CPUID_RD_LEN,
 			   &indata, &outdata);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	*eax = outdata.value;
 	*ebx = outdata.value >> 32;
 
@@ -324,9 +393,8 @@ oob_status_t esmi_oob_cpuid(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	ret = esb_rmi_read(i2c_bus, i2c_addr, CPUID_WR_LEN, CPUID_RD_LEN,
 			   &indata, &outdata);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	*ecx = outdata.value;
 	*edx = outdata.value >> 32;
 

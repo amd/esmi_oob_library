@@ -57,9 +57,8 @@ static oob_status_t validate_thread(uint32_t i2c_bus, uint32_t i2c_addr,
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	if (thread >= threads_per_socket) {
+	if (thread >= threads_per_socket)
 		return OOB_INVALID_INPUT;
-	}
 	return OOB_SUCCESS;
 }
 
@@ -109,7 +108,7 @@ oob_status_t read_min_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
 oob_status_t write_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
 				      uint32_t limit)
 {
-        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+	return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
 				      WRITE_PACKAGE_POWER_LIMIT, limit);
 }
 
@@ -117,9 +116,8 @@ oob_status_t read_bios_boost_fmax(uint32_t i2c_bus, uint32_t i2c_addr,
 				  uint32_t value,
 				  uint32_t *buffer)
 {
-	if (validate_thread(i2c_bus, i2c_addr, value)) {
+	if (validate_thread(i2c_bus, i2c_addr, value))
 		return OOB_INVALID_INPUT;
-	}
 	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
 				     READ_BIOS_BOOST_Fmax, value, buffer);
 }
@@ -128,9 +126,8 @@ oob_status_t read_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
 				  uint32_t value,
 				  uint32_t *buffer)
 {
-	if (validate_thread(i2c_bus, i2c_addr, value)) {
+	if (validate_thread(i2c_bus, i2c_addr, value))
 		return OOB_INVALID_INPUT;
-	}
 	return esmi_oob_read_mailbox(i2c_bus, i2c_addr,
 				     READ_APML_BOOST_LIMIT, value, buffer);
 }
@@ -138,19 +135,18 @@ oob_status_t read_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
 oob_status_t write_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
 				   int cpu_ind, uint32_t limit)
 {
-	if (validate_thread(i2c_bus, i2c_addr, cpu_ind)) {
+	if (validate_thread(i2c_bus, i2c_addr, cpu_ind))
 		return OOB_INVALID_INPUT;
-	}
-        limit = (limit & 0xFFFF) | ((cpu_ind << 16) & 0xFFFF0000);
-        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+	limit = (limit & 0xFFFF) | ((cpu_ind << 16) & 0xFFFF0000);
+	return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
 				      WRITE_APML_BOOST_LIMIT, limit);
 }
 
 oob_status_t write_esb_boost_limit_allcores(uint32_t i2c_bus,
 					    uint32_t i2c_addr, uint32_t limit)
 {
-        limit &= 0xFFFF;
-        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+	limit &= 0xFFFF;
+	return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
 				      WRITE_APML_BOOST_LIMIT_ALLCORES, limit);
 }
 
@@ -165,7 +161,7 @@ oob_status_t write_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
 				 uint32_t limit)
 {
 	/* As per SSP PPR, Write can be 0 to 80%, But read is 0 to 100% */
-        return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
+	 return esmi_oob_write_mailbox(i2c_bus, i2c_addr,
 				      WRITE_DRAM_THROTTLE, limit);
 }
 

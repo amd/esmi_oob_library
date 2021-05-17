@@ -59,54 +59,51 @@ static oob_status_t esmi_oob_i2c_rdwr_ioctl(uint32_t i2c_bus,
 
 	snprintf(i2c_path, FILEPATHSIZ, "/dev/i2c-%d", i2c_bus);
 	fd = open(i2c_path, O_RDWR);
-        if (fd < 0) {
-                return OOB_NOT_FOUND;
-        }
+	if (fd < 0)
+		return OOB_NOT_FOUND;
 
 	ioctl_msg.msgs = i2c_msgs;
 	ioctl_msg.nmsgs = i2c_nmsgs;
 
 	if (ioctl(fd, I2C_RDWR, &ioctl_msg) < 0) {
 		close(fd);
-                return errno_to_oob_status(errno);
+		return errno_to_oob_status(errno);
 	}
 
 	close(fd);
-        return OOB_SUCCESS;
+	return OOB_SUCCESS;
 }
 
 oob_status_t esmi_oob_read_byte(uint32_t i2c_bus, uint32_t i2c_addr,
 				uint32_t cmd, uint8_t *buffer)
 {
-        int fd, data;
+	int fd, data;
 	oob_status_t ret;
 	char i2c_path[FILEPATHSIZ];
 
-        if (NULL == buffer) {
+        if (NULL == buffer)
                 return OOB_ARG_PTR_NULL;
-        }
 
 	snprintf(i2c_path, FILEPATHSIZ, "/dev/i2c-%d", i2c_bus);
 	fd = open(i2c_path, O_RDWR);
-        if (fd < 0) {
-                return OOB_NOT_FOUND;
-        }
+	if (fd < 0)
+		return OOB_NOT_FOUND;
 
-        /* Set I2C_SLAVE for I2C_DEV to access SB-RMI or SB-TSI*/
-        if (ioctl(fd, I2C_SLAVE, i2c_addr) < 0) {
+	/* Set I2C_SLAVE for I2C_DEV to access SB-RMI or SB-TSI*/
+	if (ioctl(fd, I2C_SLAVE, i2c_addr) < 0) {
 		close(fd);
-                return errno_to_oob_status(errno);
-        }
+		return errno_to_oob_status(errno);
+	}
 
-        data = i2c_smbus_read_byte_data(fd, cmd);
-        if (data < 0) {
+	data = i2c_smbus_read_byte_data(fd, cmd);
+	if (data < 0) {
 		close(fd);
-                return errno_to_oob_status(errno);
-        }
+		return errno_to_oob_status(errno);
+	}
 	close(fd);
 
-        *buffer = (uint8_t)(data & 0xff);
-        return OOB_SUCCESS;
+	 *buffer = (uint8_t)(data & 0xff);
+	return OOB_SUCCESS;
 }
 
 oob_status_t esmi_oob_write_byte(uint32_t i2c_bus, uint32_t i2c_addr,
@@ -118,23 +115,22 @@ oob_status_t esmi_oob_write_byte(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	snprintf(i2c_path, FILEPATHSIZ, "/dev/i2c-%d", i2c_bus);
 	fd = open(i2c_path, O_RDWR);
-        if (fd < 0) {
+        if (fd < 0)
                 return OOB_NOT_FOUND;
-        }
 
-        if (ioctl(fd, I2C_SLAVE, i2c_addr) < 0) {
+	if (ioctl(fd, I2C_SLAVE, i2c_addr) < 0) {
 		close(fd);
-                return errno_to_oob_status(errno);
-        }
+		return errno_to_oob_status(errno);
+	}
 
-        if (i2c_smbus_write_byte_data(fd, cmd, value) != 0) {
+	if (i2c_smbus_write_byte_data(fd, cmd, value) != 0) {
 		close(fd);
-                return errno_to_oob_status(errno);
-        }
+		return errno_to_oob_status(errno);
+	}
 
 	close(fd);
 
-        return OOB_SUCCESS;
+	return OOB_SUCCESS;
 }
 
 oob_status_t esmi_oob_i2c_read(uint32_t i2c_bus, uint32_t i2c_addr,
@@ -248,13 +244,11 @@ oob_status_t esmi_oob_read_mailbox(uint32_t i2c_bus, uint32_t i2c_addr,
 	int i;
 	oob_status_t ret;
 
-	if (NULL == buffer) {
+	if (NULL == buffer)
 		return OOB_ARG_PTR_NULL;
-	}
 	ret = esmi_oob_write_mailbox(i2c_bus, i2c_addr, cmd, input);
-	if (ret != OOB_SUCCESS) {
+	if (ret != OOB_SUCCESS)
 		return ret;
-	}
 	for (i = 0; i < READ_NMSGS; i++) {
 		ret = esmi_oob_i2c_read(i2c_bus, i2c_addr, 0x1, 0x1,
 					&rdata[i], &output.bytes[i]);

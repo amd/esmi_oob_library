@@ -51,9 +51,9 @@
  */
 char * esmi_get_err_msg(oob_status_t oob_err)
 {
-        switch(oob_err) {
-                case OOB_SUCCESS:
-                        return "Success";
+	switch(oob_err) {
+		case OOB_SUCCESS:
+			return "Success";
 		case OOB_NOT_FOUND:
 			return "I2C device not found";
 		case OOB_PERMISSION:
@@ -82,9 +82,9 @@ char * esmi_get_err_msg(oob_status_t oob_err)
 			return "Doesnot match Try Again";
 		case OOB_INVALID_INPUT:
 			return "Input value is invalid";
-                default:
-                        return "Unknown error";
-        }
+		default:
+			return "Unknown error";
+	}
 }
 
 /*
@@ -92,22 +92,22 @@ char * esmi_get_err_msg(oob_status_t oob_err)
  */
 oob_status_t errno_to_oob_status(int err)
 {
-        switch (err) {
-                case 0:         return OOB_SUCCESS;
-                case ESRCH:     return OOB_NOT_FOUND;
-                case EACCES:    return OOB_PERMISSION;
-                case EPERM:
-                case ENOENT:    return OOB_NOT_SUPPORTED;
-                case EBADF:
-                case EOF:
-                case EISDIR:    return OOB_FILE_ERROR;
-                case EINTR:     return OOB_INTERRUPTED;
+	switch (err) {
+		case 0:         return OOB_SUCCESS;
+		case ESRCH:     return OOB_NOT_FOUND;
+		case EACCES:    return OOB_PERMISSION;
+		case EPERM:
+		case ENOENT:    return OOB_NOT_SUPPORTED;
+		case EBADF:
+		case EOF:
+		case EISDIR:    return OOB_FILE_ERROR;
+		case EINTR:     return OOB_INTERRUPTED;
 		case EREMOTEIO:
-                case EIO:       return OOB_UNEXPECTED_SIZE;
-                case ENOMEM:    return OOB_NO_MEMORY;
+		case EIO:       return OOB_UNEXPECTED_SIZE;
+		case ENOMEM:    return OOB_NO_MEMORY;
 		case EAGAIN:    return OOB_TRY_AGAIN;
-                case EDESTADDRREQ:    return OOB_NO_I2C_ADDR;
-                default:        return OOB_UNKNOWN_ERROR;
-        }
+		case EDESTADDRREQ:    return OOB_NO_I2C_ADDR;
+		default:        return OOB_UNKNOWN_ERROR;
+	}
 }
 
