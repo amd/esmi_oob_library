@@ -474,19 +474,34 @@ oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
 {
 	oob_status_t ret;
 	uint8_t byte_int, byte_dec;
+	uint8_t rd_order;
 
 	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CPUTEMPINT, &byte_int);
-	if (ret != OOB_SUCCESS) {
+				 SBTSI_CONFIGURATION, &rd_order);
+	if (ret != OOB_SUCCESS)
 		return ret;
+	rd_order &= READORDER_MASK;
+	if (rd_order) {
+		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
+					 SBTSI_CPUTEMPDEC, &byte_dec);
+		if (ret != OOB_SUCCESS)
+			return ret;
+		usleep(1000);
+		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
+					 SBTSI_CPUTEMPINT, &byte_int);
+		if (ret != OOB_SUCCESS)
+			return ret;
+	} else {
+		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
+					 SBTSI_CPUTEMPINT, &byte_int);
+		if (ret != OOB_SUCCESS)
+			return ret;
+		usleep(1000);
+		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
+					 SBTSI_CPUTEMPDEC, &byte_dec);
+		if (ret != OOB_SUCCESS)
+			return ret;
 	}
-	usleep(1000);
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CPUTEMPDEC, &byte_dec);
-	if (ret != OOB_SUCCESS) {
-		return ret;
-	}
-
 	*cpu_temp = byte_int + ((byte_dec >> 5) * TEMP_INC);
 
 	return OOB_SUCCESS;

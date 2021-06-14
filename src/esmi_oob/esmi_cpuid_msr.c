@@ -57,7 +57,7 @@
 
 /*
  * Ref APML in PPR
- * Table 118: SB-RMI Read Processor Register Command Protocol
+ * Table: SB-RMI Read Processor Register Command Protocol
  */
 #define PREPARE_MSR_MSG_IN(thread_id, msraddr, indata) { \
 	indata.cmd = 0x73; /* command protocol*/ \
@@ -72,7 +72,7 @@
 
 /*
  * Ref APML in PPR
- * Table 119: SB-RMI Read CPUID Command Protocol
+ * Table: SB-RMI Read CPUID Command Protocol
  */
 #define PREPARE_CPUID_MSG_IN(thread_id, eax, ecx, indata) { \
 	indata.cmd = 0x73; /* command protocol */\

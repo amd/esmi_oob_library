@@ -79,7 +79,8 @@ typedef enum {
 	READ_CCD_BIST_RESULT,
 	READ_CCX_BIST_RESULT,
 	READ_PACKAGE_CCLK_FREQ_LIMIT,
-	READ_PACKAGE_C0_RESIDENCY
+	READ_PACKAGE_C0_RESIDENCY,
+	READ_DDR_BANDWIDTH
 } esb_mailbox_commmands;
 
 /*****************************************************************************/
@@ -96,17 +97,19 @@ typedef enum {
  */
 
 /**
- *  @brief Get the average power consumption of the socket with provided
- *  socket index.
+ *  @brief Get the power consumption of the socket with provided
+ *  i2c_bus and i2c_addr.
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32t
- *  @p ppower, this function will get the current average power consumption
- *  (in milliwatts) to the uint32t pointed to by @p ppower.
+ *  @details Given a i2c_bus and i2c_addr and a pointer to a uint32_t
+ *  @p buffer, this function will get the current power consumption
+ *  (in watts) to the uint32_t pointed to by @p buffer.
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] ppower a pointer to uint32t to which the average power
- *  consumption will get
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t value of power
+ *  consumption
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
@@ -118,14 +121,15 @@ oob_status_t read_socket_power(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Get the current power cap/limit value for a given socket.
  *
- *  @details This function will return the valid power cap @p pcap for a given
- *  socket @ socket_ind, this value will be used for the system to limit
- *  the power.
+ *  @details This function will return the valid power cap @p buffer for a given
+ *  socket, this value will be used for the system to limit the power.
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] pcap a pointer to a uint32t that indicates the valid
- *  possible power cap/limit, in milliwatts
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to a uint32_t that indicates the valid
+ *  possible power cap/limit, in watts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
@@ -138,14 +142,14 @@ oob_status_t read_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Get the maximum value that can be assigned as a power cap/limit for
  *         a given socket.
  *
- *  @details This function will return the maximum possible valid
- *  	     power cap/limit
- *  @p pmax from a @p socket_ind.
+ *  @details This function will return the maximum possible valid power cap/limit
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] pmax a pointer to a uint32t that indicates the maximum
- *                possible power cap/limit, in milliwatts
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[out] buffer a pointer to a uint32_t that indicates the maximum
+ *                possible power cap/limit, in watts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
@@ -164,13 +168,14 @@ oob_status_t read_max_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Set the power cap/limit value for a given socket.
  *
- *  @details This function will set the power cap/limit to the provided
- *  value @p cap.
+ *  @details This function will set the power cap/limit
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] limit uint32t that indicates the desired power cap/limit, in
- *  milliwatts
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[in] limit uint32_t that indicates the desired power cap/limit,
+ *  in milliwatts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
@@ -193,15 +198,16 @@ oob_status_t write_socket_power_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @details This function will return the core's current Out-of-band
  *  boost limit
- *  @p pboostlimit for a particular @p cpu_ind
+ *  @p buffer for a particular @p value
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] cpu_ind a cpu index
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
- *  @param[inout] pboostlimit pointer to a uint32t that indicates the
- *  possible boost
- *  limit value
+ *  @param[in] value a cpu index
+ *
+ *  @param[inout] buffer pointer to a uint32_t that indicates the
+ *  possible boost limit value
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
@@ -217,11 +223,13 @@ oob_status_t read_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @details This function will return the core's current maximum In-band
  *  boost limit @p buffer for a particular @p value is cpu_ind
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[in] value is a cpu index
  *
- *  @param[inout] buffer a pointer to a uint32t that indicates the
+ *  @param[inout] buffer a pointer to a uint32_t that indicates the
  *  maximum boost limit value set via In-band
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -244,15 +252,17 @@ oob_status_t read_bios_boost_fmax(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Set the Out-of-band boostlimit value for a given core
  *
  *  @details This function will set the boostlimit to the provided value @p
- *  limit for a given cpu via Out-of-band.
+ *  limit for a given cpu.
  *  NOTE: Currently the limit is setting for all the cores instead of a
  *  particular cpu. Testing in Progress.
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] cpu_id a cpu index is a given core to set the boostlimit
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
- *  @param[in] limit a uint32t that indicates the desired Out-of-band
+ *  @param[in] cpu_ind a cpu index is a given core to set the boostlimit
+ *
+ *  @param[in] limit a uint32_t that indicates the desired Out-of-band
  *  boostlimit value of a given core
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -266,11 +276,13 @@ oob_status_t write_esb_boost_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Set the boostlimit value for the whole socket (whole system).
  *
  *  @details This function will set the boostlimit to the provided value @p
- *  boostlimit for the whole socket.
+ *  boostlimit for the socket.
  *
- *  @param[in] socket_ind for detecting i2c address
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] limit a uint32t that indicates the desired boostlimit
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[in] limit a uint32_t that indicates the desired boostlimit
  *  value of the socket
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -294,13 +306,14 @@ oob_status_t write_esb_boost_limit_allcores(uint32_t i2c_bus,
  *  @brief Get the Thermal Design Power limit TDP of the socket with provided
  *  socket index.
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32_t
- *  @p ptdp, this function will get the current TDP (in milliwatts) to
- *  the uint32_t pointed to by @p ptdp.
+ *  @details Given a socket and a pointer to a uint32_t @p buffer, this function
+ *  will get the current TDP (in milliwatts)
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] ptdp a pointer to uint32_t to which the Current TDP value
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t to which the Current TDP value
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -313,13 +326,14 @@ oob_status_t read_tdp(uint32_t i2c_bus, uint32_t i2c_addr, uint32_t *buffer);
  *  @brief Get the Maximum Thermal Design Power limit TDP of the socket with
  *  provided socket index.
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32_t
- *  @p ptdp, this function will get the Maximum TDP (in milliwatts) to
- *  the uint32_t pointed to by @p ptdp.
+ *  @details Given a socket and a pointer, this function will get the Maximum
+ *  TDP (watts)
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] ptdp a pointer to uint32_t to which the Maximum TDP value
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t to which the Maximum TDP value
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -330,16 +344,16 @@ oob_status_t read_max_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
 			  uint32_t *buffer);
 
 /**
- *  @brief Get the Minimum Thermal Design Power limit TDP of the socket with
- *  provided socket index.
+ *  @brief Get the Minimum Thermal Design Power limit TDP of the socket
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32_t
- *  @p ptdp, this function will get the Minimum  TDP (in milliwatts) to
- *  the uint32_t pointed to by @p ptdp.
+ *  @details Given a socket and a pointer to a uint32_t, this function will
+ *  get the Minimum  TDP (watts)
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] ptdp a pointer to uint32_t to which the Minimum TDP value
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t to which the Minimum TDP value
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -361,13 +375,15 @@ oob_status_t read_min_tdp(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Get the Prochot Status of the socket with provided socket index.
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32_t
- *  @p pstatus, this function will get the Prochot status as active/1 or
- *  inactive/0 to the bool pointed to by @p pstatus.
+ *  @details Given a socket and a pointer to a uint32_t,
+ *  this function will get the Prochot status as active/1 or
+ *  inactive/0
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] pstatus a pointer to uint32_t to which the Prochot status
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t to which the Prochot status
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -379,15 +395,16 @@ oob_status_t read_prochot_status(uint32_t i2c_bus, uint32_t i2c_addr,
 
 /**
  *  @brief Get the Prochot Residency (since the boot time or last
- *  read of Prochot Residency) of the socket with provided socket index.
+ *  read of Prochot Residency) of the socket.
  *
- *  @details Given a socket index @p socket_ind and a pointer to a uint32_t
- *  @p presi, this function will get the Prochot residency as a percentage
- *  pointed to by @p presi.
+ *  @details Given a socket and a pointer to a uint32_t,
+ *  this function will get the Prochot residency as a percentage
  *
- *  @param[in] socket_ind a socket index
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[inout] presi a pointer to uint32_t to which the Prochot residency
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[inout] buffer a pointer to uint32_t to which the Prochot residency
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
@@ -407,9 +424,11 @@ oob_status_t read_prochot_residency(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Read Dram Throttle will always read the lowest percentage value.
  *
- *  @details Given a @p socket_ind, this function will read dram throttle.
+ *  @details This function will read dram throttle.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[out] buffer is to read the dram throttle in % (0 - 100).
  *
@@ -426,7 +445,9 @@ oob_status_t read_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @details This function will set the dram throttle of the provided value
  *  limit for the given socket.
  *
- *  @param[in] socket_ind is a given socket
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[in] limit that indicates the desired limit as per SSP PPR write can be
  *  between 0 to 80% to for a given socket
@@ -442,9 +463,11 @@ oob_status_t write_dram_throttle(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Read VDDIOMem Power returns the estimated VDDIOMem power consumed
  *  within the socket.
  *
- *  @details Given a @p socket_ind, this function will read VDDIOMem Power.
+ *  @details This function will read VDDIOMem Power for the given socket
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[out] buffer is to read VDDIOMem Power.
  *
@@ -458,12 +481,15 @@ oob_status_t read_vddio_mem_power(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Read NBIO Error Logging Register
  *
- *  @details Given a @p socket_ind, quadrant and register offset as @p input,
+ *  @details Given a socket, quadrant and register offset as @p input,
  *  this function will read NBIOErrorLoggingRegister.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[in] quadrant value is Quadrant[31:24] from NBIO register
+ *
  *  @param[in] offset value is register offset[23:0] from NBIO register
  *
  *  @param[out] buffer is to read NBIOErrorLoggingRegiter(register value).
@@ -480,9 +506,11 @@ read_nbio_error_logging_register(uint32_t i2c_bus, uint32_t i2c_addr,
 /**
  *  @brief Read IOD Bist status.
  *
- *  @details Given a @p socket_ind, this function will read IOD Bist result.
+ *  @details This function will read IOD Bist result for the given socket.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[out] buffer is to read IODBistResult (0=Bist pass, 1= Bist fail).
  *
@@ -497,10 +525,12 @@ oob_status_t read_iod_bist(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Read CCD Bist status. Results are read for each CCD present in the
  *  system.
  *
- *  @details Given a @p socket_ind, Logical CCD instance number as @p input,
- *  this function will read CCDBistResult.
+ *  @details Given a socket bus number and address, Logical CCD instance
+ *  number as @p input, this function will read CCDBistResult.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[in] input is a Logical CCD instance number.
  *
@@ -518,12 +548,14 @@ oob_status_t read_ccd_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
  *  CCX instance number and returns a value which is the concatenation of L3
  *  pass status and all cores in the complex(n:0).
  *
- *  @details Given a @p socket_ind, Logical CCX instance number as @p input,
- *  this function will read CCXBistResult.
+ *  @details Given a socket bus number, address, Logical CCX instance number 
+ *  as @p input, this function will read CCXBistResult.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] input is a Logical CCX instance number.
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[in] value is a Logical CCX instance number.
  *
  *  @param[out] buffer is to read CCXBistResult (L3pass, Core[n:0]Pass)
  *
@@ -538,9 +570,11 @@ oob_status_t read_ccx_bist_result(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Provides the socket's CPU core clock (CCLK) frequency limit from
  *  the most restrictive infrastructure limit at the time of the request.
  *
- *  @details Given a @p socket_ind, this function will read Frequency.
+ *  @details This function will read Frequency for the given socket
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[out] buffer is to read freequency[MHz]
  *
@@ -555,10 +589,11 @@ oob_status_t read_cclk_freq_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  *  @brief Provides the average C0 residency across all cores in the socket.
  *  100% specifies that all enabled cores in the socket are runningin C0.
  *
- *  @details Given a @p socket_ind, this function will read Socket C0
- *  residency[%].
+ *  @details This function will read Socket C0 residency[%] for the given socket.
  *
- *  @param[in] socket_ind is a particular package in the system.
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
  *
  *  @param[out] buffer is to read Socket C0 residency[%].
  *
@@ -568,6 +603,32 @@ oob_status_t read_cclk_freq_limit(uint32_t i2c_bus, uint32_t i2c_addr,
  */
 oob_status_t read_socket_c0_residency(uint32_t i2c_bus, uint32_t i2c_addr,
 				      uint32_t *buffer);
+
+/**
+ *  @brief Get the Theoretical maximum DDR Bandwidth of the system in GB/s,
+ *  Current utilized DDR Bandwidth (Read + Write) in GB/s and
+ *  Current utilized DDR Bandwidth as a percentage of theoretical maximum.
+ *
+ *  @param[in] i2c_bus is the Bus connected to the socket
+ *
+ *  @param[in] i2c_addr is the 7-bit socket address
+ *
+ *  @param[out] max_bw is the maxium DDR Bandwidth in GB/s
+ *
+ *  @param[out] utilized_bw is the utilized DDR Bandwidth in GB/s
+ *
+ *  @param[out] utilized_pct is the utilized DDR Bandwidth in %.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval None-zero is returned upon failure.
+ *
+ */
+oob_status_t read_ddr_bandwidth(uint32_t i2c_bus,
+				uint32_t i2c_addr,
+				uint32_t *max_bw,
+				uint32_t *utilized_bw,
+				uint32_t *utilized_pct);
+
 /** @} */
 
 /** @} */  // end of MailboxMsg
