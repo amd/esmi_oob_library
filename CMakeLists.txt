@@ -133,20 +133,22 @@ set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/esmi_oob"
                                       CACHE STRING "Default packaging prefix.")
 
 ## Add the install directives for the runtime library.
+set(ESMI_OOB_INCLUDE_FILES
+    "${INC_DIR}/esmi_common.h"
+    "${INC_DIR}/esmi_cpuid_msr.h"
+    "${INC_DIR}/esmi_i2c.h"
+    "${INC_DIR}/esmi_mailbox.h"
+    "${INC_DIR}/esmi_rmi.h"
+    "${INC_DIR}/esmi_tsi.h"
+   )
+
+set_property(TARGET ${ESMI_OOB_TARGET}
+               PROPERTY PUBLIC_HEADER "${ESMI_OOB_INCLUDE_FILES}")
+
 install(TARGETS ${ESMI_OOB_TARGET}
-          LIBRARY DESTINATION ${ESMI_OOB}/lib COMPONENT ${ESMI_OOB_COMPONENT})
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_common.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_i2c.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_cpuid_msr.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_mailbox.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_rmi.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_tsi.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+          LIBRARY DESTINATION lib
+          PUBLIC_HEADER DESTINATION include/esmi_oob
+          COMPONENT ${ESMI_OOB_COMPONENT})
 
 # Generate Doxygen documentation
 find_package(Doxygen)
