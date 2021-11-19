@@ -150,6 +150,12 @@ install(TARGETS ${ESMI_OOB_TARGET}
           PUBLIC_HEADER DESTINATION include/esmi_oob
           COMPONENT ${ESMI_OOB_COMPONENT})
 
+if (ENABLE_EXAMPLES)
+  install(TARGETS ${SMI_EXAMPLE_EXE} DESTINATION bin)
+  install(TARGETS ${SMI_TOOL} DESTINATION bin)
+  install(TARGETS ${SMI_CPUID} DESTINATION bin)
+endif()
+
 # Generate Doxygen documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
