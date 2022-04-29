@@ -1,8 +1,20 @@
-# EPYC™ System Management Interface (E-SMI) Out-of-band Library
+# Advanced Platform Management Link (APML) Library
+# (formerly known as EPYC™ System Management Interface (E-SMI) Out-of-band Library)
 
-Thank you for using AMD ESMI_OOB Library. Please use the [ESMI Out-of-band Support](https://github.com/amd/esmi_oob_library/issues) to provide your feedback.
+Thank you for using AMD APML Library.
 
 # Changes Notes
+
+
+## Highlights of major release v2.0
+* Rename ESMI_OOB library to APML Library
+* Rework the library to use APML modules (apml_sbrmi and apml_sbtsi)
+    - This helps us acheive better locking across the protocols
+    - APML modules takes care of the probing the APML devices and provding interfaces
+* Add features supported on Family 19h Model 10h-1Fh
+    - Support APML over I2C and APML over I3C
+    - Handle thread count >127 per socket
+    - CPUID and MSR read over I3C
 
 ## Highlights of minor release v1.1
 
@@ -28,34 +40,33 @@ APIs to Monitor and control the following feature
 
 # Supported Processors
 * Family 17h model 31h
-* Family 19h model 0h~0Fh & 30h~3Fh
+* Family 19h model 0h~0Fh & 10h~1Fh
 
 # Supported BMCs
-Compile this library for any BMC running linux. Please use the [ESMI Out-of-band Support](https://github.com/amd/esmi_oob_library/issues) to provide your feedback.
+Compile this library for any BMC running linux. Please use the [APML Library/tool Support](https://github.com/amd/esmi_oob_library/issues) to provide your feedback.
 
 # Supported Operating Systems
-ESMI_OOB library should run any linux based operating systems with the following "System requirements"
+APML Library is tested on OpenBMC for Aspeed and RPI based BMCs with the following "System requirements"
 
 # System Requirements
 ## Hardware requirements
-BMC with I2c controller as master, i2c master adapter channel (SCL and SDA lines) connected to the "Supported Processors"
+BMC with I2C/I3C controller as master, I2C/I3C master adapter channel (SCL and SDA lines) connected to the "Supported Processors"
 
 ## Software requirements
 
-In order to build the ESMI_OBB library, the following components are required. Note that the software versions listed are what is being used in development. Earlier versions are not guaranteed to work:
+In order to build the APML library, the following components are required. Note that the software versions listed are what is being used in development. Earlier versions are not guaranteed to work:
+
 ### Compilation requirements
 * CMake (v3.5.0)
-
-### Packages
-* libi2c-dev
-
-In order to build the latest documentation, the following are required:
-
+* APML library upto v1.1 depends on libi2c-dev
 * Doxygen (1.8.13)
 * latex (pdfTeX 3.14159265-2.6-1.40.18)
 
 # Dependencies
-The ESMI_OOB Library depends on the libi2c-dev library.
+APML library upto v1.1 depends on libi2c-dev
+Later versions depends on the apml_modules (hosted github.com/amd/apml_modules)
 
 # Support
-Pilease use [ESMI Out-of-band Support](https://github.com/amd/esmi_oob_library/issues) for bug reports, support and feature requests.
+To provide your feedback, bug reports, support and feature requests.
+
+Please use [APML Library Support](https://github.com/amd/esmi_oob_library/issues).
