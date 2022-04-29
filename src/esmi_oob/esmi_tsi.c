@@ -41,33 +41,34 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#include <esmi_oob/esmi_tsi.h>
-#include <esmi_oob/esmi_i2c.h>
 #include <math.h>
 
+#include <esmi_oob/esmi_tsi.h>
+#include <esmi_oob/apml.h>
+
 /* sb-tsi register access */
-oob_status_t read_sbtsi_cpuinttemp(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num,
 				   uint8_t *buffer)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_CPUTEMPINT,
-				  buffer);
+	return esmi_oob_read_byte(soc_num, SBTSI_CPUTEMPINT,
+				  SBTSI, buffer);
 }
 
-oob_status_t read_sbtsi_status(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_status(uint8_t soc_num,
 			       uint8_t *buffer)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_STATUS, buffer);
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_STATUS, SBTSI, buffer);
 }
 
-oob_status_t read_sbtsi_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_config(uint8_t soc_num,
 			       uint8_t *buffer)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_CONFIGURATION,
-				  buffer);
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_CONFIGURATION, SBTSI, buffer);
 }
 
-oob_status_t read_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_updaterate(uint8_t soc_num,
 				   float *buffer)
 {
 	/* as per the ssp document valid rates from 0 - 10 are as below */
@@ -76,7 +77,11 @@ oob_status_t read_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
 	oob_status_t ret;
 	uint8_t rdbyte;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_UPDATERATE, &rdbyte);
+	if (!buffer)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_UPDATERATE, SBTSI, &rdbyte);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	if (rdbyte >= items)
@@ -86,13 +91,12 @@ oob_status_t read_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t write_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t write_sbtsi_updaterate(uint8_t soc_num,
 				    float uprate)
 {
 	/* as per the ssp document valid rates from 0 - 10 are as below */
 	float valid_rate[] = {0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8, 16, 32, 64};
 	int items = 11; /* total number of uprates in above valid_rate[] */
-	oob_status_t ret;
 	uint8_t wrbyte;
 
 	for (wrbyte = 0; wrbyte < items; wrbyte++) {
@@ -102,13 +106,10 @@ oob_status_t write_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
 	if (wrbyte >= items)
 		return OOB_INVALID_INPUT;
 
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_UPDATERATE, wrbyte);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_UPDATERATE, SBTSI, wrbyte);
 }
 
-oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
 					float hitemp_thr)
 {
 	oob_status_t ret;
@@ -121,11 +122,15 @@ oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 	byte_int = hitemp_thr;
 	temp_dec = hitemp_thr - byte_int;
 
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_HITEMPINT, byte_int);
+	ret = esmi_oob_write_byte(soc_num,
+				  SBTSI_HITEMPINT,
+				  SBTSI,
+				  byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_HITEMPDEC, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_HITEMPDEC, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
@@ -134,13 +139,11 @@ oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	/* [7:5] HiTempDec and [4:0] Reserved */
 	current = ((byte_dec << 5) | (prev & 0x1F));
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_HITEMPDEC, current);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_HITEMPDEC,
+				   SBTSI, current);
 }
 
-oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
 					float lotemp_thr)
 {
 	oob_status_t ret;
@@ -153,11 +156,14 @@ oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 	byte_int = lotemp_thr;
 	temp_dec = lotemp_thr - byte_int;
 
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPINT, byte_int);
+	ret = esmi_oob_write_byte(soc_num,
+				  SBTSI_LOTEMPINT,
+				  SBTSI, byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPDEC, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_LOTEMPDEC, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
@@ -166,13 +172,10 @@ oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	/* [7:5] LoTempDec and [4:0] Reserved */
 	current = ((byte_dec << 5) | (prev & 0x1F));
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPDEC, current);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_LOTEMPDEC, SBTSI, current);
 }
 
-oob_status_t sbtsi_set_timeout_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
 				      uint8_t mode)
 {
 	oob_status_t ret;
@@ -181,19 +184,17 @@ oob_status_t sbtsi_set_timeout_config(uint32_t i2c_bus, uint32_t i2c_addr,
 	/* 1 : Enabled and 0 Disbaled */
 	if (mode != 1 && mode != 0)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_TIMEOUTCONFIG, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_TIMEOUTCONFIG, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
 	/* [7] TimeoutEn and [6:0] Reserved */
 	new = ((mode << 7) | (prev & 0x7F));
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_TIMEOUTCONFIG, new);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_TIMEOUTCONFIG, SBTSI, new);
 }
 
-oob_status_t sbtsi_set_alert_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 				       uint8_t samples)
 {
 	oob_status_t ret;
@@ -202,8 +203,8 @@ oob_status_t sbtsi_set_alert_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 	/* Alert threshold valid range from 1 to 8 samples. */
 	if (samples < 1 || samples > 8)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_ALERTTHRESHOLD, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_ALERTTHRESHOLD, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/**
@@ -214,14 +215,10 @@ oob_status_t sbtsi_set_alert_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
 	 * 7h: 8 samples
 	 */
 	new = (prev & 0xF8) | (samples - 1);
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr,
-				  SBTSI_ALERTTHRESHOLD, new);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_ALERTTHRESHOLD, SBTSI, new);
 }
 
-oob_status_t sbtsi_set_alert_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
 				    uint8_t mode)
 {
 	oob_status_t ret;
@@ -230,18 +227,16 @@ oob_status_t sbtsi_set_alert_config(uint32_t i2c_bus, uint32_t i2c_addr,
 	/* single bit validation */
 	if (mode != 1 && mode != 0)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_ALERTCONFIG, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_ALERTCONFIG, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Alert Comparator mode enable */
 	new = (prev & 0xFE) | mode;
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_ALERTCONFIG, new);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_ALERTCONFIG, SBTSI, new);
 }
 
-oob_status_t sbtsi_set_configwr(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 				uint8_t mode, uint8_t config_mask)
 {
 	oob_status_t ret;
@@ -256,98 +251,155 @@ oob_status_t sbtsi_set_configwr(uint32_t i2c_bus, uint32_t i2c_addr,
 	    config_mask != ARA_MASK)
 		return OOB_INVALID_INPUT;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_CONFIGWR, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CONFIGWR, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
 	new = mode ? prev | config_mask : prev & (~config_mask);
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr, SBTSI_CONFIGWR, new);
-	if (ret != OOB_SUCCESS)
+	return esmi_oob_write_byte(soc_num, SBTSI_CONFIGWR, SBTSI, new);
+}
+
+oob_status_t read_sbtsi_hitempint(uint8_t soc_num,
+				  uint8_t *buffer)
+{
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_HITEMPINT, SBTSI, buffer);
+}
+
+oob_status_t read_sbtsi_lotempint(uint8_t soc_num,
+				  uint8_t *buffer)
+{
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_LOTEMPINT, SBTSI, buffer);
+}
+
+oob_status_t read_sbtsi_configwrite(uint8_t soc_num,
+				    uint8_t *buffer)
+{
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_CONFIGWR, SBTSI, buffer);
+}
+
+oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num,
+				       float *buffer)
+{
+	uint8_t rd_byte;
+	oob_status_t ret;
+
+	if (!buffer)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CPUTEMPDEC,
+				 SBTSI,
+				 &rd_byte);
+	if (ret)
 		return ret;
+	*buffer = ((rd_byte >> 5) * TEMP_INC);
+
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_hitempint(uint32_t i2c_bus, uint32_t i2c_addr,
-				  uint8_t *buffer)
-{
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_HITEMPINT, buffer);
-}
-
-oob_status_t read_sbtsi_lotempint(uint32_t i2c_bus, uint32_t i2c_addr,
-				  uint8_t *buffer)
-{
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPINT, buffer);
-}
-
-oob_status_t read_sbtsi_configwrite(uint32_t i2c_bus, uint32_t i2c_addr,
-				    uint8_t *buffer)
-{
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_CONFIGWR, buffer);
-}
-
-oob_status_t read_sbtsi_cputempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				       uint8_t *buffer)
-{
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_CPUTEMPDEC,
-				  buffer);
-}
-
-oob_status_t read_sbtsi_cputempoffint(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num,
 				      uint8_t *temp_int)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr,
-				  SBTSI_CPUTEMPOFFINT, temp_int);
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_CPUTEMPOFFINT,
+				  SBTSI,
+				  temp_int);
 }
 
-oob_status_t read_sbtsi_cputempoffdec(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec)
+oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num,
+				      float *temp_dec)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr,
-				  SBTSI_CPUTEMPOFFDEC, temp_dec);
+	uint8_t rd_byte;
+	oob_status_t ret;
+
+	if (!temp_dec)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CPUTEMPOFFDEC,
+				 SBTSI,
+				 &rd_byte);
+	if (ret)
+		return ret;
+	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
+
+	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_hitempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec)
+oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num,
+				      float *temp_dec)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_HITEMPDEC, temp_dec);
+	uint8_t rd_byte;
+	oob_status_t ret;
+
+	if (!temp_dec)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_HITEMPDEC, SBTSI, &rd_byte);
+	if (ret)
+		return ret;
+	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
+
+	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_lotempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec)
+oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num,
+				      float *temp_dec)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPDEC, temp_dec);
+	uint8_t rd_byte;
+	oob_status_t ret;
+
+	if (!temp_dec)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_LOTEMPDEC, SBTSI, &rd_byte);
+	if (ret)
+		return ret;
+	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
+
+	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_timeoutconfig(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num,
 				      uint8_t *timeout)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr,
-				  SBTSI_TIMEOUTCONFIG, timeout);
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_TIMEOUTCONFIG, SBTSI, timeout);
 }
 
-oob_status_t read_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 				      float *temp_offset)
 {
 	oob_status_t ret;
 	int8_t byte_int;
 	uint8_t byte_dec;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CPUTEMPOFFINT, &byte_int);
+	if (!temp_offset)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CPUTEMPOFFINT, SBTSI, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CPUTEMPOFFDEC, &byte_dec);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CPUTEMPOFFDEC, SBTSI, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
-	 * [7:5] decimal value in byte */
+	 * [7:5] decimal value in byte
+	 */
 	*temp_offset = byte_int + (byte_dec >> 5) * TEMP_INC;
 
 	return OOB_SUCCESS;
 }
 
-oob_status_t write_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
 				       float temp_offset)
 {
 	oob_status_t ret;
@@ -361,30 +413,28 @@ oob_status_t write_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
 		byte_int--;
 	byte_dec = (temp_offset - byte_int) / TEMP_INC;
 
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr,
-				  SBTSI_CPUTEMPOFFINT, byte_int);
+	ret = esmi_oob_write_byte(soc_num,
+				  SBTSI_CPUTEMPOFFINT,
+				  SBTSI, byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CPUTEMPOFFDEC, &prev);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CPUTEMPOFFDEC, SBTSI, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	current = ((prev & 0x1F) | (byte_dec << 5));
-	ret = esmi_oob_write_byte(i2c_bus, i2c_addr,
-				  SBTSI_CPUTEMPOFFDEC, current);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return OOB_SUCCESS;
+	return esmi_oob_write_byte(soc_num, SBTSI_CPUTEMPOFFDEC,
+				   SBTSI, current);
 }
 
-oob_status_t read_sbtsi_alertthreshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num,
 				       uint8_t *samples)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_ALERTTHRESHOLD, samples);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_ALERTTHRESHOLD, SBTSI, samples);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/**
@@ -399,12 +449,13 @@ oob_status_t read_sbtsi_alertthreshold(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_alertconfig(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_alertconfig(uint8_t soc_num,
 				    uint8_t *mode)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_ALERTCONFIG, mode);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_ALERTCONFIG, SBTSI, mode);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Alert Comparator mode enable */
@@ -413,12 +464,13 @@ oob_status_t read_sbtsi_alertconfig(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_manufid(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_manufid(uint8_t soc_num,
 				uint8_t *man_id)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_MANUFID, man_id);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_MANUFID, SBTSI, man_id);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Manufacture ID */
@@ -427,42 +479,46 @@ oob_status_t read_sbtsi_manufid(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_revision(uint8_t soc_num,
 				 uint8_t *rivision)
 {
-	return esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_REVISION, rivision);
+	return esmi_oob_read_byte(soc_num,
+				  SBTSI_REVISION, SBTSI, rivision);
 }
 
-oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_cputemp(uint8_t soc_num,
 			       float *cpu_temp)
 {
 	oob_status_t ret;
 	uint8_t byte_int, byte_dec;
 	uint8_t rd_order;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CONFIGURATION, &rd_order);
+	if (!cpu_temp)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CONFIGURATION, SBTSI, &rd_order);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	rd_order &= READORDER_MASK;
 	if (rd_order) {
-		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-					 SBTSI_CPUTEMPDEC, &byte_dec);
+		ret = esmi_oob_read_byte(soc_num,
+					 SBTSI_CPUTEMPDEC, SBTSI, &byte_dec);
 		if (ret != OOB_SUCCESS)
 			return ret;
 		usleep(1000);
-		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-					 SBTSI_CPUTEMPINT, &byte_int);
+		ret = esmi_oob_read_byte(soc_num,
+					 SBTSI_CPUTEMPINT, SBTSI, &byte_int);
 		if (ret != OOB_SUCCESS)
 			return ret;
 	} else {
-		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-					 SBTSI_CPUTEMPINT, &byte_int);
+		ret = esmi_oob_read_byte(soc_num,
+					 SBTSI_CPUTEMPINT, SBTSI, &byte_int);
 		if (ret != OOB_SUCCESS)
 			return ret;
 		usleep(1000);
-		ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-					 SBTSI_CPUTEMPDEC, &byte_dec);
+		ret = esmi_oob_read_byte(soc_num,
+					 SBTSI_CPUTEMPDEC, SBTSI, &byte_dec);
 		if (ret != OOB_SUCCESS)
 			return ret;
 	}
@@ -471,53 +527,69 @@ oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
 					float *hitemp_thr)
 {
 	oob_status_t ret;
 	uint8_t byte_int, byte_dec;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_HITEMPINT, &byte_int);
+	if (!hitemp_thr)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_HITEMPINT, SBTSI, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	usleep(1000);
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_HITEMPDEC ,&byte_dec);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_HITEMPDEC, SBTSI, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
-	 * [7:5] decimal value in byte */
+	 * [7:5] decimal value in byte
+	 */
 	*hitemp_thr = byte_int + ((byte_dec >> 5) * TEMP_INC);
 
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 					float *lotemp_thr)
 {
 	oob_status_t ret;
 	uint8_t byte_int, byte_dec;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPINT, &byte_int);
+	if (!lotemp_thr)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_LOTEMPINT, SBTSI, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	usleep(1000);
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_LOTEMPDEC, &byte_dec);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_LOTEMPDEC, SBTSI, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
-	 * [7:5] decimal value in byte */
+	 * [7:5] decimal value in byte
+	 */
 	*lotemp_thr = byte_int + ((byte_dec >> 5) * TEMP_INC);
 
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_temp_status(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 				   uint8_t *loalert, uint8_t *hialert)
 {
 	oob_status_t ret;
 	uint8_t rdbyte;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr, SBTSI_STATUS, &rdbyte);
+	if ((!loalert) || (!hialert))
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_STATUS, SBTSI, &rdbyte);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [4] temperature high alert, [3] temperature low alerti */
@@ -527,15 +599,18 @@ oob_status_t sbtsi_get_temp_status(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_config(uint8_t soc_num,
 			      uint8_t *al_mask, uint8_t *run_stop,
 			      uint8_t *read_ord, uint8_t *ara)
 {
 	oob_status_t ret;
 	uint8_t rdbytes;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_CONFIGURATION, &rdbytes);
+	if ((!al_mask) || (!run_stop) || (!read_ord) || (!ara))
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_CONFIGURATION, SBTSI, &rdbytes);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	*al_mask = rdbytes & ALERTMASK_MASK;
@@ -546,13 +621,14 @@ oob_status_t sbtsi_get_config(uint32_t i2c_bus, uint32_t i2c_addr,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_timeout(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_timeout(uint8_t soc_num,
 			       uint8_t *timeout_en)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_read_byte(i2c_bus, i2c_addr,
-				 SBTSI_TIMEOUTCONFIG, timeout_en);
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_TIMEOUTCONFIG, SBTSI,
+				 timeout_en);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7] TimeoutEn and [6:0] Reserved */

@@ -38,18 +38,18 @@
  * DEALINGS WITH THE SOFTWARE.
  *
  */
-#ifndef INCLUDE_ESMI_OOB_TSI_H_
-#define INCLUDE_ESMI_OOB_TSI_H_
+#ifndef INCLUDE_APML_TSI_H_
+#define INCLUDE_APML_TSI_H_
 
-#include "esmi_common.h"
+#include "apml_err.h"
 
 /** \file esmi_tsi.h
- *  Header file for the E-SMI-OOB library for SB-TSI functionality access.
+ *  Header file for the APML library for SB-TSI functionality access.
  *  All required function, structure, enum, etc. definitions should be defined
  *  in this file for SB-TSI Register accessing.
  *
  *  @details  This header file contains the following:
- *  APIs prototype of the APIs exported by the E-SMI-OOB library.
+ *  APIs prototype of the APIs exported by the APML library.
  *  Description of the API, arguments and return values.
  *  The Error codes returned by the API.
  */
@@ -101,7 +101,6 @@ typedef enum {
 
 /*****************************************************************************/
 /** @defgroup SB-TSIRegisterAccess SBTSI Register Read Byte Protocol
-
  *  Below functions provide interface to read one byte from the SB-TSI register
  *  and output is from a given SB_TSI register command.
  *  @{
@@ -131,9 +130,8 @@ typedef enum {
  *  combine to return the CPU temperature.
  *
  *  This field returns the integer portion of the CPU temperature
- *  @param[in] i2c_bus is the Bus connected to the socket
  *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -141,8 +139,7 @@ typedef enum {
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cpuinttemp(uint32_t i2c_bus, uint32_t i2c_addr,
-				   uint8_t *buffer);
+oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -151,9 +148,7 @@ oob_status_t read_sbtsi_cpuinttemp(uint32_t i2c_bus, uint32_t i2c_addr,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -161,16 +156,13 @@ oob_status_t read_sbtsi_cpuinttemp(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_status(uint32_t i2c_bus, uint32_t i2c_addr,
-			       uint8_t *buffer);
+oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief The bits in this register are Read-only and can be written
  *  by Writing to the corresponding bits in SBTSI::ConfigWr
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -178,17 +170,14 @@ oob_status_t read_sbtsi_status(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_config(uint32_t i2c_bus, uint32_t i2c_addr,
-			       uint8_t *buffer);
+oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief This register value specifies the rate at which CPU temperature
  *  is compared against the temperature thresholds to determine if an alert
  *  event has occurred.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -196,17 +185,14 @@ oob_status_t read_sbtsi_config(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
-				   float *buffer);
+oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
 
 /**
  *  @brief This register value specifies the rate at which CPU temperature
  *  is compared against the temperature thresholds to determine if an alert
  *  event has occurred.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] uprate value to write in raw format
  *
@@ -214,8 +200,7 @@ oob_status_t read_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t write_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
-				    float uprate);
+oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
 
 /**
  *  @brief This value specifies the integer  portion of the high temperature
@@ -224,9 +209,7 @@ oob_status_t write_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the integer part of high cpu temp
  *
@@ -234,8 +217,7 @@ oob_status_t write_sbtsi_updaterate(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_hitempint(uint32_t i2c_bus, uint32_t i2c_addr,
-				  uint8_t *buffer);
+oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief This value specifies the integer portion of the low temperature
@@ -244,9 +226,7 @@ oob_status_t read_sbtsi_hitempint(uint32_t i2c_bus, uint32_t i2c_addr,
  *  ALERT_L to assert if the CPU temperature is less than or equal to the
  *  threshold
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the integer part of low cpu temp
  *
@@ -254,15 +234,12 @@ oob_status_t read_sbtsi_hitempint(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_lotempint(uint32_t i2c_bus, uint32_t i2c_addr,
-				  uint8_t *buffer);
+oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief This register provides write access to SBTSI::Config
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the configuraion
  *
@@ -270,15 +247,12 @@ oob_status_t read_sbtsi_lotempint(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_configwrite(uint32_t i2c_bus, uint32_t i2c_addr,
-				    uint8_t *buffer);
+oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief The value returns the decimal portion of the CPU temperature
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature decimal
  *
@@ -286,16 +260,13 @@ oob_status_t read_sbtsi_configwrite(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				       uint8_t *buffer);
+oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
 
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
  *  the CPU temperature offset
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] temp_int a pointer to hold the cpu offset interger
  *
@@ -303,16 +274,13 @@ oob_status_t read_sbtsi_cputempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffint(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_int);
+oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
 
 /**
  *  @brief This value specifies the decimal/fractional portion of the
  *  CPU temperature offset added to Tctl to calculate the CPU temperature.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] temp_dec a pointer to hold the cpu offset decimal
  *
@@ -320,16 +288,13 @@ oob_status_t read_sbtsi_cputempoffint(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffdec(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec);
+oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
 
 /**
  *  @brief This value specifies the decimal portion of the high temperature
  *  threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] temp_dec a pointer to hold the decimal part of cpu high temp
  *
@@ -337,16 +302,13 @@ oob_status_t read_sbtsi_cputempoffdec(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_hitempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec);
+oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
 
 /**
  *  @brief value specifies the decimal portion of the low temperature
  *  threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] temp_dec a pointer to hold the decimal part of cpu low temperature
  *
@@ -354,8 +316,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_lotempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *temp_dec);
+oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
 
 /**
  *  @brief value specifies 0=SMBus defined timeout support disabled.
@@ -365,9 +326,7 @@ oob_status_t read_sbtsi_lotempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
  *  SMBus defined timeouts are not disabled for SB-RMI when this bit is set
  *  to 0.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] timeout a pointer to hold the cpu timeout configuration
  *
@@ -375,17 +334,14 @@ oob_status_t read_sbtsi_lotempdecimal(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_timeoutconfig(uint32_t i2c_bus, uint32_t i2c_addr,
-				      uint8_t *timeout);
+oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
 
 /**
  *  @brief Specifies the number of consecutive CPU temperature
  *  samples for which a temperature alert condition needs to remain valid
  *  before the corresponding alert bit is set.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] samples a pointer to hold the cpu temperature alert threshold
  *
@@ -393,8 +349,7 @@ oob_status_t read_sbtsi_timeoutconfig(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_alertthreshold(uint32_t i2c_bus, uint32_t i2c_addr,
-				       uint8_t *samples);
+oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -403,9 +358,7 @@ oob_status_t read_sbtsi_alertthreshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] mode a pointer to hold the cpu temperature alert configuration
  *
@@ -413,15 +366,12 @@ oob_status_t read_sbtsi_alertthreshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_alertconfig(uint32_t i2c_bus, uint32_t i2c_addr,
-				    uint8_t *mode);
+oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
 
 /**
  *  @brief Returns the AMD manufacture ID
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] man_id a pointer to hold the manufacture id
  *
@@ -429,15 +379,12 @@ oob_status_t read_sbtsi_alertconfig(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_manufid(uint32_t i2c_bus, uint32_t i2c_addr,
-				uint8_t *man_id);
+oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
 
 /**
  *  @brief Specifies the SBI temperature sensor interface revision
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] rivision a pointer to hold the cpu temperature revision
  *
@@ -445,8 +392,7 @@ oob_status_t read_sbtsi_manufid(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
-				 uint8_t *rivision);
+oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
 
 /* Extra API's for bit parsing */
 /**
@@ -454,9 +400,7 @@ oob_status_t read_sbtsi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
  *  The CPU temperature is calculated by adding SBTSI::CpuTempInt
  *  and SBTSI::CpuTempDec combine to return the CPU temperature.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] cpu_temp a pointer to get temperature of the CPU
  *
@@ -464,8 +408,7 @@ oob_status_t read_sbtsi_revision(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
-			       float *cpu_temp);
+oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -474,9 +417,7 @@ oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] loalert: 1=> CPU temp is less than or equal to low temperature
  *  threshold for consecutive samples
@@ -488,17 +429,15 @@ oob_status_t sbtsi_get_cputemp(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_temp_status(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 				   uint8_t *loalert, uint8_t *hialert);
 
 /**
  *  @brief The bits in this register are Read-only and can be written
  *  by Writing to the corresponding bits in SBTSI::ConfigWr
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
+ *  @param[in] soc_num Socket index.
  *
- *  @param[in] i2c_addr is the 7-bit socket address
-i*
  *  @param[inout] al_mask: 0=> ALERT_L pin enabled. 1=> ALERT_L pin disabled
  *  and does not assert.
  *
@@ -516,7 +455,7 @@ i*
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_config(uint8_t soc_num,
 			      uint8_t *al_mask, uint8_t *run_stop,
 			      uint8_t *read_ord, uint8_t *ara);
 
@@ -526,9 +465,7 @@ oob_status_t sbtsi_get_config(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  NOTE: Currently testing is not done for this API.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] mode: value to update 0 or 1
  *
@@ -538,17 +475,16 @@ oob_status_t sbtsi_get_config(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_configwr(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 				uint8_t mode, uint8_t config_mask);
 
 /**
  *  @brief To verify if timeout support enabled or disabled
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] timeout_en: 0=>SMBus defined timeout support disabled.
+ *
  *  1=SMBus defined timeout support enabled. SMBus timeout enable.
  *  If SB-RMI is in use, SMBus timeouts should
  *  be enabled or disabled in a consistent manner on both interfaces.
@@ -559,17 +495,16 @@ oob_status_t sbtsi_set_configwr(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_timeout(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_timeout(uint8_t soc_num,
 			       uint8_t *timeout_en);
 
 /**
  *  @brief To enable/disable timeout support
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] mode:  0=>SMBus defined timeout support disabled.
+ *
  *  1=>SMBus defined timeout support enabled. SMBus timeout enable.
  *  If SB-RMI is in use, SMBus timeouts should
  *  be enabled or disabled in a consistent manner on both interfaces.
@@ -580,7 +515,7 @@ oob_status_t sbtsi_get_timeout(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_timeout_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
 				      uint8_t mode);
 
 /**
@@ -589,9 +524,7 @@ oob_status_t sbtsi_set_timeout_config(uint32_t i2c_bus, uint32_t i2c_addr,
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] hitemp_thr: Specifies the high temperature threshold
  *
@@ -599,7 +532,7 @@ oob_status_t sbtsi_set_timeout_config(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
 					float hitemp_thr);
 
 /**
@@ -608,9 +541,7 @@ oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *  causes ALERT_L to assert if the CPU temperature is less than or
  *  equal to the threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] lotemp_thr: Specifies the low temperature threshold
  *
@@ -618,7 +549,7 @@ oob_status_t sbtsi_set_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
 					float lotemp_thr);
 
 /**
@@ -627,9 +558,7 @@ oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] hitemp_thr: Specifies the high temperature threshold
  *
@@ -637,7 +566,7 @@ oob_status_t sbtsi_set_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
 					float *hitemp_thr);
 
 /**
@@ -646,9 +575,7 @@ oob_status_t sbtsi_get_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *  causes ALERT_L to assert if the CPU temperature is less than or
  *  equal to the threshold.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] lotemp_thr: Get the low temperature threshold
  *
@@ -656,16 +583,14 @@ oob_status_t sbtsi_get_hitemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 					float *lotemp_thr);
 
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
  *  the CPU temperature offset
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[inout] temp_offset to get the offset value for temperature
  *
@@ -673,16 +598,14 @@ oob_status_t sbtsi_get_lotemp_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 				      float *temp_offset);
 
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to set
  *  the CPU temperature offset
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] temp_offset to set the offset value for temperature
  *
@@ -690,7 +613,7 @@ oob_status_t read_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t write_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
 				       float temp_offset);
 
 /**
@@ -698,9 +621,7 @@ oob_status_t write_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
  *  samples for which a temperature alert condition needs to remain valid
  *  before the corresponding alert bit is set.
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] samples: Number of samples
  *  0h: 1 sample
@@ -711,15 +632,13 @@ oob_status_t write_sbtsi_cputempoffset(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_alert_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 				       uint8_t samples);
 
 /**
  *  @brief Alert comparator mode enable
  *
- *  @param[in] i2c_bus is the Bus connected to the socket
- *
- *  @param[in] i2c_addr is the 7-bit socket address
+ *  @param[in] soc_num Socket index.
  *
  *  @param[in] mode 0=> SBTSI::Status[TempHighAlert] &
  *  SBTSI::Status[TempLowAlert] are read-clear.
@@ -731,10 +650,10 @@ oob_status_t sbtsi_set_alert_threshold(uint32_t i2c_bus, uint32_t i2c_addr,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_alert_config(uint32_t i2c_bus, uint32_t i2c_addr,
+oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
 				    uint8_t mode);
 
 /** @} */  // end of SB-TSI Register access
 /*****************************************************************************/
 
-#endif  // INCLUDE_ESMI_OOB_TSI_H_
+#endif  // INCLUDE_APML_TSI_H_

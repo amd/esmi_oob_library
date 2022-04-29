@@ -17,9 +17,9 @@ endif()
 ## Include common cmake modules
 include(utils)
 
-set(ESMI_OOB "esmi_oob")
-set(ESMI_OOB_COMPONENT "lib${ESMI_OOB}")
-set(ESMI_OOB_TARGET "${ESMI_OOB}64")
+set(APML_LIB "apml")
+set(APML_LIB_COMPONENT "lib${APML_LIB}")
+set(APML_LIB_TARGET "${APML_LIB}64")
 set(SRC_DIR "src/esmi_oob")
 set(INC_DIR "include/esmi_oob")
 
@@ -27,21 +27,22 @@ set(INC_DIR "include/esmi_oob")
 # ABI breaks (update MAJOR and MINOR), and ABI/API additions (update MINOR).
 # Until ABI stabilizes VERSION_MAJOR will be 0. This should be over-ridden
 # by git tags (through "git describe") when they are present.
-set(ESMI_OOB_LIB_VERSION_MAJOR 0)
-set(ESMI_OOB_LIB_VERSION_MINOR 1)
+set(APML_LIB_VERSION_MAJOR 0)
+set(APML_LIB_VERSION_MINOR 1)
+set(APML_LIB_VERSION_PATCH 2)
 
 ################# Determine the library version #########################
 ## Setup the package version based on git tags.
 set(LIB_SO_VERSION_STR
-              "${ESMI_OOB_LIB_VERSION_MAJOR}.${ESMI_OOB_LIB_VERSION_MINOR}.0")
-get_version(${LIB_SO_VERSION_STR} "esmi_oob")
+              "${APML_LIB_VERSION_MAJOR}.${APML_LIB_VERSION_MINOR}.0")
+get_version(${LIB_SO_VERSION_STR} "apml")
 
 # VERSION_* variables should be set by get_version
 set(LIB_SO_VERSION_STR ${VERSION_STRING})
-set(${ESMI_OOB}_VERSION_MAJOR "${VERSION_MAJOR}")
-set(${ESMI_OOB}_VERSION_MINOR "${VERSION_MINOR}")
-set(${ESMI_OOB}_VERSION_PATCH "${VERSION_PATCH}")
-set(${ESMI_OOB}_VERSION_BUILD "${VERSION_BUILD}")
+set(${APML_LIB}_VERSION_MAJOR "${VERSION_MAJOR}")
+set(${APML_LIB}_VERSION_MINOR "${VERSION_MINOR}")
+set(${APML_LIB}_VERSION_PATCH "${VERSION_PATCH}")
+set(${APML_LIB}_VERSION_BUILD "${VERSION_BUILD}")
 
 # Debian package specific variables
 # Set a default value for the package version
@@ -51,12 +52,22 @@ get_version(${VERSION_STRING} "e")
 # VERSION_* variables should be set by get_version
 set(BUILD_VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
-project(${ESMI_OOB_TARGET})
+## Define default variable and variables for the optional build target
+##  esmi_oob_lib-dev
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+	CACHE STRING "Location of APML_LIB source code.")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/${APML_LIB}/usr/"
+					CACHE STRING "Default installation directory.")
+## Commenting as not supporting packaging from cmake
+# set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/esmi_oob"
+#                                      CACHE STRING "Default packaging prefix.")
+
+project(${APML_LIB_TARGET})
 
 # Create a configure file to get version info from within library
 configure_file(
-  "${PROJECT_SOURCE_DIR}/${SRC_DIR}/${ESMI_OOB_TARGET}Config.in"
-  "${PROJECT_SOURCE_DIR}/${INC_DIR}/${ESMI_OOB_TARGET}Config.h")
+  "${PROJECT_SOURCE_DIR}/${SRC_DIR}/${APML_LIB_TARGET}Config.in"
+  "${PROJECT_SOURCE_DIR}/${INC_DIR}/${APML_LIB_TARGET}Config.h")
 
 if (NOT DEFINED CPACK_PACKAGE_VENDOR)
     set(CPACK_PACKAGE_VENDOR "AMD")
@@ -71,7 +82,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
 		"EPYC™ Side Band System Management Interface library")
 endif()
 
-set(CPACK_PACKAGE_FILE_NAME "esmi_oob_lib64-${BUILD_VERSION_STRING}")
+set(CPACK_PACKAGE_FILE_NAME "apml_lib64-${BUILD_VERSION_STRING}")
 ## Verbose output.
 set(CMAKE_VERBOSE_MAKEFILE on)
 
@@ -88,12 +99,12 @@ else ()
 endif ()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_common.c")
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_i2c.c")
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_cpuid_msr.c")
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_mailbox.c")
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_rmi.c")
-set(ESMI_OOB_SRC_LIST ${ESMI_OOB_SRC_LIST} "${SRC_DIR}/esmi_tsi.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml_err.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_cpuid_msr.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_mailbox.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_rmi.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_tsi.c")
 
 set(SMI_EXAMPLE_EXE "esmi_oob_ex")
 set(SMI_TOOL "esmi_oob_tool")
@@ -107,61 +118,52 @@ target_link_libraries(${SMI_EXAMPLE_EXE} ${ESMI_OOB_TARGET})
 target_link_libraries(${SMI_TOOL} ${ESMI_OOB_TARGET})
 target_link_libraries(${SMI_CPUID} ${ESMI_OOB_TARGET})
 
-add_library(${ESMI_OOB_TARGET} SHARED ${ESMI_OOB_SRC_LIST} ${SMI_INC_LIST})
-target_link_libraries(${ESMI_OOB_TARGET} pthread rt m i2c)
+add_library(${APML_LIB_TARGET} SHARED ${APML_LIB_SRC_LIST} ${SMI_INC_LIST})
+target_link_libraries(${APML_LIB_TARGET} pthread rt m)
 
 ## Set the VERSION and SOVERSION values
-set_property(TARGET ${ESMI_OOB_TARGET}
+set_property(TARGET ${APML_LIB_TARGET}
                              PROPERTY VERSION "${LIB_SO_VERSION_STR}")
-set_property(TARGET ${ESMI_OOB_TARGET}
-             PROPERTY SOVERSION "${ESMI_OOB_LIB_VERSION_MAJOR}")
+set_property(TARGET ${APML_LIB_TARGET}
+             PROPERTY SOVERSION "${APML_LIB_VERSION_MAJOR}")
 
 ## If the library is a release, strip the target library
 if ("${CMAKE_BUILD_TYPE}" STREQUAL Release)
     add_custom_command(
-          TARGET ${ESMI_OOB_TARGET}
-          POST_BUILD COMMAND ${CMAKE_STRIP} lib${ESMI_OOB_TARGET}.so)
+          TARGET ${APML_LIB_TARGET}
+          POST_BUILD COMMAND ${CMAKE_STRIP} lib${APML_LIB_TARGET}.so)
 endif ()
 
-## Define default variable and variables for the optional build target
-##  esmi_oob_lib-dev
-set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-	CACHE STRING "Location of ESMI_OOB source code.")
-set(CMAKE_INSTALL_PREFIX "/opt/esmi_oob"
-                                CACHE STRING "Default installation directory.")
-set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/esmi_oob"
-                                      CACHE STRING "Default packaging prefix.")
-
 ## Add the install directives for the runtime library.
-install(TARGETS ${ESMI_OOB_TARGET}
-          LIBRARY DESTINATION ${ESMI_OOB}/lib COMPONENT ${ESMI_OOB_COMPONENT})
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_common.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_i2c.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+install(TARGETS ${APML_LIB_TARGET}
+          LIBRARY DESTINATION lib COMPONENT ${APML_LIB_COMPONENT})
+install(FILES ${SOURCE_DIR}/include/esmi_oob/apml_err.h
+                                        DESTINATION include)
+install(FILES ${SOURCE_DIR}/include/esmi_oob/apml.h
+                                        DESTINATION include)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_cpuid_msr.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+                                        DESTINATION include)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_mailbox.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+                                        DESTINATION include)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_rmi.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+                                        DESTINATION include)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_tsi.h
-                                        DESTINATION esmi_oob/include/esmi_oob)
+                                        DESTINATION include)
 
 # Generate Doxygen documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/esmi_oob_doxygen.cfg
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/apml_doxygen.cfg
                         ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 
   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/docs/esmi_oob_doxygen.cfg
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/docs/apml_doxygen.cfg
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
         COMMAND make  > /dev/null
         COMMAND cp  ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.pdf
-                ${CMAKE_CURRENT_SOURCE_DIR}/ESMI_OOB_Manual.pdf
+	${CMAKE_CURRENT_SOURCE_DIR}/APML_Library_Manual.pdf
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/latex/refman.tex
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/latex)
 
@@ -179,7 +181,7 @@ if (DOXYGEN_FOUND)
   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.pdf
         COMMAND make  > /dev/null
         COMMAND cp  ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.pdf
-                ${CMAKE_CURRENT_SOURCE_DIR}/ESMI_OOB_Release_Notes.pdf
+                ${CMAKE_CURRENT_SOURCE_DIR}/APML_Library_Release_Notes.pdf
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/rel/latex/refman.tex
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/rel/latex)
 

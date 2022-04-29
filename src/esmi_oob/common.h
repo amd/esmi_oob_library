@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2019, Advanced Micro Devices, Inc.
+ * University of Illinois/NCSA Open Source License
+ *
+ * Copyright (c) 2020, Advanced Micro Devices, Inc.
  * All rights reserved.
  *
  * Developed by:
@@ -37,14 +39,27 @@
  *
  */
 
-#ifndef INCLUDE_ESMI_OOB64CONFIG_H_
-#define INCLUDE_ESMI_OOB64CONFIG_H_
+#ifndef INCLUDE_COMMON_H_
+#define INCLUDE_COMMON_H_
 
-// This file is generated on build.
+/**
+ *  @brief Writes data to device file
+ *
+ *  @details This function will write data to character device file,
+ *  through ioctl.
+ *
+ *  @param[in] soc_num  Socket index.
+ *
+ *  @param[in] file_name Character device file name for RMI/TSI I/F
+ *
+ *  @param[in] msg struct apml_message which contains information about the protocol,
+ *  input/output data etc.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t sbrmi_xfer_msg(uint8_t soc_num, char *file_name,
+			    struct apml_message *msg);
 
-#define esmi_oob_VERSION_MAJOR @esmi_oob_VERSION_MAJOR@
-#define esmi_oob_VERSION_MINOR @esmi_oob_VERSION_MINOR@
-#define esmi_oob_VERSION_PATCH @esmi_oob_VERSION_PATCH@
-#define esmi_oob_VERSION_BUILD "@esmi_oob_VERSION_BUILD@"
-
-#endif  // INCLUDE_ESMI_OOB64CONFIG_H_
+#endif  // INCLUDE_COMMON_H_
