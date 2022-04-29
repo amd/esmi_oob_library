@@ -48,10 +48,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <esmi_oob/esmi_common.h>
 #include <esmi_oob/esmi_cpuid_msr.h>
-#include <esmi_oob/esmi_mailbox.h>
-
 #define ARGS_MAX 64
 
 static uint32_t eax;
@@ -71,14 +68,15 @@ static void print_uint32(uint32_t val)
 	}
 }
 
-static oob_status_t read_cupid_fn00000000(uint32_t i2c_bus,
-					  uint32_t i2c_addr, int core_id)
+static oob_status_t read_cupid_fn00000000(uint8_t soc_num, int core_id)
 {
 	oob_status_t ret;
 
 	eax = 0;
 	ebx = 0;
-	ret = esmi_oob_cpuid(i2c_bus, i2c_addr, core_id,
+	ecx = 0;
+	edx = 0;
+	ret = esmi_oob_cpuid(soc_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret != 0)
 		return ret;
@@ -93,7 +91,7 @@ static oob_status_t read_cupid_fn00000000(uint32_t i2c_bus,
 	return ret;
 }
 
-static oob_status_t read_cupid_fn00000001(uint32_t i2c_bus, uint32_t i2c_addr,
+static oob_status_t read_cupid_fn00000001(uint8_t soc_num,
 					  int core_id)
 {
 	uint32_t res;
@@ -101,7 +99,7 @@ static oob_status_t read_cupid_fn00000001(uint32_t i2c_bus, uint32_t i2c_addr,
 
 	eax = 1;
 	ecx = 0;
-	ret = esmi_oob_cpuid(i2c_bus, i2c_addr, core_id,
+	ret = esmi_oob_cpuid(soc_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret != 0)
 		return ret;
@@ -129,7 +127,7 @@ static oob_status_t read_cupid_fn00000001(uint32_t i2c_bus, uint32_t i2c_addr,
 	printf("      cpu count\t\t\t\t= 0x%x (%d)\n", res, res);
 	res = ((ebx >> 8) & 0xff);
 	printf("      CLFLUSH line size\t\t\t= 0x%x (%d)\n", res, res);
-	
+
 	printf("   feature information(1/edx):\n");
 	printf("      FPU\t\t= %s\n", edx & 1 ? "true" : "false");
 	printf("      VME\t\t= %s\n", (edx >> 1) & 1 ? "true" : "false");
@@ -177,32 +175,24 @@ static oob_status_t read_cupid_fn00000001(uint32_t i2c_bus, uint32_t i2c_addr,
 	return ret;
 }
 
-static void rerun_sudo(int argc, char **argv)
+static void show_usage(char *exe_name)
 {
-        static char *args[ARGS_MAX];
-        char sudostr[] = "sudo";
-        int i;
-
-        args[0] = sudostr;
-        for (i = 0; i < argc; i++) {
-                args[i + 1] = argv[i];
-        }
-        args[i + 1] = NULL;
-        execvp("sudo", args);
+	printf("Usage: %s  [-b] soc_num \n"
+		"Where:  soc_num : socket Index starting from 0\n", exe_name);
 }
 
-/*
- * returns 0 if the given string is a number, else 1
- */
-static int is_string_number(char *str)
+static void rerun_sudo(int argc, char **argv)
 {
+	static char *args[ARGS_MAX];
+	char sudostr[] = "sudo";
 	int i;
-	for (i = 0; str[i] != '\0'; i++) {
-		if (str[i] != '.' && ((str[i] < '0') || (str[i] > '9'))) {
-			return 1;
-		}
-	}
-	return OOB_SUCCESS;
+
+	args[0] = sudostr;
+	for (i = 0; i < argc; i++)
+		args[i + 1] = argv[i];
+
+	args[i + 1] = NULL;
+	execvp("sudo", args);
 }
 
 /**
@@ -213,43 +203,51 @@ Main program.
 int main(int argc, char **argv)
 {
 	uint32_t core_id = 0;
-	uint32_t i2c_bus, i2c_addr;
+	uint64_t addr;
+	uint8_t force_flag, bus_type;
+	uint8_t soc_num;
 	char *end;
-	int ret;
+	int ret, opt, long_index = 0;
+	char *helperstring = "+hb:";
 
-        if (getuid() !=0) {
-                rerun_sudo(argc, argv);
-        }
+	static struct option long_options[] = {
+		{"help",	no_argument,		0,	'h'},
+		{"bus",		required_argument,	0,      'b'},
+		{0,		0,			0,	  0},
+	};
 
-	if (argc != 3) {
-		printf("Usage: %s <i2c_bus> <i2c_addr>\n"
-			"\ti2c_addr : For Mailbox and RMI commands, "
-			"SB-RMI addresses: "
-			"\t0x3c for Socket0 and 0x38 for Socket1\n ", argv[0]);
-		return OOB_SUCCESS;
-	}
-	if (is_string_number(argv[1]) || argv[2] == NULL) {
-		printf("%s <i2c_bus> <i2c_addr>\n", argv[0] );
-		printf("Provide i2c_bus as numeric and i2c_address as hexa\n");
-		return OOB_SUCCESS;
-	}
-	i2c_bus = atoi(argv[1]);
-	i2c_addr = strtoul(argv[2], &end, 16);
-	if (*end || !*argv[2]) {
-		printf("Require a valid i2c_address in Hexa\n");
-		return OOB_SUCCESS;
+	if (argc <= 1) {
+		show_usage(argv[0]);
+		return 0;
 	}
 
-	ret = read_cupid_fn00000000(i2c_bus, i2c_addr, core_id);
+	if (getuid() != 0)
+		rerun_sudo(argc, argv);
+
+	while ((opt = getopt_long(argc, argv,  helperstring, long_options, &long_index)) != EOF) {
+		switch (opt) {
+		case 'h':
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		case 'b':
+			soc_num = strtoul(optarg, &end, 0);
+			break;
+		default:
+			show_usage(argv[0]);
+			return OOB_INVALID_INPUT;
+		}
+	}
+
+	ret = read_cupid_fn00000000(soc_num, core_id);
 	if (ret != OOB_SUCCESS) {
-		printf("Failed: to get i2c_addr[0x%x] cpuid info, Err[%d]: %s\n",
-			i2c_addr, ret, esmi_get_err_msg(ret));
+		printf("Failed: to get addr[0x%llx] cpuid info, Err[%d]: %s\n",
+			addr, ret, esmi_get_err_msg(ret));
 		return ret;
 	}
-	ret = read_cupid_fn00000001(i2c_bus, i2c_addr, core_id);
+	ret = read_cupid_fn00000001(soc_num, core_id);
 	if (ret != OOB_SUCCESS) {
-		printf("Failed: to get i2c_addr[0x%x] cpuid info, Err[%d]: %s\n",
-			i2c_addr, ret, esmi_get_err_msg(ret));
+		printf("Failed: to get addr[0x%llx] cpuid info, Err[%d]: %s\n",
+			addr, ret, esmi_get_err_msg(ret));
 		return ret;
 	}
 
