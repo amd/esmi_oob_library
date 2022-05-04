@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <esmi_oob/apml_err.h>
@@ -114,7 +115,7 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 		}
 		break;
 	default:
-		return "Unknown error";
+		return strerror(oob_err);
 	}
 }
 
@@ -152,7 +153,7 @@ oob_status_t errno_to_oob_status(int err)
 	case OOB_MAILBOX_ERR_START...OOB_MAILBOX_ERR_END:
 		return err;
 	default:
-		return OOB_UNKNOWN_ERROR;
+		return err;
 	}
 }
 

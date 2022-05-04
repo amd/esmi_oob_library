@@ -84,7 +84,7 @@ oob_status_t sbrmi_xfer_msg(uint8_t socket_num, char *filename, struct apml_mess
 			ret = OOB_MAILBOX_ERR_BASE + msg->fw_ret_code;
 	}
 
-	return ret;
+	return errno_to_oob_status(ret);
 }
 
 oob_status_t esmi_oob_read_byte(uint8_t soc_num,
