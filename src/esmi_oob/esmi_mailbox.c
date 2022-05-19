@@ -87,7 +87,7 @@
 /* Max limit for XGMI link */
 #define MAX_XGMI_LINK		2
 /* Maximum value for df p-state limit */
-#define MAX_DF_PSTATE_LIMIT	3
+#define MAX_DF_PSTATE_LIMIT	2
 
 float esu_multiplier;
 struct processor_info plat_info[1];
@@ -692,7 +692,7 @@ oob_status_t write_apb_disable(uint8_t soc_num, uint8_t df_pstate,
 	if (!prochot_asserted)
 		return OOB_ARG_PTR_NULL;
 
-	if (df_pstate > 3)
+	if (df_pstate > MAX_DF_PSTATE_LIMIT)
 		return OOB_INVALID_INPUT;
 
 	ret = read_prochot_status(soc_num, &prochat_status);

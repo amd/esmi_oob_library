@@ -1093,7 +1093,7 @@ oob_status_t write_xgmi_link_width_range(uint8_t soc_num,
  *  Data Fabric(DF) P-state. Messages APBEnable and APBDisable specify
  *  DF(Data Fabric) P-state behavior. DF P-states specify the frequency
  *  of clock domains from the CPU core boundary through to and including
- *  system memory, where 0 is the highest DF P-state and 3 is the lowest.
+ *  system memory, where 0 is the highest DF P-state and 2 is the lowest.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -1308,10 +1308,10 @@ oob_status_t write_pwr_efficiency_mode(uint8_t soc_num,
  *
  *  @param[in] max_pstate value.Max value must be
  *  less than or equal to min value. Valid values
- *  are 0 - 3.
+ *  are 0 - 2.
  *
  *  @param[in] min_pstate value. Valid values are
- *  from 0 - 3.
+ *  from 0 - 2.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
