@@ -1658,6 +1658,24 @@ static void apml_get_ras_last_transact_addr(uint8_t soc_num)
 	printf("------------------------------------------------------------\n");
 }
 
+static void apml_get_power_consumed(uint8_t soc_num)
+{
+	uint32_t pow;
+	oob_status_t ret;
+
+	ret = read_socket_power(soc_num, &pow);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get power, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("---------------------------------------------\n");
+	printf("| Power (Watts)\t\t |");
+	printf(" %-17.3f|\n", (double)pow/1000);
+	printf("---------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -1787,7 +1805,9 @@ static void show_module_commands(char *exe_name, char *command)
 			"  --showlclkdpmlevelrange\t\t  [NBIOID]\t\t\t\t "
 			"Show LCLK DPM level range\n"
 			"  --showraslasttransactaddr\t\t\t  \t\t\t\t "
-			"Show RAS last transaction address\n", exe_name);
+			"Show RAS last transaction address\n"
+			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
+			"Show consumed power\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
@@ -2227,6 +2247,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showprochotresidency",		no_argument,	&flag,	23},
 		{"showlclkdpmlevelrange",		required_argument,	&flag,	25},
 		{"showraslasttransactaddr",	no_argument,		&flag,  29},
+		{"showpowerconsumed",		no_argument,		&flag,	30},
 		{0,			0,			0,	0},
 	};
 
@@ -2565,6 +2586,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 29) {
 			/* Read RAS last transaction address */
 			apml_get_ras_last_transact_addr(soc_num);
+		} else if (*(long_options[long_index].flag) == 30) {
+			/* Read power consumed for a socket */
+			apml_get_power_consumed(soc_num);
 
 		} else {
 			printf(RED "Try `%s --help' for more "
