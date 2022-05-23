@@ -570,9 +570,10 @@ oob_status_t read_prochot_residency(uint8_t soc_num, float *buffer);
  */
 
 /**
- *  @brief Read Dram Throttle will always read the lowest percentage value.
+ *  @brief Read Dram Throttle will always read the highest percentage value.
  *
- *  @details This function will read dram throttle.
+ *  @details This function will always read the highest percentage value
+ *  as represented by PROCHOT throttle or write dram throttle.
  *
  *  @param[in] soc_num Socket index.
  *
