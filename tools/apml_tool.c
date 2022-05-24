@@ -1676,6 +1676,23 @@ static void apml_get_power_consumed(uint8_t soc_num)
 	printf("---------------------------------------------\n");
 }
 
+static void apml_get_smt_status(uint8_t soc_num)
+{
+	uint32_t threads_per_core;
+	oob_status_t ret;
+
+	ret = esmi_get_threads_per_core(soc_num, & threads_per_core);
+	if (ret) {
+		printf(" Failed to SMT status  Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------------------\n");
+	printf("| SMT STATUS \t\t | %15s  |\n",
+	       threads_per_core > 1 ? "ENABLED" : "DISBALED");
+	printf("---------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -1806,6 +1823,8 @@ static void show_module_commands(char *exe_name, char *command)
 			"Show LCLK DPM level range\n"
 			"  --showraslasttransactaddr\t\t\t  \t\t\t\t "
 			"Show RAS last transaction address\n"
+			"  --showSMTstatus\t\t\t  \t\t\t\t\t "
+			"Show SMT enabled status\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 			"Show consumed power\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
@@ -2248,6 +2267,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showlclkdpmlevelrange",		required_argument,	&flag,	25},
 		{"showraslasttransactaddr",	no_argument,		&flag,  29},
 		{"showpowerconsumed",		no_argument,		&flag,	30},
+		{"showSMTstatus",		no_argument,		&flag,	31},
 		{0,			0,			0,	0},
 	};
 
@@ -2589,6 +2609,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 30) {
 			/* Read power consumed for a socket */
 			apml_get_power_consumed(soc_num);
+		} else if (*(long_options[long_index].flag) == 31) {
+			/* Read SMT enabled status */
+			apml_get_smt_status(soc_num);
 
 		} else {
 			printf(RED "Try `%s --help' for more "
