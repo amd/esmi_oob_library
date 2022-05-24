@@ -1693,6 +1693,31 @@ static void apml_get_smt_status(uint8_t soc_num)
 	printf("---------------------------------------------\n");
 }
 
+static void apml_get_threads_per_core_and_soc(uint8_t soc_num)
+{
+	uint32_t threads_per_core, threads_per_soc;
+	oob_status_t ret;
+
+	ret = esmi_get_threads_per_core(soc_num, &threads_per_core);
+	if (ret) {
+		printf("\n Failed to get threads per core Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	ret = esmi_get_threads_per_socket(soc_num, &threads_per_soc);
+	if (ret) {
+		printf("\n Failed to get threads per socket Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------\n");
+	printf("| THREADS PER CORE \t | %17d  |\n", threads_per_core);
+	printf("| THREADS PER SOCKET \t | %17d  |\n", threads_per_soc);
+	printf("-----------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -1826,7 +1851,9 @@ static void show_module_commands(char *exe_name, char *command)
 			"  --showSMTstatus\t\t\t  \t\t\t\t\t "
 			"Show SMT enabled status\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
-			"Show consumed power\n", exe_name);
+			"Show consumed power\n"
+			"  --showthreadspercoreandsocket\t  \t\t\t\t\t\t "
+			"Show threads per core and socket\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
@@ -1895,9 +1922,9 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint32_t core_id, instance, nbio_reg;
 	uint32_t power_avg, power_cap, power_max;
 	uint32_t tdp_avg, tdp_min, tdp_max;
-	uint32_t cclk, residency;
+	uint32_t cclk, residency, threads_per_core;
 	uint32_t max_bw, utilized_bw, utilized_pct;
-	uint32_t bios_boost, esb_boost;
+	uint32_t bios_boost, esb_boost, threads_per_soc;
 	uint32_t dram_thr, prochot, power;
 	uint32_t nbio_data, iod, ccd, ccx;
 	uint16_t bytespermca;
@@ -2113,7 +2140,23 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	if (ret)
 		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 	else
-		printf(" %-17f\n", energy);
+		printf(" %-17f", energy);
+
+	usleep(APML_SLEEP);
+	printf("\n| THREADS_PER_CORE\t\t\t |");
+	ret = esmi_get_threads_per_core(soc_num, &threads_per_core);
+	if (ret)
+		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+	else
+		printf(" %-17d", threads_per_core);
+
+	usleep(APML_SLEEP);
+	printf("\n| THREADS_PER_SOCKET\t\t\t |");
+	ret = esmi_get_threads_per_socket(soc_num, &threads_per_soc);
+	if (ret)
+		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+	else
+		printf(" %-17d\n", threads_per_soc);
 
 	printf("------------------------------------------------------------"
 	       "----\n");
@@ -2268,6 +2311,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showraslasttransactaddr",	no_argument,		&flag,  29},
 		{"showpowerconsumed",		no_argument,		&flag,	30},
 		{"showSMTstatus",		no_argument,		&flag,	31},
+		{"showthreadspercoreandsocket",	no_argument,		&flag,	32},
 		{0,			0,			0,	0},
 	};
 
@@ -2612,7 +2656,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 31) {
 			/* Read SMT enabled status */
 			apml_get_smt_status(soc_num);
-
+		} else if (*(long_options[long_index].flag) == 32) {
+			/* Show threads per core and threads per socket */
+			apml_get_threads_per_core_and_soc(soc_num);
 		} else {
 			printf(RED "Try `%s --help' for more "
 			       "information."RESET "\n\n", argv[0]);
