@@ -1587,18 +1587,45 @@ static void apml_get_ccd_bist_status(uint8_t soc_num, uint32_t instance)
 static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 {
 	uint32_t buffer;
+	uint16_t bist_res[2] = {0};
+	uint16_t max_cores_per_ccx, ccx_instances;
+	uint8_t index = 0, rev = 0;
 	oob_status_t ret;
 
-	ret = read_ccx_bist_result(soc_num, instance, &buffer);
+	ret = read_ccx_bist_result(soc_num, instance, bist_res);
 	if (ret != OOB_SUCCESS) {
 		printf("Failed to get the ccx bist status, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
 		return;
 	}
 
-	printf("-----------------------------------------\n");
-	printf("| CCX BIST RESULT | \t0x%-14x|\n", buffer);
-	printf("-----------------------------------------\n");
+	ret = read_sbrmi_revision(soc_num, &rev);
+	if (ret) {
+		printf("Failed to get the ccx bist status, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------\n");
+	if (rev == 0x10) {
+		buffer = ((uint32_t)bist_res[1]) << 16 | bist_res[0];
+		printf("| CCX BIST RESULT | \t0x%-8x|\n", buffer);
+	}
+	else {
+		ret = read_ccx_info(soc_num, &max_cores_per_ccx,
+				    &ccx_instances);
+		if (ret) {
+			printf("Failed to get the CCX info, Err[%d]:%s\n",
+			       ret, esmi_get_err_msg(ret));
+			return;
+		}
+		printf("| L3 BIST \t| %s\t|\n",
+		       bist_res[0] & 1 ? "Bist pass": "Bist fail");
+		for (index = 0; index < max_cores_per_ccx; index++)
+			printf("| CORE[%d] \t| %s\t|\n", index,
+			       ((bist_res[1] >> index) & 1)
+			       ? "Bist pass": "Bist fail");
+	}
+	printf("---------------------------------\n");
 }
 
 static void apml_get_nbio_error_log_reg(uint8_t soc_num,
@@ -1990,7 +2017,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	struct pstate_freq df_pstate;
 	double energy;
 	float uprat, prochot_res;
-	uint32_t core_id, instance, nbio_reg;
+	uint32_t core_id, instance, nbio_reg, buffer;
 	uint32_t power_avg, power_cap, power_max;
 	uint32_t tdp_avg, tdp_min, tdp_max;
 	uint32_t cclk, residency, threads_per_core;
@@ -1998,7 +2025,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint32_t bios_boost, esb_boost, threads_per_soc;
 	uint32_t dram_thr, prochot, power;
 	uint16_t ccx_instances, max_cores_per_ccx;
-	uint32_t nbio_data, iod, ccd, ccx;
+	uint32_t nbio_data, iod, ccd;
 	uint16_t bytespermca;
 	uint16_t numbanks;
 	uint16_t freq;
@@ -2006,8 +2033,8 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint16_t fmax;
 	uint16_t fmin;
 	uint16_t fclk;
-	uint16_t mclk;
-	uint8_t uclk;
+	uint16_t mclk, ccx_res[2] = {0};
+	uint8_t uclk, index, rev;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
 	oob_status_t ret;
 
@@ -2152,12 +2179,13 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 
 	usleep(APML_SLEEP);
 	printf("\n| CCX_Bist_Result [0x%x]\t\t\t |", instance);
-	ret = read_ccx_bist_result(soc_num, instance, &ccx);
+	ret = read_ccx_bist_result(soc_num, instance, ccx_res);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" 0x%-15x", ccx);
-
+	else {
+		buffer = ((uint32_t)ccx_res[1]) << 16 | ccx_res[0];
+		printf(" 0x%-15x", buffer);
+	}
 	usleep(APML_SLEEP);
 	printf("\n| Curr_Active_Freq_Limit\t\t |");
 	ret = read_pwr_current_active_freq_limit_socket(soc_num,
