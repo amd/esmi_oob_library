@@ -672,16 +672,18 @@ oob_status_t read_ccd_bist_result(uint8_t soc_num, uint32_t input,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] value is a Logical CCX instance number.
+ *  @param[in] value is a Logical CCX instance number. Valid values [0, (k -1)]
+ *  where k is the number of logical CCX instances.
  *
- *  @param[out] buffer is to read CCXBistResult (L3pass, Core[n:0]Pass)
+ *  @param[out] ccx_bist result is concatenation of bist results for all cores
+ *  in the complex(n:0) L3 bist, where n num of cores in CCX.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  *
  */
 oob_status_t read_ccx_bist_result(uint8_t soc_num, uint32_t value,
-				  uint32_t *buffer);
+				  uint16_t ccx_bist[2]);
 
 /**
  *  @brief Get the Theoretical maximum DDR Bandwidth of the system in GB/s,
