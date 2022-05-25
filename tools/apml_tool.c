@@ -60,6 +60,10 @@
 #define ARGS_MAX 64
 #define APML_SLEEP 10000
 #define SCALING_FACTOR	0.25
+/* CPUID function for max threads per l3 */
+#define THREADS_L3_FUNC         0x8000001D
+/* CPUID extended function for max threads per l3 */
+#define THREADS_L3_EXTD         0x3
 
 static int flag;
 
@@ -1498,6 +1502,52 @@ static void read_cpuid_register(uint8_t soc_num, uint32_t func,
 	printf("---------------------------------------------------------\n");
 }
 
+static oob_status_t read_max_threads_per_l3(uint8_t soc_num,
+					    uint32_t *threads_l3)
+{
+	uint32_t thread;
+	oob_status_t ret;
+
+	/* Get maximum threads per l3 */
+	thread = 0;
+	ret = esmi_oob_cpuid_eax(soc_num, thread, THREADS_L3_FUNC,
+				 THREADS_L3_EXTD, threads_l3);
+	if (ret)
+		return ret;
+	*threads_l3 = (*threads_l3 >> 14) & 0xFFF;
+	return ret;
+}
+
+static oob_status_t read_ccx_info(uint8_t soc_num,
+				  uint16_t *max_cores_per_ccx,
+				  uint16_t *ccx_instances)
+{
+	uint32_t threads_c, threads_s, threads_l3;
+	oob_status_t ret;
+
+	/* Get threads per core */
+	ret = esmi_get_threads_per_core(soc_num, &threads_c);
+	if (ret)
+		return ret;
+
+	/* Get maximum threads per l3 */
+	ret = read_max_threads_per_l3(soc_num, &threads_l3);
+	if (ret)
+		return ret;
+
+	/* Get Maximum threads per socket */
+	ret = esmi_get_threads_per_socket(soc_num, &threads_s);
+	if (ret)
+		return ret;
+
+	/* Max number of cores per ccx */
+	*max_cores_per_ccx = threads_l3 / threads_c + 1;
+	/* Logical CCX instances */
+	*ccx_instances = threads_s / threads_l3;
+
+	return ret;
+}
+
 static void apml_get_iod_bist_status(uint8_t soc_num)
 {
 	uint32_t buffer;
@@ -1718,6 +1768,24 @@ static void apml_get_threads_per_core_and_soc(uint8_t soc_num)
 	printf("-----------------------------------------------\n");
 }
 
+static void apml_get_ccx_info(uint8_t soc_num)
+{
+	uint16_t max_cores_per_ccx, ccx_instances;
+	oob_status_t ret;
+
+	ret = read_ccx_info(soc_num, &max_cores_per_ccx, &ccx_instances);
+	if (ret) {
+		printf("\n Failed to get the ccx information Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("----------------------------------------------\n");
+	printf("| No of cores per CCX \t | %17d |\n", max_cores_per_ccx);
+	printf("| No of CCX instances \t | %17d |\n", ccx_instances);
+	printf("----------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -1859,7 +1927,10 @@ static void show_module_commands(char *exe_name, char *command)
 			"\nOption:\n"
 			"\n< SB-RMI COMMANDS >:\n"
 			"  --showrmiregisters\t\t\t Get "
-			"values of SB-RMI reg commands for a given socket\n",
+			"values of SB-RMI reg commands for a given socket\n"
+			"  --showccxinfo\t\t\t\t "
+			"Show max num of cores per ccx and "
+			"ccx instances\n",
 			exe_name);
 	else if (!strcmp(command, "sbtsi") || !strcmp(command, "3"))
 		printf("Usage: %s [SOC_NUM] [Option]"
@@ -1926,6 +1997,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint32_t max_bw, utilized_bw, utilized_pct;
 	uint32_t bios_boost, esb_boost, threads_per_soc;
 	uint32_t dram_thr, prochot, power;
+	uint16_t ccx_instances, max_cores_per_ccx;
 	uint32_t nbio_data, iod, ccd, ccx;
 	uint16_t bytespermca;
 	uint16_t numbanks;
@@ -2079,7 +2151,6 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17s", ccd ? "Bist fail" : "Bist pass");
 
 	usleep(APML_SLEEP);
-	instance = 0x2;
 	printf("\n| CCX_Bist_Result [0x%x]\t\t\t |", instance);
 	ret = read_ccx_bist_result(soc_num, instance, &ccx);
 	if (ret)
@@ -2312,6 +2383,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showpowerconsumed",		no_argument,		&flag,	30},
 		{"showSMTstatus",		no_argument,		&flag,	31},
 		{"showthreadspercoreandsocket",	no_argument,		&flag,	32},
+		{"showccxinfo",			no_argument,		&flag,	33},
 		{0,			0,			0,	0},
 	};
 
@@ -2659,6 +2731,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 32) {
 			/* Show threads per core and threads per socket */
 			apml_get_threads_per_core_and_soc(soc_num);
+		} else if (*(long_options[long_index].flag) == 33) {
+			/* Show maximum number of cores per ccx
+			 * and logical ccx instance numbers
+			 */
+			apml_get_ccx_info(soc_num);
 		} else {
 			printf(RED "Try `%s --help' for more "
 			       "information."RESET "\n\n", argv[0]);
