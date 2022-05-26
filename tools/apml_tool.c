@@ -2464,14 +2464,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	while ((opt = getopt_long(argc, argv, helperstring,
 				  long_options, &long_index)) != -1) {
-	/* If the required argument is not passed with the option
-	 * then in that case the get_opt_long will return the '?'
-	 * or ':' instead of actual option based. Actual option passed will
-	 * be assigned to the optopt variable
-	 */
-	if ((opt == '?' || opt == ':') && optopt)
-		opt = optopt;
-
 	if (opt == 's' ||
 	    opt == 'b' ||
 	    opt == 'a' ||
@@ -2978,8 +2970,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		return OOB_SUCCESS;
 	case ':':
 		/* missing option argument */
-		printf(RED "%s: option '-%c' requires an argument."
-			RESET"\n\n", argv[0], opt);
+		printf(RED "%s: option '%s' requires an argument."
+			RESET"\n\n", argv[0], argv[optind - 1]);
 		break;
 	case '?':
 		printf("Unrecognized option %s\n", argv[2]);
