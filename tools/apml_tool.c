@@ -1362,8 +1362,6 @@ static void apml_set_pciegen5_control(uint8_t soc_num, uint8_t val)
 
 static void apml_set_pwr_efficiency_mode(uint8_t soc_num, uint8_t mode)
 {
-	char *efficieny_modes[3] = {"High Performance Mode", "Power Efficiency Mode",
-			 "IO Performance Mode"};
 	oob_status_t ret;
 
 	ret = write_pwr_efficiency_mode(soc_num, mode);
@@ -1372,7 +1370,8 @@ static void apml_set_pwr_efficiency_mode(uint8_t soc_num, uint8_t mode)
 			"Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-	printf("%s set successfully\n", efficieny_modes[mode]);
+
+	printf("Mode set successfully\n");
 }
 
 static void apml_get_core_energy(uint8_t soc_num, uint32_t thread)
@@ -2340,6 +2339,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	uint32_t boostlimit = 0, thread_ind = 0;
 	char *val;
 	char *end;
+	char *link_name;
+	char *bw_type;
 	oob_status_t ret;
 
 	//Specifying the expected options
@@ -2904,11 +2905,15 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		break;
 	case 'B':
 		/* get current bandwidth on io link */
-		apml_get_iobandwidth(soc_num, argv[optind - 1], argv[optind++]);
+		link_name = argv[optind - 1];
+		bw_type = argv[optind++];
+		apml_get_iobandwidth(soc_num, link_name, bw_type);
 		break;
 	case 'G':
 		/* get current bandwidth on xgmi link */
-		apml_get_xgmibandwidth(soc_num, argv[optind - 1], argv[optind++]);
+		link_name = argv[optind - 1];
+		bw_type = argv[optind++];
+		apml_get_xgmibandwidth(soc_num, link_name, bw_type);
 		break;
 	case 'H':
 		/* set gmi3 link width */
@@ -2985,12 +2990,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	} // end of Switch
 	}
 
-	for (i = optind; i < argc; i++) {
+	if (optind < argc) {
 		printf(RED "\nExtra Non-option argument<s> passed : %s"
-				RESET"\n", argv[i]);
+				RESET"\n", argv[optind]);
 		printf(RED "Try `%s --help' for more information."
 				RESET"\n", argv[0]);
-		return OOB_SUCCESS;
 	}
 
 	return OOB_SUCCESS;
@@ -3026,8 +3030,11 @@ int main(int argc, char **argv)
 	show_smi_message();
 
 	/* Parse command arguments */
-	parseesb_args(argc, argv);
+	ret = parseesb_args(argc, argv);
+	if (ret)
+		return ret;
+
 	show_smi_end_message();
 
-	return OOB_SUCCESS;
+	return ret;
 }

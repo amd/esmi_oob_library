@@ -203,7 +203,6 @@ Main program.
 int main(int argc, char **argv)
 {
 	uint32_t core_id = 0;
-	uint64_t addr;
 	uint8_t force_flag, bus_type;
 	uint8_t soc_num;
 	char *end;
@@ -240,14 +239,14 @@ int main(int argc, char **argv)
 
 	ret = read_cupid_fn00000000(soc_num, core_id);
 	if (ret != OOB_SUCCESS) {
-		printf("Failed: to get addr[0x%llx] cpuid info, Err[%d]: %s\n",
-			addr, ret, esmi_get_err_msg(ret));
+		printf("Failed: to get addr[0x0] cpuid info, Err[%d]: %s\n",
+			ret, esmi_get_err_msg(ret));
 		return ret;
 	}
 	ret = read_cupid_fn00000001(soc_num, core_id);
 	if (ret != OOB_SUCCESS) {
-		printf("Failed: to get addr[0x%llx] cpuid info, Err[%d]: %s\n",
-			addr, ret, esmi_get_err_msg(ret));
+		printf("Failed: to get addr[0x1] cpuid info, Err[%d]: %s\n",
+			ret, esmi_get_err_msg(ret));
 		return ret;
 	}
 
