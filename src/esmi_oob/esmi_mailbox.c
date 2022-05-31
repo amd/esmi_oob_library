@@ -79,7 +79,7 @@
  * last transaction address */
 #define HI_WORD_REG		1
 /* Max limit for DPM level */
-#define MAX_DPM_LIMIT		1
+#define MAX_DPM_LIMIT		3
 /* Maximum link width */
 #define FULL_WIDTH		2
 /* Max Gen5 rate for bmc control pcie rate */
