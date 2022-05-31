@@ -1041,8 +1041,7 @@ oob_status_t read_ras_last_transaction_address(uint8_t soc_num,
 				    LO_WORD_REG, &lo_addr);
 	if (ret)
 		return ret;
-
-	*transaction_addr = ((uint64_t)high_addr << 32 & FOUR_BYTE_MASK)
+	*transaction_addr = ((uint64_t)high_addr) << 32
 			      | (uint64_t)lo_addr & FOUR_BYTE_MASK;
 
 	return ret;

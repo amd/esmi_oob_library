@@ -61,6 +61,8 @@
 #define REG_SIZE 4
 /* Mask to check H/W Alert status bit */
 #define HW_ALERT_MASK	0x80
+/* Thread Mask */
+#define THREAD_MASK	0xFFFF
 
 static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 {
@@ -86,16 +88,13 @@ static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 oob_status_t esmi_get_vendor_id(uint8_t soc_num,
 				char *vendor_id)
 {
-	uint32_t eax, ebx, ecx, edx;
+	uint32_t eax = 0, ebx = 0, ecx = 0, edx = 0;
 	uint32_t core_id = 0;
 	char ebx_id[REG_SIZE + 1], ecx_id[REG_SIZE + 1], edx_id[REG_SIZE + 1];
 	oob_status_t ret;
 
 	if (!vendor_id)
 		return OOB_ARG_PTR_NULL;
-
-	eax = 0;
-	ebx = 0;
 
 	ret = esmi_oob_cpuid(soc_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
@@ -135,7 +134,7 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
 {
 
 	oob_status_t ret;
-	uint32_t eax = 1, ebx, ecx, edx;
+	uint32_t eax = 1, ebx, ecx = 0, edx;
 	uint32_t core_id = 0;
 
 	if (!proc_info)
@@ -267,11 +266,10 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 	msg.cmd = 0x1001;
 	msg.data_in.cpu_msr_in = msraddr;
 
+	thread &= THREAD_MASK;
 	/* Assign thread number to data_in[4:5] */
 	msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in
-				 |((uint64_t)((uint8_t)thread) << 32);
-	msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in
-				 |((uint64_t)((uint8_t)thread >> 8) << 40);
+				 | ((uint64_t)thread << 32);
 
 	/* Assign 7 byte to READ Mode */
 	msg.data_in.reg_in[7] = 1;
@@ -326,9 +324,7 @@ static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_num, uint32_t thread,
 
 	/* Assign thread number to data_in[4:5] */
 	msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in
-				 |((uint64_t)((uint8_t)thread) << 32);
-	msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in
-				 |((uint64_t)((uint8_t)thread >> 8) << 40);
+				 | ((uint64_t)thread << 32);
 
 	/* Assign extended function to data_in[6][4:7] */
 	if (mode == EAX || mode == EBX)
