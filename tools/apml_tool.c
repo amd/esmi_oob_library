@@ -1829,7 +1829,8 @@ static void show_usage(char *exe_name)
 	printf("\t1. mailbox\n");
 	printf("\t2. sbrmi\n");
 	printf("\t3. sbtsi\n");
-	printf("\t4. reg-access\n\n");
+	printf("\t4. reg-access\n");
+	printf("\t5. cpuid\n\n");
 }
 
 static void show_module_commands(char *exe_name, char *command)
@@ -1943,22 +1944,15 @@ static void show_module_commands(char *exe_name, char *command)
 			"Show LCLK DPM level range\n"
 			"  --showraslasttransactaddr\t\t\t  \t\t\t\t "
 			"Show RAS last transaction address\n"
-			"  --showSMTstatus\t\t\t  \t\t\t\t\t "
-			"Show SMT enabled status\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
-			"Show consumed power\n"
-			"  --showthreadspercoreandsocket\t  \t\t\t\t\t\t "
-			"Show threads per core and socket\n", exe_name);
+			"Show consumed power\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
 			"\n< SB-RMI COMMANDS >:\n"
 			"  --showrmiregisters\t\t\t Get "
 			"values of SB-RMI reg commands for a given socket\n"
-			"  --showccxinfo\t\t\t\t "
-			"Show max num of cores per ccx and "
-			"ccx instances\n",
-			exe_name);
+			,exe_name);
 	else if (!strcmp(command, "sbtsi") || !strcmp(command, "3"))
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
@@ -2004,6 +1998,17 @@ static void show_module_commands(char *exe_name, char *command)
 			"  --readcpuidregister\t\t\t  [FUN(hex)]"
 			"[EXT_FUN(hex)][thread]\t\t Read CPUID register\n",
 			exe_name);
+	else if (!strcmp(command, "cpuid") || !strcmp(command, "5"))
+		printf("Usage: %s [SOC_NUM] [Option]"
+		       "\nOption:\n"
+		       "\n< CPUID [params] >:\n"
+		       "  --showthreadspercoreandsocket\t  \t\t\t\t "
+		       "Show threads per core and socket\n"
+			"  --showccxinfo\t\t\t\t\t "
+			"\t\t Show max num of cores per ccx and "
+			"ccx instances\n"
+		       "  --showSMTstatus\t\t\t  \t\t\t "
+		       "Show SMT enabled status\n", exe_name);
 	else
 		printf("Failed: Invalid command, Err[%d]: %s\n",
 			OOB_INVALID_INPUT,
