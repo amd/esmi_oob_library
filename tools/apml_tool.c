@@ -2504,19 +2504,26 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-		if (argv[optind - 1][0] == '-') {
-			if (validate_number(&argv[optind - 1][1], 10)) {
-				printf("\nOption '-%c' require an"
-					" argument\n\n", opt);
+
+		if ((opt == 'u' || opt == 'X' || opt == 'w' ||
+		    opt == 'x')) {
+			temp = strtof(argv[optind - 1], &end);
+			if (*end != '\0') {
+				printf("\nOption '-%c' require argument as valid"
+				       " decimal value\n\n", opt);
 				show_usage(argv[0]);
 				return OOB_SUCCESS;
 			}
-		} else if (validate_number(argv[optind - 1], 10)
-			   && opt != 'O' && opt != 'E' && opt != 'S') {
-			printf("Option '-%c' require argument as valid"
-				" numeric value\n\n", opt);
-			show_usage(argv[0]);
-			return OOB_SUCCESS;
+		}
+		else {
+			if (opt != 'O' && opt != 'E' && opt != 'S'
+			    && opt != 'T' && opt !='P'
+			    && validate_number(argv[optind - 1], 10)) {
+				printf("\nOption '-%c' require argument as valid"
+				       " numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
 		}
 	}
 
