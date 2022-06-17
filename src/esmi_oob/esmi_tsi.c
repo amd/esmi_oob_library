@@ -403,14 +403,16 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
 				       float temp_offset)
 {
 	oob_status_t ret;
-	int8_t byte_int, byte_dec, prev, current;
+	int8_t byte_int, byte_dec;
+	uint8_t prev, current;
 
 	if (temp_offset < -128 || temp_offset >= 128)
 		return OOB_INVALID_INPUT;
 	/* extracting integer and decimal part from float value */
 	byte_int = temp_offset;
-	if (temp_offset < 0)
+	if (temp_offset < 0 && (temp_offset - byte_int != 0))
 		byte_int--;
+
 	byte_dec = (temp_offset - byte_int) / TEMP_INC;
 
 	ret = esmi_oob_write_byte(soc_num,
