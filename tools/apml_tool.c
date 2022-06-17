@@ -672,7 +672,8 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	uint8_t lowalert, hialert;
 	uint8_t al_mask, run_stop, read_ord, ara;
 	uint8_t timeout;
-	int8_t intr;
+	uint8_t intr;
+	int8_t intr_offset;
 	uint8_t id, buf;
 	oob_status_t ret;
 
@@ -774,7 +775,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	printf("_TEMP_OFFSET\t\t\t| %.3f °C\n", dec);
 
 	usleep(APML_SLEEP);
-	ret = read_sbtsi_cputempoffint(soc_num, &intr);
+	ret = read_sbtsi_cputempoffint(soc_num, &intr_offset);
 	if (ret)
 		return ret;
 
@@ -782,7 +783,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = read_sbtsi_cputempoffdec(soc_num, &dec);
 	if (ret)
 		return ret;
-	printf("\tOFF_INT [0x%x]\t\t| %u °C\n", SBTSI_CPUTEMPOFFINT, intr);
+	printf("\tOFF_INT [0x%x]\t\t| %d °C\n", SBTSI_CPUTEMPOFFINT, intr_offset);
 	printf("\tOFF_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_CPUTEMPOFFDEC, dec);
 
 	usleep(APML_SLEEP);
