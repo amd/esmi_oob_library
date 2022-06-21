@@ -5,6 +5,11 @@ Thank you for using AMD APML Library.
 
 # Changes Notes
 
+## Highlights of minor release v2.1
+
+* Update library/tool based on APML spec from PPR for AMD Family 19h Model 11h B1
+* Introduced a module in apml_tool to provide cpuid information
+* Bug fix (display temperature)
 
 ## Highlights of major release v2.0
 * Rename ESMI_OOB library to APML Library
