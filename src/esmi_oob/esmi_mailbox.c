@@ -288,6 +288,9 @@ read_nbio_error_logging_register(uint8_t soc_num,
 
 oob_status_t read_iod_bist(uint8_t soc_num, uint32_t *buffer)
 {
+	if (!buffer)
+		return OOB_ARG_PTR_NULL;
+
 	return esmi_oob_read_mailbox(soc_num, READ_IOD_BIST,
 				     0, buffer);
 }
@@ -300,20 +303,10 @@ oob_status_t read_ccd_bist_result(uint8_t soc_num,
 }
 
 oob_status_t read_ccx_bist_result(uint8_t soc_num,
-				  uint32_t value, uint16_t ccx_bist[2])
+				  uint32_t value, uint32_t *ccx_bist)
 {
-	uint32_t buffer = 0;
-	oob_status_t ret;
-
-	ret = esmi_oob_read_mailbox(soc_num, READ_CCX_BIST_RESULT,
-				    value, &buffer);
-	if (ret)
-		return ret;
-
-	ccx_bist[0] = buffer & TWO_BYTE_MASK;
-	ccx_bist[1] = (buffer >> 16) & TWO_BYTE_MASK;
-
-	return OOB_SUCCESS;
+	return esmi_oob_read_mailbox(soc_num, READ_CCX_BIST_RESULT,
+				     value, ccx_bist);
 }
 
 oob_status_t read_ddr_bandwidth(uint8_t soc_num,
