@@ -109,10 +109,10 @@ typedef enum {
 	READ_BMC_RAPL_PKG_COUNTER,
 	READ_BMC_CPU_BASE_FREQUENCY,
 	READ_BMC_CONTROL_PCIE_GEN5_RATE,
-	READ_RAS_LAST_TRANSACTION_ADDRESS = 0X5C,
-	WRITE_PWR_EFFICIENCY_MODE,
+	WRITE_PWR_EFFICIENCY_MODE = 0x5D,
 	WRITE_DF_PSTATE_RANGE,
-	READ_LCLK_DPM_LEVEL_RANGE
+	READ_LCLK_DPM_LEVEL_RANGE,
+	READ_UCODE_REVISION
 } esb_mailbox_commmands;
 
 /**
@@ -1268,22 +1268,6 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
 					    double *energy_counters);
 
 /**
- *  @brief Read RAS last transaction address.
- *
- *  @details This function returns the last transaction address.
- *
- *  @param[in] soc_num Socket index.
- *
- *  @param[out] transaction_addr transaction address.
- *
- *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval Non-zero is returned upon failure.
- *
- */
-oob_status_t read_ras_last_transaction_address(uint8_t soc_num,
-					       uint64_t *transaction_addr);
-
-/**
  *  @brief Write power efficiency profile policy.
  *
  *  @details This function writes power efficiency mode
@@ -1343,6 +1327,21 @@ oob_status_t write_df_pstate_range(uint8_t soc_num,
 oob_status_t read_lclk_dpm_level_range(uint8_t soc_num,
 				       uint8_t nbio_id,
 				       struct dpm_level *dpm);
+
+/**
+ *  @brief Read ucode revision.
+ *
+ *  @details This function reads the micro code revision.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] ucode_rev micro code revision.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t read_ucode_revision(uint8_t soc_num, uint32_t *ucode_rev);
 
 /** @} */  // end of MailboxMsg
 /****************************************************************************/

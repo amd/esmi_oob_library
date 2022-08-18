@@ -1014,28 +1014,8 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
 	return ret;
 }
 
-oob_status_t read_ras_last_transaction_address(uint8_t soc_num,
-					       uint64_t *transaction_addr)
+oob_status_t read_ucode_revision(uint8_t soc_num, uint32_t *ucode_rev)
 {
-	uint32_t lo_addr, high_addr;
-	oob_status_t ret;
-
-	if (!transaction_addr)
-		return OOB_ARG_PTR_NULL;
-
-	/* Read high word register for RAS last transaction address */
-	ret = esmi_oob_read_mailbox(soc_num, READ_RAS_LAST_TRANSACTION_ADDRESS,
-				    HI_WORD_REG, &high_addr);
-	if (ret)
-		return ret;
-
-	/* Read low word register for RAS last transaction address */
-	ret = esmi_oob_read_mailbox(soc_num, READ_RAS_LAST_TRANSACTION_ADDRESS,
-				    LO_WORD_REG, &lo_addr);
-	if (ret)
-		return ret;
-	*transaction_addr = ((uint64_t)high_addr) << 32
-			      | (uint64_t)lo_addr & FOUR_BYTE_MASK;
-
-	return ret;
+	return esmi_oob_read_mailbox(soc_num, READ_UCODE_REVISION,
+				     0, ucode_rev);
 }
