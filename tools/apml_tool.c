@@ -1716,22 +1716,6 @@ static void apml_get_lclk_dpm_level_range(uint8_t soc_num,
 	printf("--------------------------------------------\n");
 }
 
-static void apml_get_ras_last_transact_addr(uint8_t soc_num)
-{
-	uint64_t last_transact_addr = 0;
-	oob_status_t ret;
-
-	ret = read_ras_last_transaction_address(soc_num, &last_transact_addr);
-	if (ret) {
-		printf("Failed to get the RAS last transact addr, Err[%d]:%s\n",
-		       ret, esmi_get_err_msg(ret));
-		return;
-	}
-	printf("------------------------------------------------------------\n");
-	printf("| RAS LAST TRANSACT ADDR\t\t\t| x%-15llx |\n", last_transact_addr);
-	printf("------------------------------------------------------------\n");
-}
-
 static void apml_get_power_consumed(uint8_t soc_num)
 {
 	uint32_t pow;
@@ -1808,6 +1792,23 @@ static void apml_get_ccx_info(uint8_t soc_num)
 	printf("| No of cores per CCX \t | %17d |\n", max_cores_per_ccx);
 	printf("| No of CCX instances \t | %17d |\n", ccx_instances);
 	printf("----------------------------------------------\n");
+}
+
+static void apml_get_ucode_rev(uint8_t soc_num)
+{
+	uint32_t ucode;
+	oob_status_t ret;
+
+	ret = read_ucode_revision(soc_num, &ucode);
+	if (ret) {
+		printf("Failed to read ucode revision, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-------------------------------------------------------\n");
+	printf("| ucode revision | 0x%-32x |\n", ucode);
+	printf("-------------------------------------------------------\n");
 }
 
 static void show_usage(char *exe_name)
@@ -1939,8 +1940,8 @@ static void show_module_commands(char *exe_name, char *command)
 			"Show prochot residency\n"
 			"  --showlclkdpmlevelrange\t\t  [NBIOID(0~3)]\t\t\t\t "
 			"Show LCLK DPM level range\n"
-			"  --showraslasttransactaddr\t\t\t  \t\t\t\t "
-			"Show RAS last transaction address\n"
+			"  --showucoderevision\t\t\t  \t\t\t\t\t "
+			"Show micro code revision number\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 			"Show consumed power\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
@@ -2409,11 +2410,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showprochotstatus",			no_argument,	&flag,	22},
 		{"showprochotresidency",		no_argument,	&flag,	23},
 		{"showlclkdpmlevelrange",		required_argument,	&flag,	25},
-		{"showraslasttransactaddr",	no_argument,		&flag,  29},
-		{"showpowerconsumed",		no_argument,		&flag,	30},
-		{"showSMTstatus",		no_argument,		&flag,	31},
-		{"showthreadspercoreandsocket",	no_argument,		&flag,	32},
-		{"showccxinfo",			no_argument,		&flag,	33},
+		{"showucoderevision",		no_argument,		&flag,  26},
+		{"showpowerconsumed",		no_argument,		&flag,	27},
+		{"showSMTstatus",		no_argument,		&flag,	28},
+		{"showthreadspercoreandsocket",	no_argument,		&flag,	29},
+		{"showccxinfo",			no_argument,		&flag,	30},
 		{0,			0,			0,	0},
 	};
 
@@ -2748,19 +2749,19 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Read LCLK DPM Level range */
 			val1 = atoi(argv[optind - 1]);
 			apml_get_lclk_dpm_level_range(soc_num, val1);
-		} else if (*(long_options[long_index].flag) == 29) {
-			/* Read RAS last transaction address */
-			apml_get_ras_last_transact_addr(soc_num);
-		} else if (*(long_options[long_index].flag) == 30) {
+		} else if (*(long_options[long_index].flag) == 26) {
+			/* Read ucode revision */
+			apml_get_ucode_rev(soc_num);
+		} else if (*(long_options[long_index].flag) == 27) {
 			/* Read power consumed for a socket */
 			apml_get_power_consumed(soc_num);
-		} else if (*(long_options[long_index].flag) == 31) {
+		} else if (*(long_options[long_index].flag) == 28) {
 			/* Read SMT enabled status */
 			apml_get_smt_status(soc_num);
-		} else if (*(long_options[long_index].flag) == 32) {
+		} else if (*(long_options[long_index].flag) == 29) {
 			/* Show threads per core and threads per socket */
 			apml_get_threads_per_core_and_soc(soc_num);
-		} else if (*(long_options[long_index].flag) == 33) {
+		} else if (*(long_options[long_index].flag) == 30) {
 			/* Show maximum number of cores per ccx
 			 * and logical ccx instance numbers
 			 */
