@@ -72,12 +72,6 @@
 
 /* CONSTANTS OR MAGIC NUMBERS */
 
-/* LO_WORD_REG used in rapl package energy and read RAS
- * last transaction address */
-#define LO_WORD_REG		0
-/* HI_WORD_REG used in rapl package energy and read RAS
- * last transaction address */
-#define HI_WORD_REG		1
 /* Max limit for DPM level */
 #define MAX_DPM_LIMIT		3
 /* Maximum link width */

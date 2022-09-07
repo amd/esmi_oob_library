@@ -46,6 +46,13 @@
 
 #define BIT(N) (1 << N)		//!< Perform left shift operation by N bits //
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
+/* LO_WORD_REG used in rapl package energy and read RAS
+ * last transaction address */
+#define LO_WORD_REG		0	//!< Low word register //
+/* HI_WORD_REG used in rapl package energy and read RAS
+ * last transaction address */
+#define HI_WORD_REG		1	//!< High word register //
+
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
 /* Maximum DF block-ID's */
@@ -1420,8 +1427,8 @@ oob_status_t read_ras_df_err_dump(uint8_t soc_num,
 				  union ras_df_err_dump ras_err,
 				  uint32_t *data);
 
-/*
- * @} */  //  end of MailboxMsg
+/* @}
+ */  // end of MailboxMsg
 /****************************************************************************/
 
 #endif  // INCLUDE_APML_MAILBOX_H_

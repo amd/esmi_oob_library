@@ -54,10 +54,9 @@
  *  The Error codes returned by the API.
  */
 
-#define MAX_ALERT_REG_V20	32	//!< Max alert register for rev 20 //
-#define MAX_THREAD_REG_V20	24	//!< Max thread register for rev 20 //
-#define MAX_ALERT_REG_V10	16	//!< Max alert register for rev 10 //
-#define MAX_THREAD_REG_V10	16	//!< Max thread register for rev 10 //
+#define MAX_ALERT_REG           32      //!< Max alert register //
+#define MAX_THREAD_REG_V20      32      //!< Max thread register for rev 20 //
+#define MAX_THREAD_REG_V10      16      //!< Max thread register for rev 10 //
 
 /**
  * @brief Error codes retured by APML mailbox functions
@@ -108,16 +107,6 @@ typedef enum {
  */
 extern const uint8_t thread_en_reg_v10[MAX_THREAD_REG_V10];
 
-/**
- * @brief alert status register revision 0x10
- */
-extern const uint8_t alert_status_v10[MAX_ALERT_REG_V10];
-
-/**
- * @brief alert mask revision 0x10
- */
-extern const uint8_t alert_mask_v10[MAX_ALERT_REG_V10];
-
 /* SBRMI registers Revision 0x20 */
 /**
  * @brief thread enable register revision 0x20
@@ -125,14 +114,14 @@ extern const uint8_t alert_mask_v10[MAX_ALERT_REG_V10];
 extern const uint8_t thread_en_reg_v20[MAX_THREAD_REG_V20];
 
 /**
- * @brief alert status register revision 0x20
+ * @brief alert status register
  */
-extern const uint8_t alert_status_v20[MAX_ALERT_REG_V20];
+extern const uint8_t alert_status[MAX_ALERT_REG];
 
 /**
- * @brief alert mask revision 0x20
+ * @brief alert mask
  */
-extern const uint8_t alert_mask_v20[MAX_ALERT_REG_V20];
+extern const uint8_t alert_mask[MAX_ALERT_REG];
 
 /*****************************************************************************/
 /** @defgroup SB-RMIRegisterAccess SB-RMI Register Read Byte Protocol
@@ -211,16 +200,48 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
 				uint8_t *buffer);
 
 /**
- *  @brief This register will read the alert status.
+ *  @brief This function will read bit vector for all the threads.
+ *  Value of 1 indicates MCE occured for the thread and is set by
+ *  hardware.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] num_of_alert_status_reg number of alert status
+ *  registers.
+ *
+ *  @param[inout] buffer a pointer to read all "num_of_alert_status_reg"
+ *  of alert status registers. Buffer length should be
+ *  equal to "num_of_alert_status_reg" value.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval None-zero is returned upon failure.
  */
 oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
-				     uint8_t *buffer);
+				     uint8_t num_of_alert_status_reg,
+				     uint8_t **buffer);
 
 /**
- *  @brief This register will read the alert mask.
+ *  @brief This function will read bit vector for all the threads.
+ *  Value of 1 indicates alert signaling disabled for corresponding
+ *  SBRMI::AlertStatus[MceStat] for the thread.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] num_of_alert_mask_reg number of alert mask
+ *  registers.
+ *
+ *  @param[inout] buffer a pointer to read all "num_of_alert_mask_reg"
+ *  of alert mask registers. Buffer length should be equal to
+ *  "num_of_alert_mask_reg" value.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval None-zero is returned upon failure.
  */
 oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
-				   uint8_t *buffer);
+				   uint8_t num_of_alert_mask_reg,
+				   uint8_t **buffer);
 
 /**
  *  @brief This register will read the inbound message.
