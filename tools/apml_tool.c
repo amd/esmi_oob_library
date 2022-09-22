@@ -549,7 +549,6 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 		ret = esmi_get_processor_info(soc_num, &plat_info);
 		if (ret)
 			return ret;
-		/* Rolling stones dense */
 		if (plat_info.family == 0x19 && plat_info.model >= 0xA0
 		    && plat_info.model <= 0xAF)
 			is_rsdn = true;
@@ -590,7 +589,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 					}
 				}
 				if (rev != 0x10)
-					if (i > 15 && rev == 0x20 && !is_rsdn)
+					if (i > 15 && !is_rsdn)
 						printf("] \t\t\t| %#4x\n", buffer[i]);
 					else
 						printf("] \t| %#4x\n", buffer[i]);
@@ -635,7 +634,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 					}
 				}
 				if (rev != 0x10)
-					if (i > 15 && rev == 0x20 && !is_rsdn)
+					if (i > 15 && !is_rsdn)
 						printf("] \t\t\t| %#4x\n", buffer[i]);
 					else
 						printf("] \t| %#4x\n", buffer[i]);
@@ -2437,7 +2436,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint16_t mclk;
 	uint8_t uclk, index, rev;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
-	bool status;
+	bool status = false;
 	oob_status_t ret;
 
 	nbio.quadrant = 0x03;
