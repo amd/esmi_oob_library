@@ -58,7 +58,9 @@ const uint8_t thread_en_reg_v20[] = {0x4, 0x5, 0x8, 0x9,
 				     0x43, 0x44, 0x45, 0x46,
 				     0x47, 0x48, 0x49, 0x4A,
 				     0x91, 0x92, 0x93, 0x94,
-				     0x95, 0x96, 0x97, 0x98};
+				     0x95, 0x96, 0x97, 0x98,
+				     0xD8, 0xD9, 0xDA, 0xDB,
+				     0xDC, 0xDD, 0xDE, 0xDF};
 
 /* Alert status registers */
 const uint8_t alert_status[] = {0x10, 0x11, 0x12, 0x13,
@@ -203,7 +205,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
 	int i;
 	uint8_t rev;
 
-	if (!buffer)
+	if (!buffer || !(*buffer))
 		return OOB_ARG_PTR_NULL;
 
 	/* Number of alert mask regsiters should be */
@@ -229,7 +231,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 	int i;
 	uint8_t rev;
 
-	if (!buffer)
+	if (!buffer || !(*buffer))
 		return OOB_ARG_PTR_NULL;
 
 	/* Number of alert status registers should be */
