@@ -54,10 +54,10 @@
  *  The Error codes returned by the API.
  */
 
-#define MAX_ALERT_REG_V20	32
-#define MAX_THREAD_REG_V20	24
-#define MAX_ALERT_REG_V10	16
-#define MAX_THREAD_REG_V10	16
+#define MAX_ALERT_REG_V20	32	//!< Max alert register for rev 20 //
+#define MAX_THREAD_REG_V20	24	//!< Max thread register for rev 20 //
+#define MAX_ALERT_REG_V10	16	//!< Max alert register for rev 10 //
+#define MAX_THREAD_REG_V10	16	//!< Max thread register for rev 10 //
 
 /**
  * @brief Error codes retured by APML mailbox functions
@@ -156,7 +156,7 @@ extern const uint8_t alert_mask_v20[MAX_ALERT_REG_V20];
  *  @param[inout] buffer a pointer to a uint8_t that indicates value to hold
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 /**

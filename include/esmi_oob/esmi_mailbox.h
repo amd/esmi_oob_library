@@ -293,7 +293,7 @@ extern float esu_multiplier;
  *  consumption
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_socket_power(uint8_t soc_num, uint32_t *buffer);
@@ -310,7 +310,7 @@ oob_status_t read_socket_power(uint8_t soc_num, uint32_t *buffer);
  *  possible power cap/limit, in watts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_socket_power_limit(uint8_t soc_num, uint32_t *buffer);
@@ -327,7 +327,7 @@ oob_status_t read_socket_power_limit(uint8_t soc_num, uint32_t *buffer);
  *                possible power cap/limit, in watts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_max_socket_power_limit(uint8_t soc_num, uint32_t *buffer);
@@ -351,7 +351,7 @@ oob_status_t read_max_socket_power_limit(uint8_t soc_num, uint32_t *buffer);
  *  in milliwatts
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_socket_power_limit(uint8_t soc_num, uint32_t limit);
@@ -380,7 +380,7 @@ oob_status_t write_socket_power_limit(uint8_t soc_num, uint32_t limit);
  *  possible boost limit value
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_esb_boost_limit(uint8_t soc_num, uint32_t value,
@@ -400,7 +400,7 @@ oob_status_t read_esb_boost_limit(uint8_t soc_num, uint32_t value,
  *  maximum boost limit value set via In-band
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bios_boost_fmax(uint8_t soc_num,
@@ -431,7 +431,7 @@ oob_status_t read_bios_boost_fmax(uint8_t soc_num,
  *  boostlimit value of a given core
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_esb_boost_limit(uint8_t soc_num,
@@ -449,7 +449,7 @@ oob_status_t write_esb_boost_limit(uint8_t soc_num,
  *  value of the socket
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_esb_boost_limit_allcores(uint8_t soc_num, uint32_t limit);
@@ -477,7 +477,7 @@ oob_status_t write_esb_boost_limit_allcores(uint8_t soc_num, uint32_t limit);
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_tdp(uint8_t soc_num, uint32_t *buffer);
@@ -495,7 +495,7 @@ oob_status_t read_tdp(uint8_t soc_num, uint32_t *buffer);
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_max_tdp(uint8_t soc_num, uint32_t *buffer);
@@ -512,7 +512,7 @@ oob_status_t read_max_tdp(uint8_t soc_num, uint32_t *buffer);
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_min_tdp(uint8_t soc_num, uint32_t *buffer);
@@ -539,7 +539,7 @@ oob_status_t read_min_tdp(uint8_t soc_num, uint32_t *buffer);
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_prochot_status(uint8_t soc_num, uint32_t *buffer);
@@ -557,7 +557,7 @@ oob_status_t read_prochot_status(uint8_t soc_num, uint32_t *buffer);
  *  will be copied
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_prochot_residency(uint8_t soc_num, float *buffer);
@@ -580,7 +580,7 @@ oob_status_t read_prochot_residency(uint8_t soc_num, float *buffer);
  *  @param[out] buffer is to read the dram throttle in % (0 - 100).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_dram_throttle(uint8_t soc_num, uint32_t *buffer);
@@ -597,7 +597,7 @@ oob_status_t read_dram_throttle(uint8_t soc_num, uint32_t *buffer);
  *  between 0 to 80% to for a given socket
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_dram_throttle(uint8_t soc_num, uint32_t limit);
@@ -615,7 +615,7 @@ oob_status_t write_dram_throttle(uint8_t soc_num, uint32_t limit);
  *  @param[out] buffer is to read NBIOErrorLoggingRegiter(register value).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t
@@ -635,7 +635,7 @@ read_nbio_error_logging_register(uint8_t soc_num,
  *  1 = Bist fail
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_iod_bist(uint8_t soc_num, uint32_t *buffer);
@@ -656,7 +656,7 @@ oob_status_t read_iod_bist(uint8_t soc_num, uint32_t *buffer);
  *  1 = Bist fail
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_ccd_bist_result(uint8_t soc_num, uint32_t input,
@@ -679,7 +679,7 @@ oob_status_t read_ccd_bist_result(uint8_t soc_num, uint32_t input,
  *  in the complex(n:0) L3 bist[15:0], where n num of cores in CCX.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_ccx_bist_result(uint8_t soc_num, uint32_t value,
@@ -696,7 +696,7 @@ oob_status_t read_ccx_bist_result(uint8_t soc_num, uint32_t value,
  *  utilized bandwidth and utilized bandwidth percentage.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_ddr_bandwidth(uint8_t soc_num,
@@ -717,7 +717,7 @@ oob_status_t read_ddr_bandwidth(uint8_t soc_num,
  *  @param[in] dp_info dimm_power Struct with power(mw), updaterate(ms) & dimm address
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_bmc_report_dimm_power(uint8_t soc_num,
@@ -735,7 +735,7 @@ oob_status_t write_bmc_report_dimm_power(uint8_t soc_num,
  *  @param[in] dt_info struct with temp(ºC), updaterate(ms) & dimm address
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_bmc_report_dimm_thermal_sensor(uint8_t soc_num,
@@ -756,7 +756,7 @@ oob_status_t write_bmc_report_dimm_thermal_sensor(uint8_t soc_num,
  *  @param[out] out_buf 32 bit data from offset in PCI config space.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_ras_pcie_config_access(uint8_t soc_num,
@@ -776,7 +776,7 @@ oob_status_t read_bmc_ras_pcie_config_access(uint8_t soc_num,
  *  @param[out] mca_banks number of mca banks.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_ras_mca_validity_check(uint8_t soc_num,
@@ -796,7 +796,7 @@ oob_status_t read_bmc_ras_mca_validity_check(uint8_t soc_num,
  *  @param[out] out_buf 32 bit data from offset in mca bank.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_ras_mca_msr_dump(uint8_t soc_num,
@@ -816,7 +816,7 @@ oob_status_t read_bmc_ras_mca_msr_dump(uint8_t soc_num,
  *  @param[out] out_buf Data from FCH register.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_ras_fch_reset_reason(uint8_t soc_num,
@@ -839,7 +839,7 @@ oob_status_t read_bmc_ras_fch_reset_reason(uint8_t soc_num,
  *  Temperature range: 001b = 1X, 101b = 2X.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_dimm_temp_range_and_refresh_rate(uint8_t soc_num,
@@ -862,7 +862,7 @@ oob_status_t read_dimm_temp_range_and_refresh_rate(uint8_t soc_num,
  *  power consumption(mw): power consumed (0 - 32767 mW)
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_dimm_power_consumption(uint8_t soc_num,
@@ -885,7 +885,7 @@ oob_status_t read_dimm_power_consumption(uint8_t soc_num,
  *  temperature (Degrees C): Temperature (-256 - 255.75 degree C)
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_dimm_thermal_sensor(uint8_t soc_num,
@@ -905,7 +905,7 @@ oob_status_t read_dimm_thermal_sensor(uint8_t soc_num,
  *  @param[out] source_type Source of limit.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_num,
@@ -925,7 +925,7 @@ oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_num,
  *  @param[out] base_freq Frequency (MHz).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_pwr_current_active_freq_limit_core(uint8_t soc_num,
@@ -943,7 +943,7 @@ oob_status_t read_pwr_current_active_freq_limit_core(uint8_t soc_num,
  *  @param[out] power SVI-based Telemetry for all rails(mW)
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_pwr_svi_telemetry_all_rails(uint8_t soc_num,
@@ -962,7 +962,7 @@ oob_status_t read_pwr_svi_telemetry_all_rails(uint8_t soc_num,
  *  @param[out] fmin minimum frequency (MHz).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_socket_freq_range(uint8_t soc_num,
@@ -994,7 +994,7 @@ oob_status_t read_socket_freq_range(uint8_t soc_num,
  *  @param[out] io_bw io bandwidth (Mbps).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_current_io_bandwidth(uint8_t soc_num,
@@ -1028,7 +1028,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
  *  @param[out] xgmi_bw io bandwidth (Mbps).
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
@@ -1054,7 +1054,7 @@ oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
  *  NOTE: max value must be greater than or equal to min value.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_gmi3_link_width_range(uint8_t soc_num,
@@ -1082,7 +1082,7 @@ oob_status_t write_gmi3_link_width_range(uint8_t soc_num,
  *  NOTE: Max value must be greater than or equal to min value.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_xgmi_link_width_range(uint8_t soc_num,
@@ -1107,7 +1107,7 @@ oob_status_t write_xgmi_link_width_range(uint8_t soc_num,
  *  False indicates not-asserted.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_apb_disable(uint8_t soc_num,
@@ -1126,7 +1126,7 @@ oob_status_t write_apb_disable(uint8_t soc_num,
  *  and false indicates not-asserted.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_apb_enable(uint8_t soc_num, bool *prochot_asserted);
@@ -1147,7 +1147,7 @@ oob_status_t write_apb_enable(uint8_t soc_num, bool *prochot_asserted);
  *  Uclk = 0 means divide by 1 else divide by 2.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_current_dfpstate_frequency(uint8_t soc_num,
@@ -1166,7 +1166,7 @@ oob_status_t read_current_dfpstate_frequency(uint8_t soc_num,
  *  level and max dpm level values are between 0 ~ 3.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_lclk_dpm_level_range(uint8_t soc_num,
@@ -1185,7 +1185,7 @@ oob_status_t write_lclk_dpm_level_range(uint8_t soc_num,
  *  @param[out] esu_value esu value.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_rapl_units(uint8_t soc_num,
@@ -1202,7 +1202,7 @@ oob_status_t read_bmc_rapl_units(uint8_t soc_num,
  *  @param[out] base_freq base frequency.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_cpu_base_frequency(uint8_t soc_num,
@@ -1225,7 +1225,7 @@ oob_status_t read_bmc_cpu_base_frequency(uint8_t soc_num,
  *  2 for limit at Gen5 rate.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_bmc_control_pcie_gen5_rate(uint8_t soc_num,
@@ -1244,7 +1244,7 @@ oob_status_t read_bmc_control_pcie_gen5_rate(uint8_t soc_num,
  *  @param[out] energy_counters core energy.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_rapl_core_energy_counters(uint8_t soc_num,
@@ -1261,7 +1261,7 @@ oob_status_t read_rapl_core_energy_counters(uint8_t soc_num,
  *  @param[out] energy_counters core energy.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
@@ -1280,7 +1280,7 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
  *  2 indicates I/O Performance Mode.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_pwr_efficiency_mode(uint8_t soc_num,
@@ -1301,7 +1301,7 @@ oob_status_t write_pwr_efficiency_mode(uint8_t soc_num,
  *  from 0 - 2.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t write_df_pstate_range(uint8_t soc_num,
@@ -1321,7 +1321,7 @@ oob_status_t write_df_pstate_range(uint8_t soc_num,
  *  Valid max and min dpm levels are from 0 - 1.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  *
  */
 oob_status_t read_lclk_dpm_level_range(uint8_t soc_num,
@@ -1343,7 +1343,8 @@ oob_status_t read_lclk_dpm_level_range(uint8_t soc_num,
  */
 oob_status_t read_ucode_revision(uint8_t soc_num, uint32_t *ucode_rev);
 
-/** @} */  // end of MailboxMsg
+/*
+ * @} */  //  end of MailboxMsg
 /****************************************************************************/
 
 #endif  // INCLUDE_APML_MAILBOX_H_

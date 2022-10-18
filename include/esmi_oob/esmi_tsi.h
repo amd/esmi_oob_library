@@ -107,22 +107,6 @@ typedef enum {
  */
 
 /**
- *  @brief Read one byte from a given SB_TSI register with
- *  provided socket index and buffer to get the read data of a given command
- *
- *  @details Given a socket index @p socket_ind and a pointer to hold the
- *  output at uint8_t @p buffer, this function will get the value from a
- *  particular command of SB_TSI register.
- *
- *  @param[inout] buffer a pointer to a int8_t that indicates
- *  value to hold
- *
- *  @retval ::OOB_SUCCESS is returned upon successful call.
- *
- *  @retval None-zero is returned upon failure.
- *
- */
-/**
  *  @brief integer CPU temperature value
  *  The CPU temperature is calculated by adding the CPU temperature
  *  offset(SBTSI::CpuTempOffInt, SBTSI::CpuTempOffDec) to the processor control
@@ -137,7 +121,7 @@ typedef enum {
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
 
@@ -154,7 +138,7 @@ oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
 
@@ -168,7 +152,7 @@ oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
 
@@ -183,7 +167,7 @@ oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
 
@@ -198,7 +182,7 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
 
@@ -215,7 +199,7 @@ oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
 
@@ -232,7 +216,7 @@ oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
 
@@ -245,7 +229,7 @@ oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
 
@@ -258,7 +242,7 @@ oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
 
@@ -272,7 +256,7 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
 
@@ -286,7 +270,7 @@ oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
 
@@ -300,7 +284,7 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
 
@@ -314,7 +298,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
 
@@ -332,7 +316,7 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
 
@@ -347,7 +331,7 @@ oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
 
@@ -364,7 +348,7 @@ oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
 
@@ -377,7 +361,7 @@ oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
 
@@ -390,7 +374,7 @@ oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
 
@@ -406,7 +390,7 @@ oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
 
@@ -427,7 +411,7 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 				   uint8_t *loalert, uint8_t *hialert);
@@ -453,7 +437,7 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_config(uint8_t soc_num,
 			      uint8_t *al_mask, uint8_t *run_stop,
@@ -473,7 +457,7 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 				uint8_t mode, uint8_t config_mask);
@@ -493,7 +477,7 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_timeout(uint8_t soc_num,
 			       uint8_t *timeout_en);
@@ -513,7 +497,7 @@ oob_status_t sbtsi_get_timeout(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
 				      uint8_t mode);
@@ -530,7 +514,7 @@ oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
 					float hitemp_thr);
@@ -547,7 +531,7 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
 					float lotemp_thr);
@@ -564,7 +548,7 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
 					float *hitemp_thr);
@@ -581,7 +565,7 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 					float *lotemp_thr);
@@ -596,7 +580,7 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 				      float *temp_offset);
@@ -611,7 +595,7 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
 				       float temp_offset);
@@ -630,7 +614,7 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 				       uint8_t samples);
@@ -648,7 +632,7 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *
- *  @retval None-zero is returned upon failure.
+ *  @retval Non-zero is returned upon failure.
  */
 oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
 				    uint8_t mode);

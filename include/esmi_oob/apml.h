@@ -58,6 +58,9 @@
  *  The Error codes returned by the API.
  */
 
+ /**
+ * @brief SBRMI outbound messages defined in the APML library
+ */
 typedef enum {
 	SBRMI_OUTBNDMSG0 = 0x30,
 	SBRMI_OUTBNDMSG1,
@@ -69,7 +72,9 @@ typedef enum {
 	SBRMI_OUTBNDMSG7,
 } sbrmi_outbnd_msg;
 
-/*
+ /**
+ * @brief SBRMI inbound messages defined in the APML library
+ *
  * Usage convention is:
  • SBRMI::InBndMsg_inst0 is command
  • SBRMI::InBndMsg_inst[4:1] are 32 bit data
@@ -87,8 +92,8 @@ typedef enum {
 	SBRMI_INBNDMSG7,
 } sbrmi_inbnd_msg;
 
-#define SBRMI		"sbrmi"
-#define SBTSI		"sbtsi"
+#define SBRMI		"sbrmi"		//!< SBRMI module //
+#define SBTSI		"sbtsi"		//!< SBTSI module //
 
 /**
  *  @brief Reads data for the given register.
@@ -96,8 +101,6 @@ typedef enum {
  *  @details This function will read the data for the given register.
  *
  *  @param[in] soc_num Socket index.
- *
- *  @param[in] reg_offset Register offset.
  *
  *  @param[in] reg_offset Register offset for RMI/TSI I/F.
  *
