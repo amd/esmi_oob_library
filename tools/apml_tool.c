@@ -1887,6 +1887,45 @@ static void apml_get_ras_df_err_dump(uint8_t soc_num, union ras_df_err_dump df_e
 	       "-------------------\n");
 }
 
+static void apml_reset_on_sync_flood(uint8_t soc_num)
+{
+	uint32_t ack_resp = 0;
+	oob_status_t ret;
+
+	ret = reset_on_sync_flood(soc_num, &ack_resp);
+	if (ret) {
+		printf("Failed to reset after sync flood, Err[%d]: "
+		       "%s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("----------------------------------------------\n");
+	printf("| %-42s |\n", ack_resp  == 1 ?
+	       "ACK: SMU FW will proceed with reset"
+	       : "NACK: SMU FW will not proceed with reset");
+	printf("----------------------------------------------\n");
+}
+
+static void apml_override_delay_reset_on_sync_flood(uint8_t soc_num,
+						    struct ras_override_delay in)
+{
+	bool ack_resp;
+	oob_status_t ret;
+
+	ret = override_delay_reset_on_sync_flood(soc_num, in, &ack_resp);
+	if (ret) {
+		printf("Failed to override delay value reset on sync flood,"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("----------------------------------------------------\n");
+	printf("| %-48s |\n", ack_resp  == 1 ?
+	       "ACK: SMU FW will honor the override request"
+	       : "NACK: SMU FW will not honor the override request");
+	printf("----------------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2019,6 +2058,13 @@ static void show_module_commands(char *exe_name, char *command)
 			"Show LCLK DPM level range\n"
 			"  --showucoderevision\t\t\t  \t\t\t\t\t "
 			"Show micro code revision number\n"
+			"  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
+			"Request warm reset after sync flood\n"
+			"  --rasoverridedelay\t\t\t"
+			"  [DELAYVALUE(5 -120 mins)\n\t\t\t\t\t  "
+			"[DISABLEDELAY(0 - 1)]"
+			"[STOPDELAY(0 -1)] "
+			"Override delay reset cpu on sync flood\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 			"Show consumed power\n"
 			"  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
@@ -2408,6 +2454,7 @@ static oob_status_t validate_number(char *str, uint8_t base)
 static oob_status_t parseesb_args(int argc, char **argv)
 {
 	union ras_df_err_dump df_err = {0};
+	struct ras_override_delay d_in = {0};
 	struct nbio_err_log nbio;
 	struct lclk_dpm_level_range lclk;
 	struct pci_address pci_addr;
@@ -2443,6 +2490,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showtdp",		no_argument,	0,	't'},
 		{"setpowerlimit",	required_argument,	0,	's'},
 		{"showddrbandwidth",	no_argument,	&flag,	 3 },
+		{"rasresetonsyncflood", no_argument, &flag,  4},
 		{"showboostlimit",	required_argument,	0,	'b'},
 		{"setapmlboostlimit",	required_argument,	0,	'd'},
 		{"setapmlsocketboostlimit", required_argument,	0,	'a'},
@@ -2505,6 +2553,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showthreadspercoreandsocket",	no_argument,		&flag,	29},
 		{"showccxinfo",			no_argument,		&flag,	30},
 		{"apml_recovery",		required_argument,	&flag,	31},
+		{"rasoverridedelay",		required_argument,	&flag,  32},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{0,			0,			0,	0},
@@ -2693,12 +2742,27 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
 	if (opt == 0 && (*long_options[long_index].flag == 16
+			 || *long_options[long_index].flag == 32
 			 || *long_options[long_index].flag == 42)) {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
 			printf("\nOption '-%c' requires 3 arguments\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
+		}
+		if (*long_options[long_index].flag != 16) {
+			if (validate_number(argv[optind - 1], 10)) {
+				printf("Option '-%c' requires 1st argument as "
+				       "valid numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
+			if (validate_number(argv[optind], 10)) {
+				printf("Option '-%c' requires 2nd argument as "
+				       "valid numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
 		}
 		if (validate_number(argv[optind + 1], 10)) {
 			printf("Option '-%c' requires 3rd argument as valid"
@@ -2766,6 +2830,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 				return ret;
 		} else if (*(long_options[long_index].flag) == 3)
 			apml_get_ddr_bandwidth(soc_num);
+		else if (*(long_options[long_index].flag) == 4)
+			/* Request reset on sync flood */
+			apml_reset_on_sync_flood(soc_num);
 		else if (*(long_options[long_index].flag) == 5)
 			/* get number of mca banks with valid */
 			/* status after a fatal error */
@@ -2865,6 +2932,15 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* APML client reoovery */
 			val1 = atoi(argv[optind - 1]);
 			apml_do_recovery(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 32) {
+			/* override delay reset cpu on sync flood */
+			/* override delay value */
+			d_in.delay_val_override = atoi(argv[optind - 1]);
+			/* disable delay counter bit */
+			d_in.disable_delay_counter = atoi(argv[optind++]);
+			/* stop delay counter bit */
+			d_in.stop_delay_counter = atoi(argv[optind++]);
+			apml_override_delay_reset_on_sync_flood(soc_num, d_in);
 		} else if (*(long_options[long_index].flag) == 41) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_ras_df_validity_chk(soc_num, val1);
