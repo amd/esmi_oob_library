@@ -1054,3 +1054,11 @@ oob_status_t read_ras_df_err_dump(uint8_t soc_num,
 	return esmi_oob_read_mailbox(soc_num, READ_RAS_LAST_TRANS_ADDR_DUMP,
 				     ras_err.data_in, data);
 }
+
+oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp)
+{
+	/* At present, Only P0 handles this request */
+	soc_num = 0;
+	return esmi_oob_read_mailbox(soc_num, READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
+				     0, ack_resp);
+}

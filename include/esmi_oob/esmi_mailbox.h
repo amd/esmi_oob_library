@@ -127,7 +127,8 @@ typedef enum {
 	WRITE_PWR_EFFICIENCY_MODE,
 	WRITE_DF_PSTATE_RANGE,
 	READ_LCLK_DPM_LEVEL_RANGE,
-	READ_UCODE_REVISION
+	READ_UCODE_REVISION,
+	READ_BMC_RAS_RESET_ON_SYNC_FLOOD = 0x6B
 } esb_mailbox_commmands;
 
 /**
@@ -1426,6 +1427,22 @@ oob_status_t read_ras_df_err_validity_check(uint8_t soc_num,
 oob_status_t read_ras_df_err_dump(uint8_t soc_num,
 				  union ras_df_err_dump ras_err,
 				  uint32_t *data);
+
+/**
+ *  @brief Read BMC RAS reset on sync flood.
+ *
+ *  @details This function requests reset after sync flood. Reset
+ *  only works during sync flood condition
+ *
+ *  @param[in] soc_num Socket index. At present, only P0 handles this request.
+ *
+ *  @param[out] ack_resp acknowledgement response.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp);
 
 /* @}
  */  // end of MailboxMsg
