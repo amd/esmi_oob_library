@@ -106,6 +106,7 @@ set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_cpuid_msr.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_mailbox.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_rmi.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_tsi.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml_recovery.c")
 
 set(SMI_TOOL "apml_tool")
 set(SMI_CPUID "apml_cpuid_tool")
@@ -136,6 +137,8 @@ endif ()
 install(TARGETS ${APML_LIB_TARGET}
           LIBRARY DESTINATION lib COMPONENT ${APML_LIB_COMPONENT})
 install(FILES ${SOURCE_DIR}/include/esmi_oob/apml_err.h
+                                        DESTINATION include)
+install(FILES ${SOURCE_DIR}/include/esmi_oob/apml_recovery.h
                                         DESTINATION include)
 install(FILES ${SOURCE_DIR}/include/esmi_oob/apml.h
                                         DESTINATION include)
