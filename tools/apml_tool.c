@@ -54,6 +54,7 @@
 #include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/esmi_rmi.h>
 #include <esmi_oob/esmi_tsi.h>
+#include <esmi_oob/apml_recovery.h>
 
 #define RED "\x1b[31m"
 #define RESET "\x1b[0m"
@@ -1738,6 +1739,22 @@ static void apml_get_lclk_dpm_level_range(uint8_t soc_num,
 	printf("--------------------------------------------\n");
 }
 
+static void apml_do_recovery(uint8_t soc_num, uint8_t client)
+{
+	oob_status_t ret;
+
+	ret = apml_recovery(soc_num, client);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to do recovery, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("-------------------------------------------------\n");
+	printf("| Socket %u | Recovery of  %s client successful |\n",
+	       soc_num, client ? "TSI" : "RMI");
+	printf("-------------------------------------------------\n");
+}
+
 static void apml_get_power_consumed(uint8_t soc_num)
 {
 	uint32_t pow;
@@ -1887,7 +1904,8 @@ static void show_usage(char *exe_name)
 	printf("\t2. sbrmi\n");
 	printf("\t3. sbtsi\n");
 	printf("\t4. reg-access\n");
-	printf("\t5. cpuid\n\n");
+	printf("\t5. cpuid\n");
+	printf("\t6. recovery\n");
 }
 
 static void show_module_commands(char *exe_name, char *command)
@@ -2070,6 +2088,13 @@ static void show_module_commands(char *exe_name, char *command)
 			"ccx instances\n"
 		       "  --showSMTstatus\t\t\t  \t\t\t "
 		       "Show SMT enabled status\n", exe_name);
+	else if (!strcmp(command, "recovery") || !strcmp(command, "6"))
+		printf("Usage: %s [SOC_NUM] [Option]"
+		       "\nOption:\n"
+		       "\n< RECOVERY [params] >:\n"
+		       "  --apml_recovery \t\t[client(0,1)]\t\t "
+		       "Recovers APML client from bad state. client 0 ->"
+		       " SBRMI, 1 -> SBTSI\n", exe_name);
 	else
 		printf("Failed: Invalid command, Err[%d]: %s\n",
 			OOB_INVALID_INPUT,
@@ -2479,6 +2504,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showSMTstatus",		no_argument,		&flag,	28},
 		{"showthreadspercoreandsocket",	no_argument,		&flag,	29},
 		{"showccxinfo",			no_argument,		&flag,	30},
+		{"apml_recovery",		required_argument,	&flag,	31},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{0,			0,			0,	0},
@@ -2565,6 +2591,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'w' ||
 	    opt == 0 && ((*long_options[long_index].flag) == 18 ||
 			 *(long_options[long_index].flag) == 19 ||
+			 *(long_options[long_index].flag) == 31 ||
 			 (*long_options[long_index].flag) == 41)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
@@ -2834,6 +2861,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 * and logical ccx instance numbers
 			 */
 			apml_get_ccx_info(soc_num);
+		} else if (*(long_options[long_index].flag) == 31) {
+			/* APML client reoovery */
+			val1 = atoi(argv[optind - 1]);
+			apml_do_recovery(soc_num, val1);
 		} else if (*(long_options[long_index].flag) == 41) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_ras_df_validity_chk(soc_num, val1);
