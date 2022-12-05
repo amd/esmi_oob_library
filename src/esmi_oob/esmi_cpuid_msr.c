@@ -63,6 +63,8 @@
 #define HW_ALERT_MASK	0x80
 /* Thread Mask */
 #define THREAD_MASK	0xFFFF
+/* Legacy platforms(Milan & Rome) threads per socket */
+#define LEGACY_PLAT_THREADS_PER_SOC 128
 
 static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 {
@@ -251,6 +253,29 @@ static oob_status_t esmi_oob_extend_thread(uint8_t soc_num, uint32_t *thread)
 	return esmi_oob_write_byte(soc_num, SBRMI_THREAD128CS, SBRMI, val);
 }
 
+static oob_status_t validate_thread(uint8_t soc_num, uint32_t thread_num)
+{
+	uint32_t max_threads_per_soc = 0;
+	uint8_t rev = 0;
+	oob_status_t ret;
+
+	ret = read_sbrmi_revision(soc_num, &rev);
+	if (ret)
+		return ret;
+	if (rev != 0x10) {
+		ret = esmi_get_threads_per_socket(soc_num, &max_threads_per_soc);
+		if (ret)
+			return ret;
+	} else {
+		max_threads_per_soc = LEGACY_PLAT_THREADS_PER_SOC;
+	}
+
+	if (thread_num > (max_threads_per_soc - 1))
+		return OOB_CPUID_MSR_CMD_INVAL_THREAD;
+
+	return OOB_SUCCESS;
+}
+
 oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 			       uint32_t thread, uint32_t msraddr,
 			       uint64_t *buffer)
@@ -266,7 +291,11 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 	msg.cmd = 0x1001;
 	msg.data_in.cpu_msr_in = msraddr;
 
-	thread &= THREAD_MASK;
+	/* validate thread */
+	ret = validate_thread(soc_num, thread);
+	if (ret)
+		return ret;
+
 	/* Assign thread number to data_in[4:5] */
 	msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in
 				 | ((uint64_t)thread << 32);
@@ -291,6 +320,11 @@ oob_status_t esmi_oob_cpuid(uint8_t soc_num, uint32_t thread,
 
 	fn_eax = *eax;
 	fn_ecx = *ecx;
+
+	/* validate thread */
+	ret = validate_thread(soc_num, thread);
+	if (ret)
+		return ret;
 
 	ret = esmi_oob_cpuid_eax(soc_num, thread, fn_eax, fn_ecx, eax);
 	if (ret)
