@@ -136,26 +136,14 @@ endif ()
 ## Add the install directives for the runtime library.
 install(TARGETS ${APML_LIB_TARGET}
           LIBRARY DESTINATION lib COMPONENT ${APML_LIB_COMPONENT})
-install(FILES ${SOURCE_DIR}/include/esmi_oob/apml_err.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/apml_recovery.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/apml.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_cpuid_msr.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_mailbox.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_rmi.h
-                                        DESTINATION include)
-install(FILES ${SOURCE_DIR}/include/esmi_oob/esmi_tsi.h
-                                        DESTINATION include)
+install(DIRECTORY ${SOURCE_DIR}/include/esmi_oob/
+					DESTINATION include
+					PATTERN apml64Config.h EXCLUDE)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${SMI_TOOL}
 					DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${SMI_CPUID}
 					DESTINATION bin)
 
-# Generate Doxygen documentation
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/docs/apml_doxygen.cfg
