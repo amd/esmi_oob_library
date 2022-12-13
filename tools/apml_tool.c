@@ -1743,7 +1743,7 @@ static void apml_do_recovery(uint8_t soc_num, uint8_t client)
 {
 	oob_status_t ret;
 
-	ret = apml_recovery(soc_num, client);
+	ret = apml_recover_dev(soc_num, client);
 	if (ret != OOB_SUCCESS) {
 		printf("Failed to do recovery, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
