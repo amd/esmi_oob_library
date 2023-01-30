@@ -193,3 +193,14 @@ if (DOXYGEN_FOUND)
 else()
   message("Doxygen is not found. Will not generate documents.")
 endif(DOXYGEN_FOUND)
+
+# create pkgconfig.
+set(pkgconfig ${PROJECT_SOURCE_DIR}/${APML_LIB_TARGET}.pc)
+set(APML_PKGCONFIG_DIR /usr/local/lib/pkgconfig)
+
+configure_file(
+    "${pkgconfig}.in"
+    "${pkgconfig}"
+    @ONLY)
+
+install(FILES "${pkgconfig}" DESTINATION ${APML_PKGCONFIG_DIR})
