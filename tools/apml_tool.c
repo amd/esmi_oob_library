@@ -42,19 +42,23 @@
 #include <ctype.h>
 #include <errno.h>
 #include <getopt.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <esmi_oob/apml64Config.h>
-#include <esmi_oob/esmi_cpuid_msr.h>
 #include <esmi_oob/apml.h>
+#include <esmi_oob/apml64Config.h>
+#include <esmi_oob/apml_recovery.h>
+#include <esmi_oob/esmi_cpuid_msr.h>
 #include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/esmi_rmi.h>
 #include <esmi_oob/esmi_tsi.h>
-#include <esmi_oob/apml_recovery.h>
+#include <esmi_oob/rmi_mailbox_mi300.h>
+#include <esmi_oob/tsi_mi300.h>
+#include "mi300_tool.h"
 
 #define RED "\x1b[31m"
 #define RESET "\x1b[0m"
@@ -69,6 +73,37 @@
 #define MAX_POST_CODE_OFFSET	8
 
 static int flag;
+
+static oob_status_t get_platform_info(uint8_t soc_num,
+				      struct processor_info *plat_info)
+{
+	return esmi_get_processor_info(soc_num, plat_info);
+}
+
+static oob_status_t is_plat_form_mi300(uint8_t soc_num, bool *status)
+{
+	struct processor_info plat_info[1];
+	oob_status_t ret;
+
+	ret = get_platform_info(soc_num, plat_info);
+	if (ret) {
+		return ret;
+	}
+
+	if (plat_info->family == 0x19) {
+		switch (plat_info->model) {
+		case 0x90 ... 0x9F:
+			/* MI300 A platform */
+			*status = true;
+			break;
+		default:
+			*status = false;
+			break;
+		}
+	}
+
+	return ret;
+}
 
 static oob_status_t apml_get_sockpower(uint8_t soc_num)
 {
@@ -790,7 +825,10 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	printf("\tLOW_INT [0x%x]\t\t| %u °C\n", SBTSI_LOTEMPINT, intr);
 	printf("\tLOW_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_LOTEMPDEC, dec);
 
-	usleep(APML_SLEEP);
+	ret = get_apml_mi300_tsi_register_descriptions(soc_num);
+	if (ret)
+		return ret;
+
 	ret = read_sbtsi_cputempoffset(soc_num, &dec);
 	if (ret)
 		return ret;
@@ -1104,7 +1142,16 @@ static void apml_get_cclklimit(uint8_t soc_num, uint32_t thread)
 static void apml_get_pwr_telemetry(uint8_t soc_num)
 {
 	uint32_t power;
+	uint16_t update_rate;
 	oob_status_t ret;
+	bool status;
+
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret) {
+		printf("Failed to get platform information,"
+		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
 
 	ret = read_pwr_svi_telemetry_all_rails(soc_num, &power);
 	if (ret != OOB_SUCCESS) {
@@ -1116,7 +1163,15 @@ static void apml_get_pwr_telemetry(uint8_t soc_num)
 	printf("------------------------------------------------------------"
 		"--\n");
 	printf("| Telemetry Power (Watts)\t\t |");
-	printf(" %-17.03f |\n", (float)power/1000);
+	if (status) {
+		/* Assign lower 16 bits */
+		update_rate = power;
+		printf(" %-17u |\n", (power >> 16));
+		printf("| Update rate (ms)\t\t\t | %-17u |\n", update_rate);
+	}
+	else {
+		printf(" %-17.03f |\n", (float)power / 1000);
+	}
 	printf("------------------------------------------------------------"
 		"--\n");
 }
@@ -1585,10 +1640,10 @@ static void apml_get_iod_bist_status(uint8_t soc_num)
 		return;
 	}
 
-	printf("-----------------------------------\n");
-	printf("| IOD BIST STATUS | \t%s |\n",
+	printf("-------------------------------------------\n");
+	printf("| IOD/AID BIST STATUS | \t%s |\n",
 	       buffer == 0 ? "BIST PASS" : "BIST FAIL");
-	printf("-----------------------------------\n");
+	printf("-------------------------------------------\n");
 }
 
 static void apml_get_ccd_bist_status(uint8_t soc_num, uint32_t instance)
@@ -1603,10 +1658,10 @@ static void apml_get_ccd_bist_status(uint8_t soc_num, uint32_t instance)
 		return;
 	}
 
-	printf("-----------------------------------\n");
-	printf("| CCD BIST STATUS | \t%s |\n",
+	printf("-------------------------------------------\n");
+	printf("| CCD/XCD BIST STATUS | \t%s |\n",
 		buffer == 0 ? "BIST PASS" : "BIST FAIL");
-	printf("-----------------------------------\n");
+	printf("-------------------------------------------\n");
 }
 
 static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
@@ -2013,209 +2068,262 @@ static void show_usage(char *exe_name)
 	printf("\t6. recovery\n");
 }
 
-static void show_module_commands(char *exe_name, char *command)
+static void get_mailbox_commands(char *exe_name)
 {
-	if (!strcmp(command, "mailbox") || !strcmp(command, "1"))
-		printf("Usage: %s  [SOC_NUM] [Option]"
-			"\nOption:\n"
-			"\n< MAILBOX COMMANDS [params] >:\n"
-			"  --showmailboxsummary\t\t\t\t\t\t\t\t "
-			"Get summary of the mailbox commands\n"
-			"  -p, (--showpower)\t\t\t\t\t\t\t\t "
-			"Get Power for a given socket in Watts\n"
-			"  -t, (--showtdp)\t\t\t\t\t\t\t\t "
-			"Get TDP for a given socket in Watts\n"
-			"  -s, (--setpowerlimit)\t\t\t  [POWER]\t\t\t\t "
-			"Set powerlimit for a given socket in mWatts\n"
-			"  -b, (--showboostlimit)\t\t  [THREAD]\t\t\t\t "
-			"Get APML and BIOS boostlimit for a given core index "
-			"in MHz\n"
-			"  -d, (--setapmlboostlimit)\t\t  [THREAD]"
-			"[BOOSTLIMIT]\t\t\t Set APML boostlimit for a given "
-			"core in MHz\n"
-			"  -a, (--setapmlsocketboostlimit)\t  [BOOSTLIMIT]"
-			"\t\t\t\t Set APML boostlimit for all cores in a "
-			"socket in MHz\n"
-			"  --showddrbandwidth\t\t\t\t\t\t\t\t Show "
-			"DDR Bandwidth of a system\n"
-			"  --set_and_verify_dramthrottle\t\t  [0 to 80%%]"
-			"\t\t\t\t Set DRAM THROTTLE for a given socket\n"
-			"  --setdimmpower\t\t\t  [DIMM_ADDR][POWER(mW)]"
-			"[UPDATERATE(ms)] Set dimm power reported"
-			" by bmc\n"
-			"  --setdimmthermalsensor\t\t  [DIMM_ADDR][TEMP(°C)]"
-			"[UPDATERATE(ms)]  Set dimm temperature "
-			"reported by bmc\n"
-			"  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
-			"Show per dimm power consumption\n"
-			"  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
-			"\t Show per dimm thermal sensor\n"
-			"  --showdimmtemprangeandrefreshrate\t  [DIMM_ADDR]"
-			"\t\t\t\t Show per dimm temp range and refresh rate\n"
-			"  --showPCIeconfigspacedata\t\t  [SEGMENT][OFFSET]\n"
-			"\t\t\t\t\t  [BUS(HEX)][DEVICE(HEX)][FUNC]\t\t Show "
-			"32 bit data from extended PCI config space\n"
-			"  --showvalidmcabanks\t\t\t\t\t\t\t\t "
-			"Show number of MCA banks & bytes/bank with valid "
-			"status after a fatal error\n"
-			"  --showrasmcamsr\t\t\t  [MCA_BANK_INDEX][OFFSET]"
-			"\t\t Show 32 bit data from specified MCA bank and "
-			"offset\n"
-			"  --showfchresetreason\t\t\t  [FCHID(0 or 1)]\t\t"
-			"\t Show previous reset reason from FCH register\n"
-			"  --showsktfreqlimit\t\t\t\t\t\t\t\t "
-			"Show per socket current active freq limit\n"
-			"  --showcclklimit\t\t\t  [THREAD]\t\t\t\t "
-			"Show core clock limit\n"
-			"  --showsvitelemetryallrails\t\t\t\t\t\t\t "
-			"Show svi based pwr telemetry for all rails\n"
-			"  --showsktfreqrange\t\t\t\t\t\t\t\t "
-			"Show per socket fmax fmin\n"
-			"  --showiobandwidth\t\t\t  "
-			"[LINKID(P0-P3,G0-G3)][BW(AGG_BW)]"
-			"\t Show IO bandwidth\n"
-			"  --showxGMIbandwidth\t\t\t  [LINKID(P0-P3,G0-G3)]"
-			"[BW(AGG_BW,RD_BW,WR_BW)]\t Show current xGMI bandwidth\n"
-			"  --setGMI3linkwidthrange\t\t  [MIN(0,1,2)]"
-			"[MAX(0,1,2)]\t\t Set GMI3link width, max value >= "
-			"min value\n"
-			"  --setxGMIlinkwidthrange\t\t  [MIN(0,1,2)]"
-			"[MAX(0,1,2)]\t\t Set xGMIlink width, max value >= "
-			"min value\n"
-			"  --APBDisable\t\t\t\t  [PSTATE(0,1,2)]\t\t\t"
-			" APB Disable specifies DFP-State, 0 is highest & 2 is"
-			" the lowest DF P-state\n"
-			"  --enabledfpstatedynamic\t\t  \t\t\t\t\t "
-			"Set df pstate dynamic\n"
-			"  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
-			"Show df clock, memory clock and umc clock divider\n"
-			"  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
-			"[MINDPM]\t\t Set dpm level range, valid dpm "
-			"values from 0 - 3, max value >= min value\n"
-			"  --showcpubasefreq\t\t\t  \t\t\t\t\t "
-			"Show cpu base frequency\n"
-			"  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
-			"Set PCIe link rate control\n"
-			"  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
-			"Set power efficiency profile policy\n"
-			"  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
-			"Show runnng average power on specified core\n"
-			"  --showraplpkg\t\t\t\t  \t\t\t\t\t "
-			"Show running average power on pkg\n"
-			"  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
-			"[MIN_PSTATE]\t\t Set data fabric pstate range, valid "
-			"value 0 - 2. max pstate <= min pstate\n"
-			"  --showiodbist\t\t\t\t  \t\t\t\t\t "
-			"Show IOD bist status\n"
-			"  --showccdbist\t\t\t\t  [CCDINSTANCE]\t\t\t\t "
-			"Show CCD bist status\n"
-			"  --showccxbist\t\t\t\t  [CCXINSTANCE]\t\t\t\t "
-			"Show CCX bist status\n"
-			"  --shownbioerrorloggingregister\t  "
-			"[QUADRANT(HEX)][OFFSET(HEX)]\t\t Show nbio error "
-			"logging register\n"
-			"  --showdramthrottle\t\t\t  \t\t\t\t\t "
-			"Show dram throttle\n"
-			"  --showprochotstatus\t\t\t  \t\t\t\t\t "
-			"Show prochot status\n"
-			"  --showprochotresidency\t\t  \t\t\t\t\t "
-			"Show prochot residency\n"
-			"  --showlclkdpmlevelrange\t\t  [NBIOID(0~3)]\t\t\t\t "
-			"Show LCLK DPM level range\n"
-			"  --showucoderevision\t\t\t  \t\t\t\t\t "
-			"Show micro code revision number\n"
-			"  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
-			"Request warm reset after sync flood\n"
-			"  --rasoverridedelay\t\t\t"
-			"  [DELAYVALUE(5 -120 mins)\n\t\t\t\t\t  "
-			"[DISABLEDELAY(0 - 1)]"
-			"[STOPDELAY(0 -1)] "
-			"Override delay reset cpu on sync flood\n"
-			"  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
-			"/summary)] Get post code for the given offset or"
-			" recent 8 offsets\n"
-			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
-			"Show consumed power\n"
-			"  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
-			"Show RAS DF error validity check for a given blockID\n"
-			"  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
-			"Show RAS DF error dump\n", exe_name);
-	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
-		printf("Usage: %s [SOC_NUM] [Option]"
-			"\nOption:\n"
-			"\n< SB-RMI COMMANDS >:\n"
-			"  --showrmiregisters\t\t\t\t\t\t Get "
-			"values of SB-RMI reg commands for a given socket\n"
-			"  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t "
-			"Clear the RAS status register value\n"
-			,exe_name);
-	else if (!strcmp(command, "sbtsi") || !strcmp(command, "3"))
-		printf("Usage: %s [SOC_NUM] [Option]"
-			"\nOption:\n"
-			"\n< SB-TSI COMMANDS [params] >:\n"
-			"  --showtsiregisters\t\t\t  \t\t\t\t\t Get "
-			"values of SB-TSI reg commands for a given socket\n"
-			"  --set_verify_updaterate\t	  [UPDATERATE]"
-			"\t\t\t\t Set APML Freq Update rate."
-			"Valid values are 2^i, i=[-4,6]\n"
-			"  --sethightempthreshold\t	  [TEMP(°C)]\t\t"
-			"\t\t Set APML High Temp Threshold\n"
-			"  --setlowtempthreshold\t\t	  [TEMP(°C)]\t\t"
-			"\t\t Set APML Low Temp Threshold\n"
-			"  --settempoffset\t\t	  [VALUE]\t\t\t\t Set "
-			"APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 "
-			"°C]\n"
-			"  --settimeoutconfig\t\t	  [VALUE]\t\t"
-			"\t\t Set/Reset APML CPU timeout config, VALUE = 0 or "
-			"1\n"
-			"  --setalertthreshold\t\t\t  [VALUE]\t\t\t\t "
-			"Set APML CPU alert threshold sample, VALUE = 1 to 8\n"
-			"  --setalertconfig\t\t	  [VALUE]\t\t\t\t "
-			"Set/Reset APML CPU alert config, VALUE = 0 or 1\n"
-			"  --setalertmask\t\t	  [VALUE]\t\t\t\t "
-			"Set/Reset APML CPU alert mask, VALUE = 0 or 1\n"
-			"  --setrunstop\t\t\t	  [VALUE]\t\t\t\t "
-			"Set/Reset APML CPU runstop, VALUE = 0 or 1\n"
-			"  --setreadorder\t\t	  [VALUE]\t\t\t\t "
-			"Set/Reset APML CPU read order, VALUE = 0 or 1\n"
-			"  --setara\t\t\t	  [VALUE]\t\t\t\t "
-			"Set/Reset APML CPU ARA, VALUE = 0 or 1\n",
-			exe_name);
-	else if (!strcmp(command, "reg-access") || !strcmp(command, "4"))
-		printf("Usage: %s [SOC_NUM] [Option]"
-			"\nOption:\n"
-			"\n< REG-ACCESS [params] >:\n"
-			"  --readregister\t\t\t  [sbrmi/sbtsi][REGISTER(hex)]\t\t\t "
-			"Read a register\n"
-			"  --writeregister\t\t\t  [sbrmi/sbtsi][REGISTER(hex)]"
-			"[VALUE(int)]\t Write to a register\n"
-			"  --readmsrregister\t\t\t  [REGISTER(hex)]"
-			"[thread]\t\t\t Read MSR register\n"
-			"  --readcpuidregister\t\t\t  [FUN(hex)]"
-			"[EXT_FUN(hex)][thread]\t\t Read CPUID register\n",
-			exe_name);
-	else if (!strcmp(command, "cpuid") || !strcmp(command, "5"))
-		printf("Usage: %s [SOC_NUM] [Option]"
-		       "\nOption:\n"
-		       "\n< CPUID [params] >:\n"
-		       "  --showthreadspercoreandsocket\t  \t\t\t\t "
-		       "Show threads per core and socket\n"
-			"  --showccxinfo\t\t\t\t\t "
-			"\t\t Show max num of cores per ccx and "
-			"ccx instances\n"
-		       "  --showSMTstatus\t\t\t  \t\t\t "
-		       "Show SMT enabled status\n", exe_name);
-	else if (!strcmp(command, "recovery") || !strcmp(command, "6"))
-		printf("Usage: %s [SOC_NUM] [Option]"
-		       "\nOption:\n"
-		       "\n< RECOVERY [params] >:\n"
-		       "  --apml_recovery \t\t[client(0,1)]\t\t "
-		       "Recovers APML client from bad state. client 0 ->"
-		       " SBRMI, 1 -> SBTSI\n", exe_name);
-	else
+	printf("Usage: %s  [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< MAILBOX COMMANDS [params] >:\n"
+	       "  --showmailboxsummary\t\t\t\t\t\t\t\t "
+	       "Get summary of the mailbox commands\n"
+	       "  -p, (--showpower)\t\t\t\t\t\t\t\t "
+	       "Get Power for a given socket in Watts\n"
+	       "  -t, (--showtdp)\t\t\t\t\t\t\t\t "
+	       "Get TDP for a given socket in Watts\n"
+	       "  -s, (--setpowerlimit)\t\t\t  [POWER]\t\t\t\t "
+	       "Set powerlimit for a given socket in mWatts\n"
+	       "  -b, (--showboostlimit)\t\t  [THREAD]\t\t\t\t "
+	       "Get APML and BIOS boostlimit for a given core index "
+	       "in MHz\n"
+	       "  -d, (--setapmlboostlimit)\t\t  [THREAD]"
+	       "[BOOSTLIMIT]\t\t\t Set APML boostlimit for a given "
+	       "core in MHz\n"
+	       "  -a, (--setapmlsocketboostlimit)\t  [BOOSTLIMIT]"
+	       "\t\t\t\t Set APML boostlimit for all cores in a "
+	       "socket in MHz\n"
+	       "  --showddrbandwidth\t\t\t\t\t\t\t\t Show "
+	       "DDR Bandwidth of a system\n"
+	       "  --set_and_verify_dramthrottle\t\t  [0 to 80%%]"
+	       "\t\t\t\t Set DRAM THROTTLE for a given socket\n"
+	       "  --setdimmpower\t\t\t  [DIMM_ADDR][POWER(mW)]"
+	       "[UPDATERATE(ms)] Set dimm power reported"
+	       " by bmc\n"
+	       "  --setdimmthermalsensor\t\t  [DIMM_ADDR][TEMP(°C)]"
+	       "[UPDATERATE(ms)]  Set dimm temperature "
+	       "reported by bmc\n"
+	       "  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
+	       "Show per dimm power consumption\n"
+	       "  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
+	       "\t Show per dimm thermal sensor\n"
+	       "  --showdimmtemprangeandrefreshrate\t  [DIMM_ADDR]"
+	       "\t\t\t\t Show per dimm temp range and refresh rate\n"
+	       "  --showPCIeconfigspacedata\t\t  [SEGMENT][OFFSET]\n"
+	       "\t\t\t\t\t  [BUS(HEX)][DEVICE(HEX)][FUNC]\t\t Show "
+	       "32 bit data from extended PCI config space\n"
+	       "  --showvalidmcabanks\t\t\t\t\t\t\t\t "
+	       "Show number of MCA banks & bytes/bank with valid "
+	       "status after a fatal error\n"
+	       "  --showrasmcamsr\t\t\t  [MCA_BANK_INDEX][OFFSET]"
+	       "\t\t Show 32 bit data from specified MCA bank and "
+	       "offset\n"
+	       "  --showfchresetreason\t\t\t  [FCHID(0 or 1)]\t\t"
+	       "\t Show previous reset reason from FCH register\n"
+	       "  --showsktfreqlimit\t\t\t\t\t\t\t\t "
+	       "Show per socket current active freq limit\n"
+	       "  --showcclklimit\t\t\t  [THREAD]\t\t\t\t "
+	       "Show core clock limit\n"
+	       "  --showsvitelemetryallrails\t\t\t\t\t\t\t "
+	       "Show svi based pwr telemetry for all rails\n"
+	       "  --showsktfreqrange\t\t\t\t\t\t\t\t "
+	       "Show per socket fmax fmin\n"
+	       "  --showiobandwidth\t\t\t  "
+	       "[LINKID(P0-P3,G0-G3)][BW(AGG_BW)]"
+	       "\t Show IO bandwidth\n"
+	       "  --showxGMIbandwidth\t\t\t  [LINKID(P0-P3,G0-G3)]"
+	       "[BW(AGG_BW,RD_BW,WR_BW)]\t Show current xGMI bandwidth\n"
+	       "  --setGMI3linkwidthrange\t\t  [MIN(0,1,2)]"
+	       "[MAX(0,1,2)]\t\t Set GMI3link width, max value >= "
+	       "min value\n"
+	       "  --setxGMIlinkwidthrange\t\t  [MIN(0,1,2)]"
+	       "[MAX(0,1,2)]\t\t Set xGMIlink width, max value >= "
+	       "min value\n"
+	       "  --APBDisable\t\t\t\t  [PSTATE(0,1,2)]\t\t\t"
+	       " APB Disable specifies DFP-State, 0 is highest & 2 is"
+	       " the lowest DF P-state\n"
+	       "  --enabledfpstatedynamic\t\t  \t\t\t\t\t "
+	       "Set df pstate dynamic\n"
+	       "  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
+	       "Show df clock, memory clock and umc clock divider\n"
+	       "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
+	       "[MINDPM]\t\t Set dpm level range, valid dpm "
+	       "values from 0 - 3, max value >= min value\n"
+	       "  --showcpubasefreq\t\t\t  \t\t\t\t\t "
+	       "Show cpu base frequency\n"
+	       "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "Set PCIe link rate control\n"
+	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "Set power efficiency profile policy\n"
+	       "  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
+	       "Show runnng average power on specified core\n"
+	       "  --showraplpkg\t\t\t\t  \t\t\t\t\t "
+	       "Show running average power on pkg\n"
+	       "  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
+	       "[MIN_PSTATE]\t\t Set data fabric pstate range, valid "
+	       "value 0 - 2. max pstate <= min pstate\n"
+	       "  --showiodbist\t\t\t\t  \t\t\t\t\t "
+	       "Show IOD bist status\n"
+	       "  --showccdbist\t\t\t\t  [CCDINSTANCE]\t\t\t\t "
+	       "Show CCD bist status\n"
+	       "  --showccxbist\t\t\t\t  [CCXINSTANCE]\t\t\t\t "
+	       "Show CCX bist status\n"
+	       "  --shownbioerrorloggingregister\t  "
+	       "[QUADRANT(HEX)][OFFSET(HEX)]\t\t Show nbio error "
+	       "logging register\n"
+	       "  --showdramthrottle\t\t\t  \t\t\t\t\t "
+	       "Show dram throttle\n"
+	       "  --showprochotstatus\t\t\t  \t\t\t\t\t "
+	       "Show prochot status\n"
+	       "  --showprochotresidency\t\t  \t\t\t\t\t "
+	       "Show prochot residency\n"
+	       "  --showlclkdpmlevelrange\t\t  [NBIOID(0~3)]\t\t\t\t "
+	       "Show LCLK DPM level range\n"
+	       "  --showucoderevision\t\t\t  \t\t\t\t\t "
+	       "Show micro code revision number\n"
+	       "  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
+	       "Request warm reset after sync flood\n"
+	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
+	       "Show consumed power\n"
+	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
+	       "Show RAS DF error validity check for a given blockID\n"
+	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
+	       "Show RAS DF error dump\n", exe_name);
+}
+
+static void get_rmi_commands(char *exe_name)
+{
+	printf("Usage: %s [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< SB-RMI COMMANDS >:\n"
+	       "  --showrmiregisters\t\t\t Get "
+	       "values of SB-RMI reg commands for a given socket\n", exe_name);
+}
+
+static void get_tsi_commands(char *exe_name)
+{
+	printf("Usage: %s [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< SB-TSI COMMANDS [params] >:\n"
+	       "  --showtsiregisters\t\t\t  \t\t\t\t\t Get "
+	       "values of SB-TSI reg commands for a given socket\n"
+	       "  --set_verify_updaterate\t	  [UPDATERATE]"
+	       "\t\t\t\t Set APML Freq Update rate."
+	       "Valid values are 2^i, i=[-4,6]\n"
+	       "  --sethightempthreshold\t	  [TEMP(°C)]\t\t"
+	       "\t\t Set APML High Temp Threshold\n"
+	       "  --setlowtempthreshold\t\t	  [TEMP(°C)]\t\t"
+	       "\t\t Set APML Low Temp Threshold\n"
+	       "  --settempoffset\t\t	  [VALUE]\t\t\t\t Set "
+	       "APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 "
+	       "°C]\n"
+	       "  --settimeoutconfig\t\t	  [VALUE]\t\t"
+	       "\t\t Set/Reset APML CPU timeout config, VALUE = 0 or "
+	       "1\n"
+	       "  --setalertthreshold\t\t\t  [VALUE]\t\t\t\t "
+	       "Set APML CPU alert threshold sample, VALUE = 1 to 8\n"
+	       "  --setalertconfig\t\t	  [VALUE]\t\t\t\t "
+	       "Set/Reset APML CPU alert config, VALUE = 0 or 1\n"
+	       "  --setalertmask\t\t	  [VALUE]\t\t\t\t "
+	       "Set/Reset APML CPU alert mask, VALUE = 0 or 1\n"
+	       "  --setrunstop\t\t\t	  [VALUE]\t\t\t\t "
+	       "Set/Reset APML CPU runstop, VALUE = 0 or 1\n"
+	       "  --setreadorder\t\t	  [VALUE]\t\t\t\t "
+	       "Set/Reset APML CPU read order, VALUE = 0 or 1\n"
+	       "  --setara\t\t\t	  [VALUE]\t\t\t\t "
+	       "Set/Reset APML CPU ARA, VALUE = 0 or 1\n", exe_name);
+}
+
+static void get_reg_access_commands(char *exe_name)
+{
+	printf("Usage: %s [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< REG-ACCESS [params] >:\n"
+	       "  --readregister\t\t\t  [sbrmi/sbtsi][REGISTER(hex)]\t\t\t "
+	       "Read a register\n"
+	       "  --writeregister\t\t\t  [sbrmi/sbtsi][REGISTER(hex)]"
+	       "[VALUE(int)]\t Write to a register\n"
+	       "  --readmsrregister\t\t\t  [REGISTER(hex)]"
+	       "[thread]\t\t\t Read MSR register\n"
+	       "  --readcpuidregister\t\t\t  [FUN(hex)]"
+	       "[EXT_FUN(hex)][thread]\t\t Read CPUID register\n", exe_name);
+}
+
+static void get_cpuid_access_commands(char *exe_name)
+{
+	printf("Usage: %s [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< CPUID [params] >:\n"
+	       "  --showthreadspercoreandsocket\t  \t\t\t\t "
+	       "Show threads per core and socket\n"
+	       "  --showccxinfo\t\t\t\t\t "
+	       "\t\t Show max num of cores per ccx and "
+	       "ccx instances\n"
+	       "  --showSMTstatus\t\t\t  \t\t\t "
+	       "Show SMT enabled status\n", exe_name);
+}
+
+static void get_recovery_commands(char *exe_name)
+{
+	printf("Usage: %s [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< RECOVERY [params] >:\n"
+	       "  --apml_recovery \t\t[client(0,1)]\t\t "
+	       "Recovers APML client from bad state. client 0 ->"
+	       " SBRMI, 1 -> SBTSI\n", exe_name);
+}
+
+static oob_status_t show_module_commands(char *exe_name, char *command)
+{
+	struct processor_info plat_info[1];
+	uint8_t soc_num = 0;
+	oob_status_t ret;
+
+	ret = get_platform_info(soc_num, plat_info);
+	if (ret) {
+		printf("Note: Help section not available as platform "
+		       "identification failed, will not be able to \n"
+		       "run the RMI messages.Please recover RMI device.\n");
+		return ret;
+	}
+
+	if (!strcmp(command, "mailbox") || !strcmp(command, "1")) {
+		if (plat_info->family == 0x19) {
+			switch (plat_info->model) {
+			case 0x90 ... 0x9F:
+				/* MI300A mailbox commands */
+				get_mi300_mailbox_commands(exe_name);
+				break;
+			default:
+				get_mailbox_commands(exe_name);
+				break;
+			}
+		}
+	} else if (!strcmp(command, "sbrmi") || !strcmp(command, "2")) {
+		get_rmi_commands(exe_name);
+	} else if (!strcmp(command, "sbtsi") || !strcmp(command, "3")) {
+
+		if (plat_info->family == 0x19) {
+			switch (plat_info->model) {
+			case 0x90 ... 0x9F:
+				/* MI300A TSI commands */
+				get_mi300_tsi_commands(exe_name);
+				break;
+			default:
+				get_tsi_commands(exe_name);
+				break;
+			}
+		}
+	} else if (!strcmp(command, "reg-access") || !strcmp(command, "4")) {
+		get_reg_access_commands(exe_name);
+	} else if (!strcmp(command, "cpuid") || !strcmp(command, "5")) {
+		get_cpuid_access_commands(exe_name);
+	} else if (!strcmp(command, "recovery") || !strcmp(command, "6")) {
+		get_recovery_commands(exe_name);
+	} else {
 		printf("Failed: Invalid command, Err[%d]: %s\n",
-			OOB_INVALID_INPUT,
-			esmi_get_err_msg(OOB_INVALID_INPUT));
+		       OOB_INVALID_INPUT,
+		       esmi_get_err_msg(OOB_INVALID_INPUT));
+		ret = OOB_INVALID_INPUT;
+	}
+	return ret;
 }
 
 static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
@@ -2369,7 +2477,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17u", nbio_data);
 
 	usleep(APML_SLEEP);
-	printf("\n| IOD_Bist_Result\t\t\t |");
+	printf("\n| IOD/AID_Bist_Result\t\t\t |");
 	ret = read_iod_bist(soc_num, &iod);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
@@ -2378,7 +2486,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 
 	usleep(APML_SLEEP);
 	instance = 0x0;
-	printf("\n| CCD_Bist_Result [0x%x]\t\t\t |", instance);
+	printf("\n| CCD/XCD_Bist_Result [0x%x]\t\t |", instance);
 	ret = read_ccd_bist_result(soc_num, instance, &ccd);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
@@ -2461,9 +2569,11 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	if (ret)
 		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 	else
-		printf(" %-17d\n", threads_per_soc);
+		printf(" %-17d", threads_per_soc);
 
-	printf("------------------------------------------------------------"
+	get_mi_300_mailbox_cmds_summary(soc_num);
+
+	printf("\n------------------------------------------------------------"
 	       "----\n");
 	return OOB_SUCCESS;
 }
@@ -2532,7 +2642,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_power dp_soc_num;
 	struct dimm_thermal dt_soc_num;
 	uint8_t soc_num;
-	uint8_t dimm_addr;
+	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
 	struct link_id_bw_type link;
 	float uprate;
@@ -2660,7 +2770,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
 	if (argc > 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
-		show_module_commands(argv[0], argv[2]);
+		ret = show_module_commands(argv[0], argv[2]);
 		return OOB_SUCCESS;
 	}
 
@@ -2724,8 +2834,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			return OOB_SUCCESS;
 		}
 
-		if ((opt == 'u' || opt == 'X' || opt == 'w' ||
-		    opt == 'x')) {
+		if (opt == 'u' || opt == 'X' || opt == 'w' ||
+		     opt == 'x') {
 			temp = strtof(argv[optind - 1], &end);
 			if (*end != '\0') {
 				printf("\nOption '-%c' require argument as valid"
@@ -2754,16 +2864,16 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'L' ||
 	    opt == 'V' ||
 	    opt == 'e' ||
-	    (opt == 0 && *(long_options[long_index].flag) == 15)) {
-		if (optind >= argc || *argv[optind] == '-') {
+           (opt == 0 && (*long_options[long_index].flag == 15))) {
+	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
 
-		if (opt == 'V' && validate_number(argv[optind - 1], 10)) {
+	       if (opt == 'V' && validate_number(argv[optind - 1], 10)) {
 			printf("Option '-%c' require 1st argument as valid"
-				" numeric value\n\n", opt);
+			       " numeric value\n\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
@@ -3034,10 +3144,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* DF block ID instance */
 			df_err.input[2] = atoi(argv[optind++]);
 			apml_get_ras_df_err_dump(soc_num, df_err);
-		} else {
-			printf(RED "Try `%s --help' for more "
-			       "information."RESET "\n\n", argv[0]);
-			return OOB_SUCCESS;
 		}
 		break;
 	case 'Y':
@@ -3256,6 +3362,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			RESET"\n\n", argv[0], argv[optind - 1]);
 		break;
 	case '?':
+		opterr = -1;
+		ret = parseesb_mi300_args(argc, argv, soc_num);
+		if (!ret)
+			break;
 		printf("Unrecognized option %s\n", argv[2]);
 		printf(RED "Try `%s --help' for more"
 		       " information." RESET "\n", argv[0]);
