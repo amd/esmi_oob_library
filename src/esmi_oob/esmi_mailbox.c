@@ -1062,3 +1062,27 @@ oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp)
 	return esmi_oob_read_mailbox(soc_num, READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
 				     0, ack_resp);
 }
+
+oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
+						struct ras_override_delay data_in,
+						bool *ack_resp)
+{
+	uint32_t input = 0, d_out = 0;
+	oob_status_t ret;
+	/* At present, Only P0 handles this request */
+	soc_num = 0;
+
+	input = data_in.delay_val_override;
+	if (data_in.disable_delay_counter)
+		input |= BIT(8);
+	if (data_in.stop_delay_counter)
+		input |= BIT(9);
+
+	ret = esmi_oob_read_mailbox(soc_num,
+				    BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE,
+				    input, &d_out);
+	if (!ret)
+		*ack_resp = d_out & 1;
+
+	return ret;
+}

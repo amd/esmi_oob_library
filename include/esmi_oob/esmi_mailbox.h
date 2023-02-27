@@ -44,7 +44,7 @@
 #include "apml_err.h"
 #include "stdbool.h"
 
-#define BIT(N) (1 << N)		//!< Perform left shift operation by N bits //
+#define BIT(N) ((uint32_t)1 << N)		//!< Perform left shift operation by N bits //
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
 /* LO_WORD_REG used in rapl package energy and read RAS
  * last transaction address */
@@ -128,7 +128,8 @@ typedef enum {
 	WRITE_DF_PSTATE_RANGE,
 	READ_LCLK_DPM_LEVEL_RANGE,
 	READ_UCODE_REVISION,
-	READ_BMC_RAS_RESET_ON_SYNC_FLOOD = 0x6B
+	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
+	READ_BMC_RAS_RESET_ON_SYNC_FLOOD
 } esb_mailbox_commmands;
 
 /**
@@ -288,6 +289,21 @@ union ras_df_err_dump {
 	uint8_t input[4];     //!< [0] offset, [1] DF block ID
 			      //!< [2] block ID inst, [3] RESERVED
 	uint32_t data_in;     //!< 32 bit data in for the DF err dump
+};
+/**
+ * @brief BMC RAS override delay reset CPU on sync flood. The structure contains
+ * delay value override in mins [5 -120 mins], disable delay counter and
+ * stop delay counter. If disable delay counter is set ResetCpuOnSyncFlood
+ * response will NOT be delayed in the next SyncFlood regardless of the value
+ * specified in delay_val_override. If StopDelayCounter is set it stops the
+ * active delay countdown which extends the DelayResetCpuOnSyncFlood indefinitely
+ * and system will not reset.
+ */
+
+struct ras_override_delay {
+	uint8_t delay_val_override;	//!< Delay value override [5 -120 mins]
+	bool disable_delay_counter;	//!< Disable delay counter
+	bool stop_delay_counter;	//!< stop delay counter
 };
 
 /**
@@ -1443,6 +1459,28 @@ oob_status_t read_ras_df_err_dump(uint8_t soc_num,
  *
  */
 oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp);
+
+/**
+ *  @brief Overrides delay reset cpu on sync flood value.
+ *
+ *  @details This function will override delay reset cpu on sync flood value
+ *  for the current boot instance. Delay value reverts to BIOS config selection
+ *  after reboot.Number of override requests is limited to 5 per boot instance.
+ *
+ *  @param[in] soc_num Socket index. At present, only P0 handles this request.
+ *
+ *  @param[in] d_in struct ras_override_delay_d_in containing delay value override
+ *  [5 - 120 mins], disable delay counter bit and stop delay counter bit.
+ *
+ *  @param[out] ack_resp acknowledgment response.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
+						struct ras_override_delay data_in,
+						bool *ack_resp);
 
 /* @}
  */  // end of MailboxMsg
