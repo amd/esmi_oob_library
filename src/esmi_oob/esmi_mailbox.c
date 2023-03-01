@@ -1107,6 +1107,69 @@ oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code
 	return esmi_oob_read_mailbox(soc_num, GET_POST_CODE, offset, post_code);
 }
 
+oob_status_t get_bmc_ras_run_time_err_validity_ck(uint8_t soc_num,
+						  uint32_t err_category,
+						  struct ras_rt_valid_err_inst *inst)
+{
+	uint32_t d_out = 0;
+	oob_status_t ret;
+
+	if (!inst)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_BMC_RAS_RUNTIME_ERR_VALIDITY_CHECK,
+				    err_category, &d_out);
+	if (!ret) {
+		inst->number_of_inst = d_out;
+		inst->number_bytes = (d_out >> WORD_BITS);
+	}
+
+	return ret;
+}
+
+oob_status_t get_bmc_ras_run_time_error_info(uint8_t soc_num,
+					     struct run_time_err_d_in d_in,
+					     uint32_t *err_info)
+{
+	uint32_t d_input = 0;
+
+	d_input = (uint32_t) d_in.valid_inst_index << WORD_BITS
+		   | (uint32_t)d_in.category << BYTE_BITS | d_in.offset;
+	return esmi_oob_read_mailbox(soc_num, GET_BMC_RAS_RUNTIME_ERR_INFO,
+				     d_input, err_info);
+}
+
+oob_status_t set_bmc_ras_err_threshold(uint8_t soc_num,
+				       struct run_time_threshold th)
+{
+	uint32_t input = 0;
+
+	input = (uint32_t) th.max_intrupt_rate << MAX_INTR_RATE_POS
+		 | (uint32_t) th.err_count_th << ERR_COUNT_TH | th.err_type;
+
+	return esmi_oob_write_mailbox(soc_num, SET_BMC_RAS_ERR_THRESHOLD,
+				      input);
+}
+
+oob_status_t set_bmc_ras_oob_config(uint8_t soc_num, struct oob_config_d_in d_in)
+{
+	uint32_t input = 0;
+
+	input = (uint32_t)d_in.core_mca_err_reporting_en << CORE_MCA_ERR_REPORT_EN
+		| (uint32_t)d_in.pcie_err_reporting_en << PCIE_ERR_REPORT_EN
+		| (uint32_t)d_in.dram_cecc_leak_rate << DRAM_CECC_LEAK_RATE
+		| (uint32_t)d_in.dram_cecc_oob_ec_mode << DRAM_CECC_OOB_EC_MODE
+		| (uint32_t)d_in.mca_oob_misc0_ec_enable;
+	return esmi_oob_write_mailbox(soc_num, SET_BM_RAS_OOB_CONFIG,
+				      input);
+}
+
+oob_status_t get_bmc_ras_oob_config(uint8_t soc_num, uint32_t *oob_config)
+{
+	return esmi_oob_read_mailbox(soc_num, GET_BMC_RAS_OOB_CONFIG,
+				     DEFAULT_DATA, oob_config);
+}
+
 oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data)
 {
 	uint32_t buffer;

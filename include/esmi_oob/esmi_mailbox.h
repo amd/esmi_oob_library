@@ -45,6 +45,31 @@
 #include "apml_err.h"
 #include <stdbool.h>
 
+/* RAS OOB Config bits position for 0x61 - 0x65 msgs */
+/* DRAM cecc oob ec mode */
+#define DRAM_CECC_OOB_EC_MODE   1
+/* Error count threshold position */
+#define ERR_COUNT_TH            2
+/* DRAM cecc leak rate */
+#define DRAM_CECC_LEAK_RATE     3
+/* PCIE error reporting enable */
+#define PCIE_ERR_REPORT_EN      8
+/* MCA Threshold Interrupt */
+#define MCA_TH_INTR             11
+/* CECC Threshold Interrupt */
+#define CECC_TH_INTR            12
+/* PCIE Threshold Interrupt */
+#define PCIE_TH_INTR		13
+/* MCA Max interrupt rate */
+#define MCA_MAX_INTR_RATE       15
+/* Interrupt rate position */
+#define MAX_INTR_RATE_POS       18
+/* DRAM CECC Max Interrupt rate */
+#define DRAM_CECC_MAX_INTR_RATE 19
+/* PCIE Max Interrrupt rate */
+#define PCIE_MAX_INTR_RATE	23     //!< PCIE Max interrupt rate //
+/* core mca error reporting enable*/
+#define CORE_MCA_ERR_REPORT_EN  31
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
 /* Maximum DF block-ID's */
@@ -124,6 +149,11 @@ typedef enum {
 	WRITE_DF_PSTATE_RANGE,
 	READ_LCLK_DPM_LEVEL_RANGE,
 	READ_UCODE_REVISION,
+	GET_BMC_RAS_RUNTIME_ERR_VALIDITY_CHECK,
+	GET_BMC_RAS_RUNTIME_ERR_INFO,
+	SET_BMC_RAS_ERR_THRESHOLD,
+	SET_BM_RAS_OOB_CONFIG,
+	GET_BMC_RAS_OOB_CONFIG,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD
 } esb_mailbox_commmands;
@@ -304,6 +334,61 @@ struct ras_override_delay {
 	uint8_t delay_val_override;	//!< Delay value override [5 -120 mins]
 	uint8_t disable_delay_counter : 1;	//!< Disable delay counter
 	uint8_t stop_delay_counter : 1;	//!< stop delay counter
+};
+
+/**
+ * @brief Number of valid error instance per category. It consists of
+ * number of bytes per each category and number of instances of each
+ * category.
+ */
+struct ras_rt_valid_err_inst {
+	uint16_t number_bytes;          //!< Number of bytes of given category
+	uint16_t number_of_inst;        //!< Number of instances of given catg
+};
+
+/**
+ * @brief Get run time error information data_in. Runtime error data_in includes
+ * 4 byte aligned offset in instance, runtime error category and zero based
+ * index of valid instance
+ * number of bytes per each category and number of instances of each
+ * category.
+ */
+struct run_time_err_d_in {
+	uint8_t offset;                 //!< 4 byte aligned offset in instance
+	uint8_t category;               //!< Runtime error category
+	uint8_t valid_inst_index;       //!< Valid inst index returned by 61h
+};
+
+/**
+ * @brief Configure threshold counters for MCA, DRAM CECC and PCIE.
+ * structure consists of error type, error count threshold and
+ * max interrupt rate.
+ */
+struct run_time_threshold {
+	uint8_t err_type : 2;           //!< error type [00(MCA), 01(DRAM CECC)
+					//!< 10 (PCIE_UE) and 11(RSVD)
+	uint16_t err_count_th;          //!< error count threshold
+	uint8_t max_intrupt_rate : 4;	//!< Max interrupt rate
+};
+
+/**
+ * @brief Configure oob state infrastructure in SoC.
+ * structure consists of mca_oob_misc0_ec_enable, dram_cecc_oob_ec_mode,
+ * dram_cecc_leak_rate, pcie_err_reporting_en and core_mca_err_reporting_en.
+ */
+struct oob_config_d_in {
+	uint8_t mca_oob_misc0_ec_enable : 1;	//!< MCA OOB MISC0 Error Counter
+						//!< Enable: 0 = disable, 1 = enable
+	uint8_t dram_cecc_oob_ec_mode : 2;	//!< DRAM CECC OOB error counter
+						//!< mode 00 = disable,
+						//!< 01 enable in noleak mode, 10 = enable
+						//!< in leak mode and 11 is reserved
+	uint8_t dram_cecc_leak_rate: 5;		//!< DRAM CECC OOB leak rate.
+						//!< Valid values are 00 - 1Fh
+	uint8_t pcie_err_reporting_en : 1;	//!< PCIe OOB error reporting enable
+						//!< 0 disable and 1 for enable
+	uint8_t	core_mca_err_reporting_en : 1;	//!< Core MCA OOB error reporting enable
+						//!< 0 disable and 1 for enable
 };
 
 /**
@@ -1557,6 +1642,114 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
  *
  */
 oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code);
+
+/**
+ *  @brief Reads number of valid error instances per category.
+ *
+ *  @details This function will read number of valid error instances per
+ *  category. Valid categories are MCA[00], DRAM CECC[01], PCIE [10],
+ *  RSVD[11].
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] err_category Runtime error category MCA[00], DRAM CECC[01],
+ *  PCIe[10] and RSVD [11].
+ *
+ *  @param[out] inst struct ras_rt_valid_err_inst containing number of bytes
+ *  of error category and number of instances of error category.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_bmc_ras_run_time_err_validity_ck(uint8_t soc_num,
+						  uint32_t err_category,
+						  struct ras_rt_valid_err_inst *inst);
+
+/**
+ *  @brief Reads BMC RAS runtime error information.
+ *
+ *  @details This function will read BMC RAS runtime error information based
+ *  on category. If category is MCA then it will read 32 bit of data from
+ *  MCA MSR Bank.
+ *  If category is DRAM CECC then will read error count, counter info and
+ *  corresponding from the valid DRAM ECC correctable error counter instance.
+ *  If category is PCIE then it returns 32 bit PCIE error data from given
+ *  offset of given instance.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in]  d_in struct run_time_err_d_in contatining 4 byte aligned offset,
+ *  runtime error category and 0 based index of valid instance returned by
+ *  BMC_RAS_RUNTIME_ERR_VALIDITY_CHECK.
+ *
+ *  @param[out] err_info error information for a given category with valid instance
+ *  and offset.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_bmc_ras_run_time_error_info(uint8_t soc_num,
+					     struct run_time_err_d_in d_in,
+					     uint32_t *err_info);
+
+/**
+ *  @brief Sets BMC RAS error threshold
+ *
+ *  @details This function will configure thresholding counters for MCA,
+ *  DRAM CECC or PCIE.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] th struct run_time_threshold containing error type [00(MCA),
+ *  01(DRAM CECC), 10(PCIE_UE), 11(PCIE_CE)], error count threshold and
+ *  max interrupt rate.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_bmc_ras_err_threshold(uint8_t soc_num,
+				       struct run_time_threshold th);
+
+
+/**
+ *  @brief Configures OOB state infrastructure in SoC
+ *
+ *  @details This function will configure OOB state infrastructure in
+ *  the SoC.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] d_in struct oob_config_d_in containing mca_oob_misc0_ec_enable,
+ *  dram_cecc_oob_ec_mode, dram_cecc_leak_rate, pcie_err_reporting_en,
+ *  pcie_ue_oob_counter_en and core_mca_err_reporting_en.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_bmc_ras_oob_config(uint8_t soc_num,
+				    struct oob_config_d_in d_in);
+
+/**
+ *  @brief Reads the current status of OOB state infrastructure in SoC
+ *
+ *  @details This function will read the current status of OOB state
+ *  configuration in the SoC.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] out struct oob_config_d_in containing mca_oob_misc0_ec_enable,
+ *  dram_cecc_oob_ec_mode, dram_cecc_leak_rate, pcie_err_reporting_en,
+ *  pcie_ue_oob_counter_en and core_mca_err_reporting_en.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_bmc_ras_oob_config(uint8_t soc_num, uint32_t *oob_config);
 
 /**
  *  @brief Get the 64 bit PPIN fuse
