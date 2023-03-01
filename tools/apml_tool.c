@@ -67,7 +67,26 @@
 #define SCALING_FACTOR	0.25
 /* Maximum post code offset */
 #define MAX_POST_CODE_OFFSET	8
-
+/* Zero OFFSET */
+#define ZERO_OFFSET		0
+/* DRAM ECC error category */
+#define DRAM_ECC_ERR_CAT	1
+/* Rank Multiplier Mask */
+#define RANK_MUL_MASK		0x7
+/* Nibble mask */
+#define NIBBLE_MASK		0xF
+/* Channel number position */
+#define CH_NUM_POS		16
+/* Sub channel number position */
+#define SUB_CH_POS		20
+/* Chip select number position */
+#define CHIP_SEL_NUM_POS	21
+/* Rank multiplier number */
+#define RANK_MUL_NUM_POS	23
+/* BIT mask */
+#define BIT_MASK		0x1
+/* DRAM CECC leak rate mask */
+#define DRAM_CECC_LEAK_RATE_MASK	0x1F
 static int flag;
 
 static oob_status_t get_platform_info(uint8_t soc_num,
@@ -2097,6 +2116,154 @@ static void apml_clear_ras_status_register(uint8_t soc_num, uint8_t value)
 	return;
 }
 
+static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_num,
+						   uint32_t rt_err_category)
+{
+	struct ras_rt_valid_err_inst inst;
+	oob_status_t ret;
+	char *err_catg;
+
+	ret = get_bmc_ras_run_time_err_validity_ck(soc_num, rt_err_category,
+						   &inst);
+	if (ret) {
+		printf("Failed to get bmc ras runtime error validity check,"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	switch (rt_err_category) {
+	case 0:
+		err_catg = "MCA";
+		break;
+	case 1:
+		err_catg = "DRAM CECC";
+		break;
+	case 2:
+		err_catg = "PCIe";
+		break;
+	default:
+		err_catg = "RSVD";
+		break;
+	}
+
+	printf("----------------------------------------------------"
+	       "----------------\n");
+	printf("| %-9s: Number of valid err Instance \t| %16u |\n",
+	       err_catg, inst.number_of_inst);
+	printf("| %-9s: Number of bytes\t\t\t| %16u |\n",
+	       err_catg, inst.number_bytes);
+	printf("----------------------------------------------------"
+	       "----------------\n");
+}
+
+static void apml_get_ras_runtime_err_info(uint8_t soc_num,
+					  struct run_time_err_d_in d_in)
+{
+	uint32_t d_out;
+	uint16_t err_count;
+	uint8_t ch_num;
+	uint8_t sub_ch;
+	uint8_t chip_sel_num;
+	uint8_t rank_mult;
+	oob_status_t ret;
+
+	ret = get_bmc_ras_run_time_error_info(soc_num, d_in, &d_out);
+	if (ret) {
+		printf("Failed to get bmc ras runtime error info,"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	if (d_in.category == DRAM_ECC_ERR_CAT && d_in.offset == ZERO_OFFSET) {
+		err_count = d_out;
+		ch_num = (d_out >> CH_NUM_POS) & NIBBLE_MASK;
+		sub_ch = (d_out >> SUB_CH_POS) & BIT_MASK;
+		chip_sel_num = (d_out >> CHIP_SEL_NUM_POS) & TRIBBLE_BITS;
+		rank_mult = (d_out >> RANK_MUL_NUM_POS) & RANK_MUL_MASK;
+		printf("---------------------------------\n");
+		printf("|Error Count | %16u |\n", err_count);
+		printf("|CHAN Number | %16u |\n", ch_num);
+		printf("|SUB Channel | %16u |\n", sub_ch);
+		printf("|Chip sel num| %16u |\n", chip_sel_num);
+		printf("|Rank Mul num| %16u |\n", rank_mult);
+		printf("---------------------------------\n");
+		return;
+	}
+	printf("------------------------------------\n");
+	printf("| Data\t\t| %16u |\n", d_out);
+	printf("------------------------------------\n");
+}
+
+static void apml_set_ras_err_threshold(uint8_t soc_num,
+				       struct run_time_threshold th)
+{
+	oob_status_t ret;
+
+	ret = set_bmc_ras_err_threshold(soc_num, th);
+	if (ret) {
+		printf("Failed to set bmc ras error threshold "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("BMC RAS error threshold set successfully\n");
+}
+
+static void apml_set_ras_oob_config(uint8_t soc_num,
+				    struct oob_config_d_in d_in)
+{
+	oob_status_t ret;
+
+	ret = set_bmc_ras_oob_config(soc_num, d_in);
+	if (ret) {
+		printf("Failed to set ras oob configuration "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("BMC RAS oob configuration set successfully\n");
+}
+
+static void apml_get_ras_oob_config(uint8_t soc_num)
+{
+	oob_status_t ret;
+	uint32_t d_out;
+
+	ret = get_bmc_ras_oob_config(soc_num, &d_out);
+	if (ret) {
+		printf("Failed to get ras oob configuration "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("-----------------------------------------------------"
+	       "--------\n");
+	printf("| MCA OOB Err Counter\t\t\t\t | %-8s |\n", (d_out & BIT_MASK)
+	       ? "Enabled" : "Disabled");
+	printf("| DRAM CECC OOB CECC Err Counter Mode\t\t | %-8u |\n",
+	       (d_out >> DRAM_CECC_OOB_EC_MODE & TRIBBLE_BITS));
+	printf("| DRAM CECC OOB Leak Rate\t\t\t | 0x%-6x |\n",
+	       (d_out >> DRAM_CECC_LEAK_RATE & DRAM_CECC_LEAK_RATE_MASK));
+	printf("| PCIe OOB Error Reporting Enable\t\t | %-8s |\n",
+	       (d_out >> PCIE_ERR_REPORT_EN & BIT_MASK) ?
+	       "Enabled" : "Disabled");
+	printf("| MCA Thresholding Interrupt Enable\t\t | %-8s |\n",
+	       (d_out >> MCA_TH_INTR & BIT_MASK) ? "Enabled" : "Disabled");
+	printf("| DRAM CECC Thresholding Interrupt Enable\t | %-8s |\n",
+	       (d_out >> CECC_TH_INTR & BIT_MASK) ? "Enabled" : "Disabled");
+	printf("| PCIE Thresholding Interrupt Enable\t\t | %-8s |\n",
+	       (d_out >> PCIE_TH_INTR & BIT_MASK) ? "Enabled" : "Disabled");
+	printf("| MCA Max Interrupt Rate\t\t\t | 0x%-6x |\n",
+	       (d_out >> MCA_MAX_INTR_RATE & NIBBLE_MASK));
+	printf("| DRAM CECC Max Interrupt Rate\t\t\t | 0x%-6x |\n",
+	       (d_out >> DRAM_CECC_MAX_INTR_RATE & NIBBLE_MASK));
+	printf("| PCIe Max Interrupt Rate  \t\t\t | 0x%-6x |\n",
+	       (d_out >> PCIE_MAX_INTR_RATE & NIBBLE_MASK));
+	printf("| Core MCA OOB Error Reporting Enable\t\t | %-8s |\n",
+	       (d_out >> CORE_MCA_ERR_REPORT_EN & BIT_MASK)
+	       ? "Enabled" : "Disabled");
+	printf("------------------------------------------------------"
+	       "-------\n");
+}
+
 static oob_status_t apml_get_ppin_fuse(uint8_t soc_num)
 {
 	uint64_t data = 0;
@@ -2298,16 +2465,30 @@ static void get_mailbox_commands(char *exe_name)
 	       " recent 8 offsets\n"
 	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 	       "Show consumed power\n"
+	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
+	       "Show RAS DF error validity check for a given blockID\n"
+	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
+	       "Show RAS DF error dump\n"
+	       "  --showrasrterrvalidityck\t\t  [ERR_CATERGORY(0-2)]\t\t\t "
+	       "BMC RAS runtime error validity check\n"
+	       "  --showrasrterrinfo\t\t\t  [OFFSET][CATEGORY][VALID_INST]\t "
+	       "BMC RAS runtime error Info\n"
+	       "  --setraserrthreshold\t\t\t  [CATEGORY][ERR_CT][MAX_INTR_RATE]\t "
+	       "BMC RAS error threshold\n"
+	       "  --setrasoobconfig\t\t\t  [MCA_MISC0_ERR_CNTR_EN(0,1)]"
+	       "\n\t\t\t\t\t  [DRAM_ERR_CNTR_MD(0 - 2)]"
+	       "\n\t\t\t\t\t  [DRAM_LEAK_RATE(0 - 31)]"
+	       "\n\t\t\t\t\t  [PCIE_ERR_RPRT_EN(0,1)]"
+	       "\n\t\t\t\t\t  [CORE_MCA_ERR_RPRT_EN]"
+	       "\t\t Configures OOB state infrastructure in SoC\n"
+	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
+	       "Show BMC ras oob configuration\n"
 	       "  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
 	       " fuse data\n"
 	       "  --showcclkfreqlimit\t\t\t\t\t\t\t\t Get "
 	       "cclk freqlimit for a given socket in MHz\n"
 	       "  --showc0residency\t\t\t\t\t\t\t\t Show "
-	       "c0_residency for a given socket\n"
-	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
-	       "Show RAS DF error validity check for a given blockID\n"
-	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
-	       "Show RAS DF error dump\n", exe_name);
+	       "c0_residency for a given socket\n", exe_name);
 }
 
 static void get_rmi_commands(char *exe_name)
@@ -2793,6 +2974,9 @@ static void validate_modules(uint8_t soc_num, bool *is_sbrmi,
 static oob_status_t parseesb_args(int argc, char **argv)
 {
 	union ras_df_err_dump df_err = {0};
+	struct oob_config_d_in oob_config = {0};
+	struct run_time_threshold th = {0};
+	struct run_time_err_d_in err_d_in = {0};
 	struct ras_override_delay d_in = {0};
 	struct nbio_err_log nbio;
 	struct lclk_dpm_level_range lclk;
@@ -2896,6 +3080,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"rasoverridedelay",		required_argument,	&flag,  32},
 		{"getpostcode",			required_argument,	&flag,  33},
 		{"clearrasstatusregister",	required_argument,	&flag,	34},
+		{"showrasrterrvalidityck",	required_argument,	&flag,	35},
+		{"showrasrterrinfo",		required_argument,	&flag,	36},
+		{"setraserrthreshold",		required_argument,	&flag,	37},
+		{"setrasoobconfig",		required_argument,	&flag,	38},
+		{"getrasoobconfig",		no_argument,		&flag,	39},
 		{"showppinfuse",		no_argument,		&flag,  40},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
@@ -3002,6 +3191,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 *(long_options[long_index].flag) == 19 ||
 			 *(long_options[long_index].flag) == 31 ||
 			 *(long_options[long_index].flag) == 34 ||
+			 *(long_options[long_index].flag) == 35 ||
 			 (*long_options[long_index].flag) == 41)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
@@ -3104,6 +3294,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	if (opt == 0 && (*long_options[long_index].flag == 16
 			 || *long_options[long_index].flag == 32
+			 || *long_options[long_index].flag == 36
+			 || *long_options[long_index].flag == 37
 			 || *long_options[long_index].flag == 42)) {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
@@ -3181,6 +3373,25 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
+	if (opt == 0 && *long_options[long_index].flag == 38) {
+		if ((optind + 3) >= argc || *argv[optind] == '-'
+		     || *argv[optind + 1] == '-' || *argv[optind + 2] == '-'
+		     || *argv[optind + 3] == '-') {
+			printf("\nOption '--%s' requires 5 arguments\n",
+			       long_options[long_index].name);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+		if (validate_number(argv[optind - 1], 10) ||
+		    validate_number(argv[optind], 10) ||
+		    validate_number(argv[optind + 1], 10) ||
+		    validate_number(argv[optind + 2], 10) ||
+		    validate_number(argv[optind + 3], 10)) {
+			printf("\nOption '%s' requires all arguments as "
+			       "valid numeric value\n", argv[optind - 1]);
+			return OOB_SUCCESS;
+		}
+	}
 	switch (opt) {
 	case 0:
 		if (*(long_options[long_index].flag) == 1)
@@ -3310,6 +3521,44 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = atoi(argv[optind - 1]);
 			/* Set RAS Status Register */
 			apml_clear_ras_status_register(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 35) {
+			/* RAS runtime error validity check */
+			val1 = atoi(argv[optind - 1]);
+			apml_get_bmc_ras_rt_err_validity_check(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 36) {
+			/* RAS runtime error info */
+			/* offset */
+			err_d_in.offset = atoi(argv[optind - 1]);
+			/* Category */
+			err_d_in.category = atoi(argv[optind++]);
+			/* Valid instance index */
+			err_d_in.valid_inst_index = atoi(argv[optind++]);
+			apml_get_ras_runtime_err_info(soc_num, err_d_in);
+		} else if (*(long_options[long_index].flag) == 37) {
+			/* Error/category type */
+			th.err_type = atoi(argv[optind - 1]);
+			/* Error count threshold */
+			th.err_count_th = atoi(argv[optind++]);
+			/* Max interrupt rate */
+			th.max_intrupt_rate = atoi(argv[optind++]);
+			/* RAS runtime error threshold */
+			apml_set_ras_err_threshold(soc_num, th);
+		} else if (*(long_options[long_index].flag) == 38) {
+			/* RAS set oob config */
+			/* MCA OOB MISC0 Error Counter Enable */
+			oob_config.mca_oob_misc0_ec_enable = atoi(argv[optind - 1]);
+			/* DRAM CECC OOB Error Counter Mode */
+			oob_config.dram_cecc_oob_ec_mode = atoi(argv[optind++]);
+			/* PCIe OOB Error Reporting Enable */
+			oob_config.dram_cecc_leak_rate = atoi(argv[optind++]);
+			/* PCIe OOB Error Reporting Enable */
+			oob_config.pcie_err_reporting_en = atoi(argv[optind++]);
+			/* Core MCA OOB Error Reporting Enable */
+			oob_config.core_mca_err_reporting_en = atoi(argv[optind++]);
+			apml_set_ras_oob_config(soc_num, oob_config);
+		} else if (*(long_options[long_index].flag) == 39) {
+			/* RAS GET OOB Configuration */
+			apml_get_ras_oob_config(soc_num);
 		} else if (*(long_options[long_index].flag) == 40) {
 			/* show PPIN Fuse data */
 			apml_get_ppin_fuse(soc_num);
