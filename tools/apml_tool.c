@@ -65,6 +65,8 @@
 #define THREADS_L3_FUNC         0x8000001D
 /* CPUID extended function for max threads per l3 */
 #define THREADS_L3_EXTD         0x3
+/* Maximum post code offset */
+#define MAX_POST_CODE_OFFSET	8
 
 static int flag;
 
@@ -1926,6 +1928,53 @@ static void apml_override_delay_reset_on_sync_flood(uint8_t soc_num,
 	printf("----------------------------------------------------\n");
 }
 
+static void apml_get_post_code(uint8_t soc_num, char *offset)
+{
+	uint32_t post_code = 0, code_offset = 0, is_digit = 0;
+	uint8_t index = 0;
+	oob_status_t ret;
+
+	is_digit  = isdigit(offset[0]);
+	if (is_digit) {
+		code_offset = atoi(offset);
+		ret = get_post_code(soc_num, code_offset, &post_code);
+		if (ret) {
+			printf("Failed to get post code for a given offset,"
+			       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+			return;
+		}
+
+		printf("--------------------------------------\n");
+		printf("| Post code [%u]\t | %-17u |\n", code_offset,
+		       post_code);
+		printf("--------------------------------------\n");
+		return;
+	}
+	if ((strcmp(offset, "s") == 0) || (strcmp(offset, "summary") == 0)) {
+		for (index = 0; index < 8; index++) {
+			ret = get_post_code(soc_num, index, &post_code);
+			if (ret) {
+				printf("Failed to get post code for a given"
+				       "offset[%u],Err[%d]: %s\n", index, ret,
+				       esmi_get_err_msg(ret));
+				return;
+			}
+			if (index == 0)
+				printf("-----------------------------------"
+				       "---\n");
+			printf("| Post code [%u]\t | %-17u |\n", index,
+			       post_code);
+		}
+		printf("--------------------------------------\n");
+	}
+	else {
+		printf("Failed to get post code for a given offset,"
+		       "Err[%d]: %s\n", OOB_INVALID_INPUT,
+		       esmi_get_err_msg(OOB_INVALID_INPUT));
+		return;
+	}
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2065,6 +2114,9 @@ static void show_module_commands(char *exe_name, char *command)
 			"[DISABLEDELAY(0 - 1)]"
 			"[STOPDELAY(0 -1)] "
 			"Override delay reset cpu on sync flood\n"
+			"  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
+			"/summary)] Get post code for the given offset or"
+			" recent 8 offsets\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 			"Show consumed power\n"
 			"  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
@@ -2554,6 +2606,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showccxinfo",			no_argument,		&flag,	30},
 		{"apml_recovery",		required_argument,	&flag,	31},
 		{"rasoverridedelay",		required_argument,	&flag,  32},
+		{"getpostcode",			required_argument,	&flag,  33},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{0,			0,			0,	0},
@@ -2941,6 +2994,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* stop delay counter bit */
 			d_in.stop_delay_counter = atoi(argv[optind++]);
 			apml_override_delay_reset_on_sync_flood(soc_num, d_in);
+		} else if (*(long_options[long_index].flag) == 33) {
+			/* Get Post code for 8 offsets */
+			apml_get_post_code(soc_num, argv[optind - 1]);
 		} else if (*(long_options[long_index].flag) == 41) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_ras_df_validity_chk(soc_num, val1);
