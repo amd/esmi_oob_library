@@ -1086,3 +1086,9 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
 
 	return ret;
 }
+
+oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code)
+{
+	return esmi_oob_read_mailbox(soc_num, GET_POST_CODE, offset, post_code);
+}
+

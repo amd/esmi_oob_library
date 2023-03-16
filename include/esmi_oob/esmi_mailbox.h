@@ -95,6 +95,7 @@ typedef enum {
 	READ_CCD_BIST_RESULT,
 	READ_CCX_BIST_RESULT,
 	READ_DDR_BANDWIDTH = 0x18,
+	GET_POST_CODE = 0x20,
 	WRITE_BMC_REPORT_DIMM_POWER = 0X40,
 	WRITE_BMC_REPORT_DIMM_THERMAL_SENSOR,
 	READ_BMC_RAS_PCIE_CONFIG_ACCESS,
@@ -1481,6 +1482,27 @@ oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp);
 oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
 						struct ras_override_delay data_in,
 						bool *ack_resp);
+/**
+ *  @brief Read post code.
+ *
+ *  @details This function will read most recent post code at the
+ *  specified offset.SMU caches 8 most recent post codes.When the
+ *  input is 0 the SMU will refresh the cache before running the
+ *  latest post code. Input as 0 refers to most recent post code
+ *  and higher inputs refers to the older post code.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] offset post code offset
+ *
+ *  @param[out] post_code recent post code
+ *  of error category and number of instances of error category.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code);
 
 /* @}
  */  // end of MailboxMsg
