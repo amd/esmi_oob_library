@@ -296,14 +296,10 @@ oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
 oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
 				   uint8_t *buffer)
 {
-	oob_status_t ret;
+	return esmi_oob_read_byte(soc_num, SBRMI_RASSTATUS, SBRMI, buffer);
+}
 
-	ret = esmi_oob_read_byte(soc_num,
-				 SBRMI_RASSTATUS, SBRMI, buffer);
-	if (ret)
-		return ret;
-
-	/* BMC should write 1 to clear them, make way for next update */
-	return esmi_oob_write_byte(soc_num,
-				   SBRMI_RASSTATUS, SBRMI, *buffer);
+oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer)
+{
+	return esmi_oob_write_byte(soc_num, SBRMI_RASSTATUS, SBRMI, buffer);
 }

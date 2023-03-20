@@ -279,6 +279,18 @@ oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
 oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
 				   uint8_t *buffer);
 
+/**
+ *  @brief This API will clear ras status register.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] buffer bit mask to clear ras status bits
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer);
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 
