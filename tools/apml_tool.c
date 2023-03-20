@@ -1975,6 +1975,23 @@ static void apml_get_post_code(uint8_t soc_num, char *offset)
 	}
 }
 
+static void apml_clear_ras_status_register(uint8_t soc_num, uint8_t value)
+{
+	uint8_t reg_value;
+	oob_status_t ret;
+
+	ret = clear_sbrmi_ras_status(soc_num, value);
+	if (ret) {
+		printf("Failed to clear RAS status register"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("Required RAS status register bit cleared successfully\n");
+
+	return;
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2127,8 +2144,10 @@ static void show_module_commands(char *exe_name, char *command)
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
 			"\n< SB-RMI COMMANDS >:\n"
-			"  --showrmiregisters\t\t\t Get "
+			"  --showrmiregisters\t\t\t\t\t\t Get "
 			"values of SB-RMI reg commands for a given socket\n"
+			"  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t "
+			"Clear the RAS status register value\n"
 			,exe_name);
 	else if (!strcmp(command, "sbtsi") || !strcmp(command, "3"))
 		printf("Usage: %s [SOC_NUM] [Option]"
@@ -2607,6 +2626,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"apml_recovery",		required_argument,	&flag,	31},
 		{"rasoverridedelay",		required_argument,	&flag,  32},
 		{"getpostcode",			required_argument,	&flag,  33},
+		{"clearrasstatusregister",	required_argument,	&flag,	34},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{0,			0,			0,	0},
@@ -2694,6 +2714,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 0 && ((*long_options[long_index].flag) == 18 ||
 			 *(long_options[long_index].flag) == 19 ||
 			 *(long_options[long_index].flag) == 31 ||
+			 *(long_options[long_index].flag) == 34 ||
 			 (*long_options[long_index].flag) == 41)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
@@ -2997,6 +3018,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 33) {
 			/* Get Post code for 8 offsets */
 			apml_get_post_code(soc_num, argv[optind - 1]);
+		} else if (*(long_options[long_index].flag) == 34) {
+			/* RAS Status register value */
+			val1 = atoi(argv[optind - 1]);
+			/* Set RAS Status Register */
+			apml_clear_ras_status_register(soc_num, val1);
 		} else if (*(long_options[long_index].flag) == 41) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_ras_df_validity_chk(soc_num, val1);
@@ -3008,6 +3034,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* DF block ID instance */
 			df_err.input[2] = atoi(argv[optind++]);
 			apml_get_ras_df_err_dump(soc_num, df_err);
+		} else {
+			printf(RED "Try `%s --help' for more "
+			       "information."RESET "\n\n", argv[0]);
+			return OOB_SUCCESS;
 		}
 		break;
 	case 'Y':
