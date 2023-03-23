@@ -1206,6 +1206,16 @@ static void convert_to_upper_case(char *str)
 	}
 }
 
+static void convert_to_lower_case(char *str)
+{
+	uint8_t index;
+
+	for (index = 0; str[index]; index++) {
+		if (str[index] >= 'A' && str[index] <= 'Z')
+			str[index] += 32;
+	}
+}
+
 static oob_status_t validate_bw_link_id(char *link_id, char *bw_type,
 					bool is_xgmi_bw,
 					struct link_id_bw_type *link)
@@ -1250,14 +1260,64 @@ static oob_status_t validate_bw_link_id(char *link_id, char *bw_type,
 	return OOB_SUCCESS;
 }
 
+static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
+					      bool is_xgmi_bw,
+					      struct mi300_link_id_bw_type *link)
+{
+	const char *link_id_list[10] = {"p2", "p3", "g0", "g1",
+					"g2", "g3", "g4", "g5",
+					"g6", "g7"};
+	const char *bw_type_list[3] = {"AGG_BW", "RD_BW", "WR_BW"};
+	const char *io_bw_type = "AGG_BW";
+	uint8_t index, arr_size;
+	oob_status_t ret;
+
+	link->bw_type = 0;
+	link->link_id = 0;
+	convert_to_lower_case(link_id);
+	convert_to_upper_case(bw_type);
+
+	if (is_xgmi_bw)
+		arr_size = ARRAY_SIZE(bw_type_list);
+	else
+		arr_size = 1;
+
+	if (!is_xgmi_bw) {
+		if (strcmp(bw_type, io_bw_type) == 0)
+			link->bw_type = 1;
+	} else {
+		for (index = 0; index < arr_size; index++) {
+			if (strcmp(bw_type, bw_type_list[index]) == 0) {
+				link->bw_type = 1 << index;
+				break;
+			}
+		}
+	}
+
+	arr_size = ARRAY_SIZE(link_id_list);
+	for (index = 0; index < arr_size; index++) {
+		if (strcmp(link_id, link_id_list[index]) == 0) {
+			if (index <= 1)
+				link->link_id = index + 3;
+
+			else
+				link->link_id = index + 6;
+			break;
+		}
+	}
+
+	printf("\n link_id: %u bw:%u \n", link->link_id, link->bw_type);
+	return OOB_SUCCESS;
+}
+
 static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 				 char *bw_type)
 {
-	struct link_id_bw_type link;
+	struct mi300_link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
 
-	ret = validate_bw_link_id(link_id, bw_type, false, &link);
+	ret = validate_mi300_bw_link_id(link_id, bw_type, false, &link);
 	if (ret) {
 		printf("Failed to get current IO bandwidth, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -1278,11 +1338,11 @@ static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 static void apml_get_xgmibandwidth(uint8_t soc_num, char *link_id,
 				   char *bw_type)
 {
-	struct link_id_bw_type link;
+	struct mi300_link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
 
-	ret = validate_bw_link_id(link_id, bw_type, true, &link);
+	ret = validate_mi300_bw_link_id(link_id, bw_type, true, &link);
 	if (ret) {
 		printf("Failed to get current bandwidth on xGMI link, "
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
