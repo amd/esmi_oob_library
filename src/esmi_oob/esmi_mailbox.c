@@ -585,8 +585,33 @@ static oob_status_t validate_link_id_encoding(uint8_t link_id)
 	return ret;
 }
 
+static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
+{
+	oob_status_t ret;
+
+	switch (link_id) {
+	case p2:
+	case p3:
+	case g0:
+	case g1:
+	case g2:
+	case g3:
+	case g4:
+	case g5:
+	case g6:
+	case g7:
+		ret = OOB_SUCCESS;
+
+		break;
+	default:
+		ret = OOB_INVALID_INPUT;
+	};
+
+	return ret;
+}
+
 oob_status_t read_current_io_bandwidth(uint8_t soc_num,
-				       struct link_id_bw_type link,
+				       struct mi300_link_id_bw_type link,
 				       uint32_t *io_bw)
 {
 	uint32_t input;
@@ -595,7 +620,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
 	if (link.bw_type != 1)
 		return OOB_INVALID_INPUT;
 
-	if (validate_link_id_encoding(link.link_id))
+	if (validate_mi300_link_id_encoding(link.link_id))
 		return OOB_INVALID_INPUT;
 
 	input = link.bw_type | link.link_id << 8;
@@ -606,7 +631,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
 }
 
 oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
-					 struct link_id_bw_type link,
+					 struct mi300_link_id_bw_type link,
 					 uint32_t *xgmi_bw)
 {
 	uint32_t input;
@@ -614,7 +639,7 @@ oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
 	if (validate_bw_type(link.bw_type))
 		return OOB_INVALID_INPUT;
 
-	if (validate_link_id_encoding(link.link_id))
+	if (validate_mi300_link_id_encoding(link.link_id))
 		return OOB_INVALID_INPUT;
 
 	input = link.bw_type | link.link_id << 8;
@@ -647,15 +672,8 @@ oob_status_t write_xgmi_link_width_range(uint8_t soc_num,
 					 uint8_t max_link_width)
 {
 	uint32_t input;
-	oob_status_t ret;
-
-	ret = validate_max_min_values(max_link_width, min_link_width,
-				      MAX_XGMI_LINK);
-	if (ret)
-		return ret;
 
 	input = max_link_width | min_link_width << 8;
-
 	return esmi_oob_write_mailbox(soc_num,
 				      WRITE_XGMI_LINK_WIDTH_RANGE, input);
 }
