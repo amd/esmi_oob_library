@@ -842,9 +842,6 @@ oob_status_t read_bmc_control_pcie_gen5_rate(uint8_t soc_num,
 oob_status_t write_pwr_efficiency_mode(uint8_t soc_num,
 				       uint8_t mode)
 {
-	if (validate_pwr_efficiency_mode(mode))
-		return OOB_INVALID_INPUT;
-
 	return esmi_oob_write_mailbox(soc_num,
 				      WRITE_PWR_EFFICIENCY_MODE,
 				      (uint32_t)mode);
