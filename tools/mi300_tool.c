@@ -811,7 +811,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "values from 0 - 3, max value >= min value\n"
 	       "  --showcpubasefreq\t\t\t  \t\t\t\t\t "
 	       "Show cpu base frequency\n"
-	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "  --setpwrefficiencymode\t\t  [MODE(1,2,4)]\t\t\t\t "
 	       "Set power efficiency profile policy\n"
 	       "  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
 	       "Show runnng average power on specified core\n"
