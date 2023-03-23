@@ -105,7 +105,7 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 	case OOB_MAILBOX_ERR_START...OOB_MAILBOX_ERR_END:
 		switch (oob_err) {
 		case OOB_MAILBOX_CMD_ABORTED:
-			return "Mailabox command aborted.";
+			return "Mailbox command aborted.";
 		case OOB_MAILBOX_CMD_UNKNOWN:
 			return "Unknown mailbox message";
 		case OOB_MAILBOX_CMD_INVAL_CORE:
