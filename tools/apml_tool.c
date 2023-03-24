@@ -761,13 +761,18 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = sbtsi_get_temp_status(soc_num, &lowalert, &hialert);
 	if (ret)
 		return ret;
-	printf("_STATUS [0x%x]\t\t\t| ", SBTSI_STATUS);
+	printf("_STATUS [0x%x]\t\t\t| \n", SBTSI_STATUS);
+	printf("\t Temp Alert \t\t| ");
 	if (lowalert)
 		printf("CPU Temp Low Alert\n");
 	else if (hialert)
 		printf("CPU Temp Hi Alert\n");
 	else
 		printf("No Temp Alert\n");
+
+	ret = get_hbm_temp_status(soc_num);
+	if (ret)
+		return ret;
 
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_config(soc_num, &al_mask, &run_stop,
@@ -857,7 +862,12 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = read_sbtsi_alertthreshold(soc_num, &buf);
 	if (ret)
 		return ret;
-	printf("_THRESHOLD_SAMPLE [0x%x]\t| %d\n", SBTSI_ALERTTHRESHOLD, buf);
+	printf("_THRESHOLD_SAMPLE [0x%x]\t|\n", SBTSI_ALERTTHRESHOLD);
+	printf("\t Alert Threshold\t| %u\n", buf);
+	ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
+	if (ret)
+		return ret;
+	printf("\t HBM Alert Threshold\t| %u\n", buf);
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_alertconfig(soc_num, &buf);

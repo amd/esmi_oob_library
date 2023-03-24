@@ -295,3 +295,24 @@ oob_status_t read_sbtsi_hbm_temp(uint8_t soc_num, float *buffer)
 
 	return ret;
 }
+
+oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples)
+{
+	oob_status_t ret;
+
+	ret = esmi_oob_read_byte(soc_num, SBTSI_ALERTTHRESHOLD,
+				 SBTSI, samples);
+	if (ret)
+		return ret;
+
+	/*
+	 *  Bits 3 - 5 will provide hbm alert threshold
+	 *  ex value : samples
+	 *  0h: 1 sample
+	 *  6h-1h: (value + 1) sample
+	 *  7h: 8 samples
+	 */
+	*samples = (*samples & 0x38) + 1;
+
+	return ret;
+}

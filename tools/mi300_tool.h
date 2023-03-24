@@ -108,3 +108,15 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num);
  *
  */
 void get_mi_300_mailbox_cmds_summary(uint8_t soc_num);
+/**
+ *  @brief Get the HBM temperature status.
+ *
+ *  @details This function will HBM temperature status.
+ *
+ *  @param[in] soc_num socket number.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval None-zero is returned upon failure.
+ *
+ */
+oob_status_t get_hbm_temp_status(uint8_t soc_num);

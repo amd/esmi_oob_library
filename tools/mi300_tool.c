@@ -50,11 +50,29 @@
 #include <unistd.h>
 
 #include <esmi_oob/apml.h>
+#include <esmi_oob/esmi_tsi.h>
 #include <esmi_oob/rmi_mailbox_mi300.h>
 #include <esmi_oob/tsi_mi300.h>
 
 static int flag;
 #define APML_SLEEP 10000
+
+oob_status_t get_hbm_temp_status(uint8_t soc_num)
+{
+	uint8_t reg_val;
+	oob_status_t ret;
+
+	ret = read_sbtsi_status(soc_num, &reg_val);
+	if (ret)
+		return ret;
+	printf("\t Mem Temp High Alert\t|");
+	printf("%-25s \n", reg_val >> 6 & 1 ? " HBM Temp >= High Temp Threshold"
+	       : " HBM Temp < High Temp Threshold");
+	printf("\t Mem Temp Lo Alert\t|");
+	printf("%-25s \n", reg_val >> 5 & 1 ? " HBM Temp <= Low Temp Threshold"
+	       : " HBM Temp > Low Temp Threshold");
+	return ret;
+}
 
 static void apml_get_hbm_throttle(uint8_t soc_num)
 {
@@ -879,6 +897,8 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Set XGMI pstate.Valid values are 0 - 1\n"
 	       "  --unsetxgmipstate\t\t\t  \t\t\t\t\t "
 	       "Unset XGMI pstate\n"
+	       "  --showpstates\t\t\t\t  [PSTATE_INDEX]\t\t\t "
+               "Show memclk and fclk frequency\n"
 	       "  --setmaxpstate\t\t\t  [PSTATE]\t\t\t\t "
 	       "Set max memory and fabric clock pstate\n"
 	       "  --showbistresult\t\t\t  [DIE_ID]\t\t\t\t "
