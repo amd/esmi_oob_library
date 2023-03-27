@@ -1944,10 +1944,10 @@ static void apml_get_post_code(uint8_t soc_num, char *offset)
 			return;
 		}
 
-		printf("--------------------------------------\n");
-		printf("| Post code [%u]\t | %-17u |\n", code_offset,
+		printf("---------------------------------------\n");
+		printf("| Post code [%u]\t | 0x%-17x |\n", code_offset,
 		       post_code);
-		printf("--------------------------------------\n");
+		printf("---------------------------------------\n");
 		return;
 	}
 	if ((strcmp(offset, "s") == 0) || (strcmp(offset, "summary") == 0)) {
@@ -1961,11 +1961,11 @@ static void apml_get_post_code(uint8_t soc_num, char *offset)
 			}
 			if (index == 0)
 				printf("-----------------------------------"
-				       "---\n");
-			printf("| Post code [%u]\t | %-17u |\n", index,
+				       "-----\n");
+			printf("| Post code [%u]\t | 0x%-17x |\n", index,
 			       post_code);
 		}
-		printf("--------------------------------------\n");
+		printf("----------------------------------------\n");
 	}
 	else {
 		printf("Failed to get post code for a given offset,"
