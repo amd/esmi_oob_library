@@ -316,3 +316,28 @@ oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples)
 
 	return ret;
 }
+
+oob_status_t sbtsi_set_hbm_alert_threshold(uint8_t soc_num,
+					   uint8_t samples)
+{
+	oob_status_t ret;
+	uint8_t prev, new;
+
+	/* Alert threshold valid range from 1 to 8 samples. */
+	if (samples < 1 || samples > 8)
+		return OOB_INVALID_INPUT;
+	ret = esmi_oob_read_byte(soc_num,
+				 SBTSI_ALERTTHRESHOLD, SBTSI, &prev);
+	if (ret != OOB_SUCCESS)
+		return ret;
+	/**
+	* [7:6] reserved and [5:3] HBM AlertThr value
+	* ex value : samples
+	* 0h: 1 sample
+	* 6h-1h: (value + 1) sample
+	* 7h: 8 samples
+	*/
+
+	new = (prev & 0xC7) | ((samples - 1) << 3);
+	return esmi_oob_write_byte(soc_num, SBTSI_ALERTTHRESHOLD, SBTSI, new);
+}

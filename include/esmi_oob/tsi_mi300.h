@@ -307,4 +307,20 @@ oob_status_t read_sbtsi_hbm_temp(uint8_t soc_num, float *buffer);
  *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples);
+
+/**
+ *  @brief Set hbm alert samples
+ *
+ *  @details This function will set hbm alert samples.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] samples hbm threshold samples
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t sbtsi_set_hbm_alert_threshold(uint8_t soc_num,
+					   uint8_t samples);
 #endif  // INCLUDE_TSI_MI300_H_
