@@ -876,10 +876,12 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		return ret;
 	printf("_THRESHOLD_SAMPLE [0x%x]\t|\n", SBTSI_ALERTTHRESHOLD);
 	printf("\t Alert Threshold\t| %u\n", buf);
-	ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
-	if (ret)
-		return ret;
-	printf("\t HBM Alert Threshold\t| %u\n", buf);
+	if (status) {
+		ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
+		if (ret)
+			return ret;
+		printf("\t HBM Alert Threshold\t| %u\n", buf);
+	}
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_alertconfig(soc_num, &buf);
@@ -2447,6 +2449,13 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret) {
+		printf("Failed to get platform info  Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return OOB_SUCCESS;
+	}
+
 	usleep(APML_SLEEP);
 	printf("| Power (Watts)\t\t\t\t |");
 	ret = read_socket_power(soc_num, &power_avg);
@@ -2496,19 +2505,20 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17.3f", (double)tdp_max/1000);
 
 	usleep(APML_SLEEP);
-	printf("\n| DDR BANDWIDTH \t\t\t |");
-	ret = read_ddr_bandwidth(soc_num, &max_ddr);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else {
-		printf("\n| \tDDR Max BW (GB/s)\t\t |");
-		printf(" %-17d", max_ddr.max_bw);
-		printf("\n| \tDDR Utilized BW (GB/s)\t\t |");
-		printf(" %-17d", max_ddr.utilized_bw);
-		printf("\n| \tDDR Utilized Percent(%%)\t\t |");
-		printf(" %-17d", max_ddr.utilized_pct);
+	if (!status) {
+		printf("\n| DDR BANDWIDTH \t\t\t |");
+		ret = read_ddr_bandwidth(soc_num, &max_ddr);
+		if (ret) {
+			printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
+		} else {
+			printf("\n| \tDDR Max BW (GB/s)\t\t |");
+			printf(" %-17d", max_ddr.max_bw);
+			printf("\n| \tDDR Utilized BW (GB/s)\t\t |");
+			printf(" %-17d", max_ddr.utilized_bw);
+			printf("\n| \tDDR Utilized Percent(%%)\t\t |");
+			printf(" %-17d", max_ddr.utilized_pct);
+		}
 	}
-
 	usleep(APML_SLEEP);
 	core_id = 0x0;
 	printf("\n| BIOS Boostlimit [0x%x] (MHz)\t\t |", core_id);
@@ -2527,12 +2537,14 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17u", esb_boost);
 
 	usleep(APML_SLEEP);
-	printf("\n| DRAM_Throttle  (%%)\t\t\t |");
-	ret = read_dram_throttle(soc_num, &dram_thr);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-17u", dram_thr);
+	if (!status) {
+		printf("\n| DRAM_Throttle  (%%)\t\t\t |");
+		ret = read_dram_throttle(soc_num, &dram_thr);
+		if (ret)
+			printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
+		else
+			printf(" %-17u", dram_thr);
+	}
 
 	usleep(APML_SLEEP);
 	printf("\n| PROCHOT Status\t\t\t |");
@@ -2655,12 +2667,6 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17d", threads_per_soc);
 
 
-	ret = is_plat_form_mi300(soc_num, &status);
-	if (ret) {
-		printf("Failed to get platform info  Err[%d]:%s\n",
-		       ret, esmi_get_err_msg(ret));
-		return OOB_SUCCESS;
-	}
 	if (status)
 		get_mi_300_mailbox_cmds_summary(soc_num);
 	printf("\n------------------------------------------------------------"

@@ -964,7 +964,7 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	float temp_value = 0;
 	oob_status_t ret;
 
-	ret = read_sbtsi_hbm_hi_temp_dec_th(soc_num, &temp_value);
+	ret = read_sbtsi_hbm_hi_temp_th(soc_num, &temp_value);
 	if (ret)
 		return ret;
 
