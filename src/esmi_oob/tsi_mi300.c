@@ -312,7 +312,7 @@ oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples)
 	 *  6h-1h: (value + 1) sample
 	 *  7h: 8 samples
 	 */
-	*samples = (*samples & 0x38) + 1;
+	*samples = ((*samples & 0x38) >> 3) + 1;
 
 	return ret;
 }
