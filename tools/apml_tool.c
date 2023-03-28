@@ -732,8 +732,12 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	uint8_t intr;
 	int8_t intr_offset;
 	uint8_t id, buf;
+	bool status;
 	oob_status_t ret;
 
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret)
+		return ret;
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_cputemp(soc_num, &temp_value[0]);
 	if (ret)
@@ -770,9 +774,11 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	else
 		printf("No Temp Alert\n");
 
-	ret = get_hbm_temp_status(soc_num);
-	if (ret)
-		return ret;
+	if (status) {
+		ret = get_hbm_temp_status(soc_num);
+		if (ret)
+			return ret;
+	}
 
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_config(soc_num, &al_mask, &run_stop,
@@ -786,7 +792,9 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		"Comparison Enabled");
 	printf("\tAtomic Rd order\t\t| %s\n", read_ord ? "Decimal Latches "
 		"Integer" : "Integer latches Decimal");
-	printf("\tARA response\t\t| %s\n", ara ? "Disabled" : "Enabled");
+	if (!status)
+		printf("\tARA response\t\t| %s\n", ara ? "Disabled"
+		       : "Enabled");
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_updaterate(soc_num, &uprate);
@@ -830,9 +838,12 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	printf("\tLOW_INT [0x%x]\t\t| %u °C\n", SBTSI_LOTEMPINT, intr);
 	printf("\tLOW_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_LOTEMPDEC, dec);
 
-	ret = get_apml_mi300_tsi_register_descriptions(soc_num);
-	if (ret)
-		return ret;
+	if (status)
+	{
+		ret = get_apml_mi300_tsi_register_descriptions(soc_num);
+		if (ret)
+			return ret;
+	}
 
 	ret = read_sbtsi_cputempoffset(soc_num, &dec);
 	if (ret)
@@ -852,12 +863,13 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	printf("\tOFF_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_CPUTEMPOFFDEC, dec);
 
 	usleep(APML_SLEEP);
-	ret = sbtsi_get_timeout(soc_num, &timeout);
-	if (ret)
-		return ret;
-	printf("_TIMEOUT_CONFIG [0x%x]\t\t| %s\n",
-	       SBTSI_TIMEOUTCONFIG, timeout ? "Enabled" : "Disabled");
-
+	if (!status) {
+		ret = sbtsi_get_timeout(soc_num, &timeout);
+		if (ret)
+			return ret;
+		printf("_TIMEOUT_CONFIG [0x%x]\t\t| %s\n",
+		       SBTSI_TIMEOUTCONFIG, timeout ? "Enabled" : "Disabled");
+	}
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_alertthreshold(soc_num, &buf);
 	if (ret)
@@ -2422,6 +2434,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint16_t mclk;
 	uint8_t uclk, index, rev;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
+	bool status;
 	oob_status_t ret;
 
 	nbio.quadrant = 0x03;
@@ -2641,8 +2654,15 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	else
 		printf(" %-17d", threads_per_soc);
 
-	get_mi_300_mailbox_cmds_summary(soc_num);
 
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret) {
+		printf("Failed to get platform info  Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return OOB_SUCCESS;
+	}
+	if (status)
+		get_mi_300_mailbox_cmds_summary(soc_num);
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 	return OOB_SUCCESS;

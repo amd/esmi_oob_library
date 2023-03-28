@@ -65,12 +65,16 @@ oob_status_t get_hbm_temp_status(uint8_t soc_num)
 	ret = read_sbtsi_status(soc_num, &reg_val);
 	if (ret)
 		return ret;
-	printf("\t Mem Temp High Alert\t|");
-	printf("%-25s \n", reg_val >> 6 & 1 ? " HBM Temp >= High Temp Threshold"
-	       : " HBM Temp < High Temp Threshold");
-	printf("\t Mem Temp Lo Alert\t|");
-	printf("%-25s \n", reg_val >> 5 & 1 ? " HBM Temp <= Low Temp Threshold"
-	       : " HBM Temp > Low Temp Threshold");
+	printf("\t Mem Temp Alert\t\t|");
+	if (reg_val >> 6 & 1)
+		printf(" HBM High Temp Alert\n");
+	else if (reg_val >> 5 & 1)
+		printf(" HBM Low Temp Alert\n");
+	else if (!(reg_val >> 6 & 1) && !(reg_val >> 5 & 1))
+		printf(" No HBM Temp Alert\n");
+	else
+		printf("HBM High and Low Temp Alert\n");
+
 	return ret;
 }
 
@@ -944,6 +948,8 @@ void get_mi300_tsi_commands(char *exec_name)
 	       "1\n"
 	       "  --setalertthreshold\t\t       [VALUE]\t\t\t\t\t "
 	       "Set APML CPU alert threshold sample, VALUE = 1 to 8\n"
+	       "  --sethbmalertthreshold\t       [VALUE]\t\t\t\t\t "
+	       "Set APML HBM alert threshold sample, VALUE = 1 to 8\n"
 	       "  --setalertconfig\t\t       [VALUE]\t\t\t\t\t "
 	       "Set/Reset APML CPU alert config, VALUE = 0 or 1\n"
 	       "  --setalertmask\t\t       [VALUE]\t\t\t\t\t "
@@ -951,9 +957,7 @@ void get_mi300_tsi_commands(char *exec_name)
 	       "  --setrunstop\t\t\t       [VALUE]\t\t\t\t\t "
 	       "Set/Reset APML CPU runstop, VALUE = 0 or 1\n"
 	       "  --setreadorder\t\t       [VALUE]\t\t\t\t\t "
-	       "Set/Reset APML CPU read order, VALUE = 0 or 1\n"
-	       "  --setara\t\t\t       [VALUE]\t\t\t\t\t "
-	       "Set/Reset APML CPU ARA, VALUE = 0 or 1\n", exec_name);
+	       "Set/Reset APML CPU read order, VALUE = 0 or 1\n", exec_name);
 }
 
 oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
@@ -1009,6 +1013,19 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	return ret;
 }
 
+static oob_status_t apml_set_hbm_alert_threshold(uint8_t soc_num, uint8_t value)
+{
+	oob_status_t ret;
+
+	ret = sbtsi_set_hbm_alert_threshold(soc_num, value);
+	if (ret != OOB_SUCCESS) {
+	printf("Failed: to set hbm alert threshold sample, Err[%d]: %s\n",
+	       ret, esmi_get_err_msg(ret));
+	return ret;
+	}
+	printf("Set hbm alert threshold success\n");
+	return OOB_SUCCESS;
+}
 
 /*
  * returns 0 if the given string is a number for the given base, else 1.
@@ -1066,6 +1083,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"clearstatistics",             no_argument,            &flag,  828},
 		{"sethbmhightempthreshold",     required_argument,      &flag,  829},
 		{"sethbmlowtempthreshold",      required_argument,      &flag,  830},
+		{"sethbmalertthreshold",	required_argument,	&flag,	831},
 		{0,                     0,                      0,      0},
 	};
 
@@ -1104,7 +1122,8 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 				(*long_options[long_index].flag) == 821 ||
 				(*long_options[long_index].flag) == 822 ||
 				(*long_options[long_index].flag) == 829 ||
-				(*long_options[long_index].flag) == 830)) {
+				(*long_options[long_index].flag) == 830 ||
+				(*long_options[long_index].flag) == 831)) {
 			if (validate_number(argv[optind - 1], 10)) {
 				printf("Option '--%s' require argument as valid"
 				       " numeric value\n",
@@ -1300,6 +1319,11 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			temp = atof(argv[optind - 1]);
 			/* Set hbm low temperature threshold */
 			apml_set_hbm_low_threshold_temp(soc_num, temp);
+			break;
+		case 831:
+			/* Set HBM alert threshold samples */
+			val1 = atoi(argv[optind - 1]);
+			apml_set_hbm_alert_threshold(soc_num, val1);
 			break;
 		default:
 			return ret;
