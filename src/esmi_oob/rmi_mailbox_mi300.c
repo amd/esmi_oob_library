@@ -152,13 +152,14 @@ oob_status_t get_energy_accum_with_timestamp(uint8_t soc_num, uint64_t *energy,
 		if (ret)
 			return ret;
 		buffer[index] = value;
+		value = 0;
 	}
 
 	/* Read 64 bit of energy accumulator */
 	*energy = (uint64_t)buffer[1] << D_WORD_BITS | buffer[0];
 
 	/* Read 64 bit of timestamp */
-	*time_stamp = ((uint64_t)buffer[3] & TWO_BYTE_MASK)
+	*time_stamp = ((uint64_t)(buffer[3] & THREE_BYTE_MASK))
 			<< D_WORD_BITS | buffer[2];
 	return ret;
 }

@@ -61,8 +61,10 @@
 #define GEN5_RATE_MASK          3
 /* one byte mask for DDR bandwidth */
 #define ONE_BYTE_MASK           0XFF
-/* Teo byte mask */
+/* Two byte mask */
 #define TWO_BYTE_MASK           0xFFFF
+/* Three byte mask */
+#define THREE_BYTE_MASK		0xFFFFFF
 /* Four byte mask used in raplcoreenergy, raplpackageenergy */
 #define FOUR_BYTE_MASK          0xFFFFFFFF
 /* CPU index mask used in boost limit write */
