@@ -2163,10 +2163,12 @@ static void show_usage(char *exe_name)
 		"[module-name]\n", exe_name);
 	printf("Where:  soc_num : socket number 0 or 1\n");
 	printf("Description:\n");
-	printf("%s -v \t\t\t- Displays tool version\n", exe_name);
-	printf("%s --help <MODULE>\t- Displays help on the options for "
+	printf("%s -v \t\t\t\t- Displays tool version\n", exe_name);
+	printf("%s [SOC_NUM] --showdependency \t- Displays module dependency\n",
+	       exe_name);
+	printf("%s --help <MODULE>\t\t- Displays help on the options for "
 		"the specified module\n", exe_name);
-	printf("%s <option/s>\t\t- Runs the specified option/s."
+	printf("%s <option/s>\t\t\t- Runs the specified option/s."
 	       "\nUsage: %s [soc_num]"
 	       " [Option] params\n\n", exe_name, exe_name);
 	printf("\tMODULES:\n");
@@ -2752,6 +2754,25 @@ static oob_status_t validate_number(char *str, uint8_t base)
 	return OOB_SUCCESS;
 }
 
+static void validate_modules(uint8_t soc_num, bool *is_sbrmi,
+			     bool *is_sbtsi)
+{
+	oob_status_t ret;
+
+	ret = validate_apml_dependency(soc_num, is_sbrmi, is_sbtsi);
+	if (ret) {
+		if (!*is_sbrmi && !*is_sbtsi)
+			printf(RED" SBRMI and SBTSI modules not present.Please insert "
+			       "the modules" RESET"\n");
+		else if (!*is_sbrmi)
+			printf(RED" SBRMI module not present.Please insert "
+			       "the module" RESET"\n");
+		else if (!*is_sbtsi)
+			printf(RED" SBTSI module not present.Please insert "
+			       "the module" RESET"\n");
+	}
+}
+
 /*
  * Parse command line parameters and set data for program.
  * @param argc number of command line parameters
@@ -2786,6 +2807,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	char *link_name;
 	char *bw_type;
 	oob_status_t ret;
+	bool is_sbrmi = false, is_sbtsi = false;
 
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -2864,6 +2886,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"clearrasstatusregister",	required_argument,	&flag,	34},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
+		{"showdependency",		no_argument,		&flag,  45},
 		{0,			0,			0,	0},
 	};
 
@@ -2894,6 +2917,14 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
+	if (argc > 2 && (!strcmp(argv[2], "--showdependency"))) {
+		soc_num = atoi(argv[1]);
+		validate_modules(soc_num, &is_sbrmi, &is_sbtsi);
+		if (is_sbrmi && is_sbtsi)
+			printf(" Both SBRMI and SBTSI modules are present");
+		return OOB_SUCCESS;
+	}
+
 	if (argc > 2 && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))) {
 		ret = show_module_commands(argv[0], argv[2]);
 		return OOB_SUCCESS;
@@ -2905,6 +2936,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
 	soc_num = atoi(argv[1]);
+	/* Check if  the SBRMI and SBTSI modules are present */
+	/* for the given socket */
+	validate_modules(soc_num, &is_sbrmi, &is_sbtsi);
+	if (!is_sbrmi && !is_sbtsi)
+		return OOB_SUCCESS;
+
 	if (argc == 2) {
 		show_smi_parameters(soc_num);
 		printf(RED "Try `%s --help' for more information." RESET"\n",
