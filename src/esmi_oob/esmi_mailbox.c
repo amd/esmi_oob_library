@@ -146,22 +146,15 @@ oob_status_t read_bios_boost_fmax(uint8_t soc_num,
 	ret = read_sbrmi_revision(soc_num, &rev);
 	if (ret)
 		return ret;
-	if (rev == 0x20) {
-		if (!plat_info->family) {
-			ret = esmi_get_processor_info(soc_num, plat_info);
-			if (ret)
-				return ret;
-			}
-		if (plat_info->family == 0x19) {
-			switch (plat_info->model) {
-			case 0x30 ... 0x3F:
-				break;
-			default:
-				value <<= 16;
-				break;
-			}
-		}
+
+	switch(rev) {
+	case 0x10:
+		break;
+	default:
+		value <<= 16;
+		break;
 	}
+
 	return esmi_oob_read_mailbox(soc_num,
 				     READ_BIOS_BOOST_Fmax,
 				     value, buffer);
@@ -176,23 +169,15 @@ oob_status_t read_esb_boost_limit(uint8_t soc_num,
 	ret = read_sbrmi_revision(soc_num, &rev);
 	if (ret)
 		return ret;
-	if (rev == 0x20) {
-		if (!plat_info->family) {
-			ret = esmi_get_processor_info(soc_num, plat_info);
-			if (ret)
-				return ret;
-		}
 
-		if (plat_info->family == 0x19) {
-			switch (plat_info->model) {
-			case 0x30 ... 0x3F:
-				break;
-			default:
-				value <<= 16;
-				break;
-			}
-		}
+	switch(rev) {
+	case 0x10:
+		break;
+	default:
+		value <<= 16;
+		break;
 	}
+
 	return esmi_oob_read_mailbox(soc_num,
 				     READ_APML_BOOST_LIMIT,
 				     value, buffer);

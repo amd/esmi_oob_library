@@ -41,9 +41,9 @@
 #ifndef INCLUDE_APML_MAILBOX_H_
 #define INCLUDE_APML_MAILBOX_H_
 
+#include "apml_common.h"
 #include "apml_err.h"
-#include "stdbool.h"
-#include <esmi_oob/apml_common.h>
+#include <stdbool.h>
 
 /* LO_WORD_REG used in rapl package energy and read RAS
  * last transaction address */
