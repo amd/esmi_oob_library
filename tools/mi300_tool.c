@@ -65,7 +65,7 @@ oob_status_t get_hbm_temp_status(uint8_t soc_num)
 	ret = read_sbtsi_status(soc_num, &reg_val);
 	if (ret)
 		return ret;
-	printf("\t Mem Temp Alert\t\t|");
+	printf("\t Mem Temp Alert |\t\t|\t\t|");
 	if (reg_val >> 6 & 1)
 		printf(" HBM High Temp Alert\n");
 	else if (reg_val >> 5 & 1)
@@ -612,6 +612,21 @@ static void apml_set_hbm_low_threshold_temp(uint8_t soc_num, float temp_th)
 		printf("HBM low temperature threshold set successfully\n");
 }
 
+static oob_status_t apml_set_hbm_alert_config(uint8_t soc_num, int value)
+{
+	oob_status_t ret;
+
+	ret = set_sbtsi_hbm_alertconfig(soc_num, value);
+	if (ret) {
+		printf("Failed: to set hbm alert config, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+
+	printf("Set HBM alert config success\n");
+	return OOB_SUCCESS;
+}
+
 void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 {
 	struct mclk_fclk_pstates pstate = {0};
@@ -952,6 +967,8 @@ void get_mi300_tsi_commands(char *exec_name)
 	       "Set APML HBM alert threshold sample, VALUE = 1 to 8\n"
 	       "  --setalertconfig\t\t       [VALUE]\t\t\t\t\t "
 	       "Set/Reset APML CPU alert config, VALUE = 0 or 1\n"
+	       "  --sethbmalertconfig\t\t       [VALUE]\t\t\t\t\t "
+	       "Set/Reset APML HBM alert config, VALUE = 0 or 1\n"
 	       "  --setalertmask\t\t       [VALUE]\t\t\t\t\t "
 	       "Set/Reset APML CPU alert mask, VALUE = 0 or 1\n"
 	       "  --setrunstop\t\t\t       [VALUE]\t\t\t\t\t "
@@ -968,10 +985,14 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	if (ret)
 		return ret;
 
-	printf("_HBM_HIGH_THRESHOLD_TEMP \t| %.3f °C\n", temp_value);
-	printf("\tHIGH_INT [0x%x]\t\t| %u °C\n", SBTSI_HBM_HITEMPINT_LIMIT,
-	       (int)(temp_value));
-	printf("\tHIGH_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_HBM_HITEMPDEC_LIMIT,
+	printf("_HBM_HIGH_THRESHOLD_TEMP|\t\t|\t\t| %.3f °C\n",
+	       temp_value);
+	printf("\tHIGH_INT  \t| 0x%x \t\t| 0x%-5x\t| %u °C\n",
+	       SBTSI_HBM_HITEMPINT_LIMIT,
+	       (int)(temp_value), (int)(temp_value));
+	printf("\tHIGH_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n",
+	       SBTSI_HBM_HITEMPDEC_LIMIT,
+	       (uint8_t)((temp_value - floor(temp_value)) / TEMP_INC),
 	       temp_value - floor(temp_value));
 
 	temp_value = 0;
@@ -979,10 +1000,13 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	if (ret)
 		return ret;
 
-	printf("_HBM_LOW_THRESHOLD_TEMP \t| %.3f °C\n", temp_value);
-	printf("\tLOW_INT [0x%x]\t\t| %u °C\n", SBTSI_HBM_LOTEMPINT_LIMIT,
+	printf("_HBM_LOW_THRESHOLD_TEMP |\t\t|\t\t| %.3f °C\n", temp_value);
+	printf("\tLOW_INT  \t| 0x%x \t\t| 0x%-5x\t| %u °C\n",
+	       SBTSI_HBM_LOTEMPINT_LIMIT, (int)(temp_value),
 	       (int)(temp_value));
-	printf("\tLOW_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_HBM_LOTEMPDEC_LIMIT,
+	printf("\tLOW_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n",
+	       SBTSI_HBM_LOTEMPDEC_LIMIT,
+	       (uint8_t)((temp_value - floor(temp_value)) / TEMP_INC),
 	       temp_value - floor(temp_value));
 	usleep(APML_SLEEP);
 
@@ -991,11 +1015,14 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	if (ret)
 		return ret;
 
-	printf("_HBM_MAX_TEMP \t\t\t| %.3f °C\n", temp_value);
-	printf("\tMAX_INT [0x%x]\t\t| %u °C\n", SBTSI_MAX_HBMTEMPINT,
+	printf("_HBM_MAX_TEMP \t\t|\t\t|\t\t| %.3f °C\n", temp_value);
+	printf("\tMAX_INT  \t| 0x%x \t\t| 0x%-5x\t| %u °C\n",
+	       SBTSI_MAX_HBMTEMPINT, (int)(temp_value),
 	       (int)(temp_value));
-	printf("\tMAX_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_MAX_HBMTEMPDEC,
-	temp_value - floor(temp_value));
+	printf("\tMAX_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n",
+	       SBTSI_MAX_HBMTEMPDEC,
+	       (uint8_t)((temp_value - floor(temp_value)) / TEMP_INC),
+	       temp_value - floor(temp_value));
 	usleep(APML_SLEEP);
 
 	temp_value = 0;
@@ -1003,11 +1030,14 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	if (ret)
 		return ret;
 
-	printf("_HBM_TEMP \t\t\t| %.3f °C\n", temp_value);
-	printf("\tHBM_INT [0x%x]\t\t| %u °C\n", SBTSI_HBMTEMPINT,
+	printf("_HBM_TEMP \t\t|\t\t|\t\t| %.3f °C\n", temp_value);
+	printf("\tHBM_INT  \t| 0x%x \t\t| 0x%-5x\t| %u °C\n",
+	       SBTSI_HBMTEMPINT, (int)(temp_value),
 	       (int)(temp_value));
-	printf("\tHBM_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_HBMTEMPDEC,
-	temp_value - floor(temp_value));
+	printf("\tHBM_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n",
+	       SBTSI_HBMTEMPDEC,
+	       (uint8_t)((temp_value - floor(temp_value)) / TEMP_INC),
+	       temp_value - floor(temp_value));
 	usleep(APML_SLEEP);
 
 	return ret;
@@ -1084,6 +1114,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"sethbmhightempthreshold",     required_argument,      &flag,  829},
 		{"sethbmlowtempthreshold",      required_argument,      &flag,  830},
 		{"sethbmalertthreshold",	required_argument,	&flag,	831},
+		{"sethbmalertconfig",		required_argument,	&flag,	832},
 		{0,                     0,                      0,      0},
 	};
 
@@ -1123,13 +1154,8 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 				(*long_options[long_index].flag) == 822 ||
 				(*long_options[long_index].flag) == 829 ||
 				(*long_options[long_index].flag) == 830 ||
-				(*long_options[long_index].flag) == 831)) {
-			if (validate_number(argv[optind - 1], 10)) {
-				printf("Option '--%s' require argument as valid"
-				       " numeric value\n",
-				       long_options[long_index].name);
-				return OOB_SUCCESS;
-			}
+				(*long_options[long_index].flag) == 831 ||
+				(*long_options[long_index].flag) == 832)) {
 			if (*long_options[long_index].flag == 829 ||
 			    *long_options[long_index].flag == 830) {
 				temp = strtof(argv[optind - 1], &end);
@@ -1324,6 +1350,11 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			/* Set HBM alert threshold samples */
 			val1 = atoi(argv[optind - 1]);
 			apml_set_hbm_alert_threshold(soc_num, val1);
+			break;
+		case 832:
+			/* Set HBM Alert config */
+			val1 = atoi(argv[optind - 1]);
+			apml_set_hbm_alert_config(soc_num, val1);
 			break;
 		default:
 			return ret;

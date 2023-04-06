@@ -753,26 +753,28 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 
 	printf("\n\t\t *** SB-TSI REGISTER SUMMARY ***\n");
 	printf("------------------------------------------------------------"
-		"----\n");
-	printf("\t FUNCTION [register] \t| \tValue [Units]\n");
+	       "-----------------------\n");
+	printf(" FUNCTION/Reg Name\t| Reg offset\t| Hexa(0x)\t| Value [Units]\n");
 	printf("------------------------------------------------------------"
-		"----\n");
-	printf("_CPUTEMP\t\t\t| %.3f °C\n", temp_value[0]);
-	printf("\tCPU_INT [0x%x]\t\t| %u °C\n", SBTSI_CPUTEMPINT, intr);
-	printf("\tCPU_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_CPUTEMPDEC, dec);
+	       "-----------------------\n");
+	printf("_CPUTEMP\t\t|\t\t|\t\t| %.3f °C\n", temp_value[0]);
+	printf("\tCPU_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n", SBTSI_CPUTEMPINT,
+	       intr, intr);
+	printf("\tCPU_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n", SBTSI_CPUTEMPDEC,
+	       (uint8_t)(dec / TEMP_INC), dec);
 
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_temp_status(soc_num, &lowalert, &hialert);
 	if (ret)
 		return ret;
-	printf("_STATUS [0x%x]\t\t\t| \n", SBTSI_STATUS);
-	printf("\t Temp Alert \t\t| ");
+	printf("_STATUS\t\t\t| 0x%x \t\t|\t\t| \n", SBTSI_STATUS);
+	printf("\t CPU Temp Alert |\t\t|\t\t| ");
 	if (lowalert)
 		printf("CPU Temp Low Alert\n");
 	else if (hialert)
 		printf("CPU Temp Hi Alert\n");
 	else
-		printf("No Temp Alert\n");
+		printf("CPU No Temp Alert\n");
 
 	if (status) {
 		ret = get_hbm_temp_status(soc_num);
@@ -786,22 +788,24 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	if (ret)
 		return ret;
 
-	printf("_CONFIG [0x%x]\t\t\t|\n", SBTSI_CONFIGURATION);
-	printf("\tALERT_L pin\t\t| %s\n", al_mask ? "Disabled" : "Enabled");
-	printf("\tRunstop\t\t\t| %s\n", run_stop ? "Comparison Disabled" :
-		"Comparison Enabled");
-	printf("\tAtomic Rd order\t\t| %s\n", read_ord ? "Decimal Latches "
-		"Integer" : "Integer latches Decimal");
+	printf("_CONFIG\t\t\t| 0x%x \t\t|\t\t| \n", SBTSI_CONFIGURATION);
+	printf("\tALERT_L pin\t|\t\t|\t\t| %s\n", al_mask ? "Disabled" : "Enabled");
+	printf("\tRunstop\t\t|\t\t|\t\t| %s\n", run_stop ? "Comparison Disabled" :
+	       "Comparison Enabled");
+	printf("\tAtomic Rd order |\t\t|\t\t| %s\n", read_ord ? "Decimal Latches "
+	       "Integer" : "Integer latches Decimal");
+	printf("\tARA response\t|\t\t|\t\t| %s\n", ara ? "Disabled"
+	       : "Enabled");
 	if (!status)
-		printf("\tARA response\t\t| %s\n", ara ? "Disabled"
+		printf("\tARA response\t|\t\t|\t\t| %s\n", ara ? "Disabled"
 		       : "Enabled");
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_updaterate(soc_num, &uprate);
 	if (ret)
 		return ret;
-	printf("_TSI_UPDATERATE [0x%x]\t\t| %.3f Hz\n", SBTSI_UPDATERATE,
-		uprate);
+	printf("_TSI_UPDATERATE \t| 0x%x \t\t|\t\t| %.3f Hz\n", SBTSI_UPDATERATE,
+	       uprate);
 
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_hitemp_threshold(soc_num, &temp_value[1]);
@@ -818,9 +822,11 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	if (ret)
 		return ret;
 
-	printf("_HIGH_THRESHOLD_TEMP\t\t| %.3f °C\n", temp_value[1]);
-	printf("\tHIGH_INT [0x%x]\t\t| %u °C\n", SBTSI_HITEMPINT, intr);
-	printf("\tHIGH_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_HITEMPDEC, dec);
+	printf("_HIGH_THRESHOLD_TEMP\t|\t\t|\t\t| %.3f °C\n", temp_value[1]);
+	printf("\tHIGH_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n", SBTSI_HITEMPINT,
+	       intr, intr);
+	printf("\tHIGH_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n", SBTSI_HITEMPDEC,
+	       (uint8_t)(dec / TEMP_INC), dec);
 
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_lotemp_threshold(soc_num, &temp_value[2]);
@@ -834,9 +840,11 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = read_sbtsi_lotempdecimal(soc_num, &dec);
 	if (ret)
 		return ret;
-	printf("_LOW_THRESHOLD_TEMP \t\t| %.3f °C\n", temp_value[2]);
-	printf("\tLOW_INT [0x%x]\t\t| %u °C\n", SBTSI_LOTEMPINT, intr);
-	printf("\tLOW_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_LOTEMPDEC, dec);
+	printf("_LOW_THRESHOLD_TEMP\t|\t\t|\t\t| %.3f °C\n", temp_value[2]);
+	printf("\tLOW_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n", SBTSI_LOTEMPINT,
+	       intr, intr);
+	printf("\tLOW_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n", SBTSI_LOTEMPDEC,
+	       (uint8_t)(dec / TEMP_INC), dec);
 
 	if (status)
 	{
@@ -848,7 +856,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = read_sbtsi_cputempoffset(soc_num, &dec);
 	if (ret)
 		return ret;
-	printf("_TEMP_OFFSET\t\t\t| %.3f °C\n", dec);
+	printf("_TEMP_OFFSET\t\t|\t\t|\t\t| %.3f °C\n", dec);
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_cputempoffint(soc_num, &intr_offset);
@@ -859,51 +867,64 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	ret = read_sbtsi_cputempoffdec(soc_num, &dec);
 	if (ret)
 		return ret;
-	printf("\tOFF_INT [0x%x]\t\t| %d °C\n", SBTSI_CPUTEMPOFFINT, intr_offset);
-	printf("\tOFF_DEC [0x%x]\t\t| %.3f °C\n", SBTSI_CPUTEMPOFFDEC, dec);
+	printf("\tOFF_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n",
+	       SBTSI_CPUTEMPOFFINT, intr_offset, intr_offset);
+	printf("\tOFF_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n",
+	       SBTSI_CPUTEMPOFFDEC, (uint8_t)(dec / TEMP_INC), dec);
 
 	usleep(APML_SLEEP);
 	if (!status) {
 		ret = sbtsi_get_timeout(soc_num, &timeout);
 		if (ret)
 			return ret;
-		printf("_TIMEOUT_CONFIG [0x%x]\t\t| %s\n",
+		printf("_TIMEOUT_CONFIG \t| 0x%x \t\t|\t\t| %s\n",
 		       SBTSI_TIMEOUTCONFIG, timeout ? "Enabled" : "Disabled");
 	}
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_alertthreshold(soc_num, &buf);
 	if (ret)
 		return ret;
-	printf("_THRESHOLD_SAMPLE [0x%x]\t|\n", SBTSI_ALERTTHRESHOLD);
-	printf("\t Alert Threshold\t| %u\n", buf);
+	printf("_THRESHOLD_SAMPLE\t| 0x%x \t\t|\t\t| \n",
+	       SBTSI_ALERTTHRESHOLD);
+	printf("\t CPU Alert TH\t|\t\t|\t\t| %u\n", buf);
 	if (status) {
 		ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
 		if (ret)
 			return ret;
-		printf("\t HBM Alert Threshold\t| %u\n", buf);
+		printf("\t HBM Alert TH\t|\t\t|\t\t| %u\n", buf);
 	}
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_alertconfig(soc_num, &buf);
 	if (ret)
 		return ret;
-	printf("_TSI_ALERT_CONFIG [0x%x]\t| %s\n",
-	       SBTSI_ALERTCONFIG, buf ? "Enabled" : "Disabled");
+	printf("_TSI_ALERT_CONFIG\t| 0x%x \t\t|\t\t| \n",
+	       SBTSI_ALERTCONFIG);
+	printf("\t CPU Alert CFG\t|\t\t|\t\t| %s\n",
+	       buf ? "Enabled" : "Disabled");
+	if (status) {
+		usleep(APML_SLEEP);
+		ret = get_sbtsi_hbm_alertconfig(soc_num, &buf);
+		if (ret)
+			return ret;
+		printf("\t HBM Alert CFG\t|\t\t|\t\t| %s\n",
+		       buf ? "Enabled" : "Disabled");
+	}
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_manufid(soc_num, &id);
 	if (ret)
 		return ret;
-	printf("_TSI_MANUFACTURE_ID [0x%x]\t| %#x\n", SBTSI_MANUFID, id);
+	printf("_TSI_MANUFACTURE_ID\t| 0x%x \t\t|\t\t| %#x\n", SBTSI_MANUFID, id);
 
 	usleep(APML_SLEEP);
 	ret = read_sbtsi_revision(soc_num, &id);
 	if (ret)
 		return ret;
-	printf("_TSI_REVISION [0x%x]\t\t| %#x\n", SBTSI_REVISION, id);
+	printf("_TSI_REVISION \t\t| 0x%x \t\t|\t\t| %#x\n", SBTSI_REVISION, id);
 
 	printf("------------------------------------------------------------"
-	       "----\n");
+	       "-----------------------\n");
 	return OOB_SUCCESS;
 }
 
