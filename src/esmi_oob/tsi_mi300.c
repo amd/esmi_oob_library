@@ -44,6 +44,7 @@
 #include <math.h>
 
 #include <esmi_oob/apml.h>
+#include <esmi_oob/apml_common.h>
 #include <esmi_oob/esmi_tsi.h>
 #include <esmi_oob/tsi_mi300.h>
 
@@ -340,4 +341,41 @@ oob_status_t sbtsi_set_hbm_alert_threshold(uint8_t soc_num,
 
 	new = (prev & 0xC7) | ((samples - 1) << 3);
 	return esmi_oob_write_byte(soc_num, SBTSI_ALERTTHRESHOLD, SBTSI, new);
+}
+
+oob_status_t get_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t *mode)
+{
+	oob_status_t ret;
+
+	ret = esmi_oob_read_byte(soc_num, SBTSI_ALERTCONFIG, SBTSI, mode);
+	if (ret)
+		return ret;
+
+	/**
+	 * [7:2] are reserved, Bit [1] HBM Alert config (1 indicates and
+	 * 0 indicates disable).
+	 */
+	*mode = (*mode >> 1) & BIT(1);
+
+	return ret;
+}
+
+oob_status_t set_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t mode)
+{
+	oob_status_t ret;
+	uint8_t prev, new;
+
+	/* single bit validation */
+	if (mode > 1)
+		return OOB_INVALID_INPUT;
+
+	ret = esmi_oob_read_byte(soc_num, SBTSI_ALERTCONFIG, SBTSI, &prev);
+	if (ret)
+		return ret;
+	/* If the bit-1 of previous value is same as mode value */
+	if (mode == (prev >> 1) & BIT(1))
+		return OOB_SUCCESS;
+	/* [7:2] reserved, [1] HBM Alert config bit */
+	new = (prev & 0xFD) | (mode << 1);
+	return esmi_oob_write_byte(soc_num, SBTSI_ALERTCONFIG, SBTSI, new);
 }

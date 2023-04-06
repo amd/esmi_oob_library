@@ -44,6 +44,9 @@
 
 #include <esmi_oob/apml.h>
 
+#define BIT(N) ((uint32_t)1 << N)		//!< Perform left shift operation by N bits //
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
+
 /* Default data for input */
 #define DEFAULT_DATA            0
 #define BIT_LEN			1	//!< Bit length //

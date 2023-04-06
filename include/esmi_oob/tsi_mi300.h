@@ -323,4 +323,38 @@ oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples);
  */
 oob_status_t sbtsi_set_hbm_alert_threshold(uint8_t soc_num,
 					   uint8_t samples);
+/**
+ *  @brief Get the sbtsi hbm alert config
+ *
+ *  @details This function will read hbm alert config. 1 indicates
+ *  Enable hbm high and low temperature alert and 0 indicates
+ *  disbale hbm high and low temperature alert.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[inout] mode HBM alert enable or disable
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t get_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t *mode);
+
+/**
+ *  @brief Set hbm alert config
+ *
+ *  @details This function will set hbm alert config.
+ *  1 indicates enable hbm high and low temperature alert
+ *  and 0 indicates disable hbm high and low temperature alert.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] mode 1 indicates enable and 0 indicates disable
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t set_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t mode);
+
 #endif  // INCLUDE_TSI_MI300_H_

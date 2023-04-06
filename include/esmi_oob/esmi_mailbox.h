@@ -43,9 +43,8 @@
 
 #include "apml_err.h"
 #include "stdbool.h"
+#include <esmi_oob/apml_common.h>
 
-#define BIT(N) ((uint32_t)1 << N)		//!< Perform left shift operation by N bits //
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
 /* LO_WORD_REG used in rapl package energy and read RAS
  * last transaction address */
 #define LO_WORD_REG		0	//!< Low word register //
