@@ -1470,8 +1470,8 @@ oob_status_t reset_on_sync_flood(uint8_t soc_num, uint32_t *ack_resp);
  *
  *  @param[in] soc_num Socket index. At present, only P0 handles this request.
  *
- *  @param[in] d_in struct ras_override_delay_d_in containing delay value override
- *  [5 - 120 mins], disable delay counter bit and stop delay counter bit.
+ *  @param[in] data_in struct ras_override_delay_d_in containing delay value
+ *  override [5 - 120 mins], disable delay counter bit and stop delay counter bit.
  *
  *  @param[out] ack_resp acknowledgment response.
  *
