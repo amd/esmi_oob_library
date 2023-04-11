@@ -107,6 +107,10 @@ typedef enum {
 		OOB_MAILBOX_ERR_BASE + 0x2,	//!< Unknown mailbox cmd
 	OOB_MAILBOX_CMD_INVAL_CORE =
 		OOB_MAILBOX_ERR_BASE + 0x3,	//!< Invalid core
+	OOB_MAILBOX_INVALID_INPUT_ARGS =
+		OOB_MAILBOX_ERR_BASE + 0x9,	//!< Invalid Input Arguments
+	OOB_MAILBOX_INVALID_OOBRAS_CONFIG =
+		OOB_MAILBOX_ERR_BASE +0xA,	//!< Invalid OOB RAS config
 	OOB_MAILBOX_ERR_END =
 		OOB_MAILBOX_ERR_BASE + 0xFF,
 } oob_status_t;
