@@ -51,6 +51,7 @@
 #define DEFAULT_DATA            0
 #define BIT_LEN			1	//!< Bit length //
 #define SEMI_NIBBLE_BITS	2	//!< Half nibble bits //
+#define TRIBBLE_BITS		3	//!< 3 bits //
 #define NIBBLE_BITS		4	//!< Nibble bits //
 #define BYTE_BITS		8	//!< Byte bits //
 #define WORD_BITS		16	//!< word bits //
