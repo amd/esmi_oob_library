@@ -1811,6 +1811,43 @@ static void apml_get_ucode_rev(uint8_t soc_num)
 	printf("-------------------------------------------------------\n");
 }
 
+static void apml_get_ras_df_validity_chk(uint8_t soc_num, uint8_t blk_id) {
+	struct ras_df_err_chk err_chk;
+	oob_status_t ret;
+
+	ret = read_ras_df_err_validity_check(soc_num, blk_id, &err_chk);
+	if (ret) {
+		printf("Failed to read RAS DF validity check, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("----------------------------------------------------\n");
+	printf("| Err log length\t\t| %-17u|\n", err_chk.err_log_len);
+	printf("| DF Block instances\t\t| %-17u|\n", err_chk.df_block_instances);
+	printf("----------------------------------------------------\n");
+}
+
+static void apml_get_ras_df_err_dump(uint8_t soc_num, union ras_df_err_dump df_err)
+{
+	uint32_t data = 0;
+	oob_status_t ret;
+
+	ret = read_ras_df_err_dump(soc_num, df_err, &data);
+	if (ret) {
+		printf("Failed to read RAS error dump for offset[%d] "
+		       "Err[%d]:%s\n", df_err.input[0], ret,
+		       esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("--------------------------------------------------"
+	       "-------------------\n");
+	printf("| Data from offset[%03d]\t\t| 0x%-32x|\n", df_err.input[0], data);
+	printf("--------------------------------------------------"
+	       "-------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -1943,7 +1980,11 @@ static void show_module_commands(char *exe_name, char *command)
 			"  --showucoderevision\t\t\t  \t\t\t\t\t "
 			"Show micro code revision number\n"
 			"  --showpowerconsumed\t\t\t  \t\t\t\t\t "
-			"Show consumed power\n", exe_name);
+			"Show consumed power\n"
+			"  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
+			"Show RAS DF error validity check for a given blockID\n"
+			"  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
+			"Show RAS DF error dump\n", exe_name);
 	else if (!strcmp(command, "sbrmi") || !strcmp(command, "2"))
 		printf("Usage: %s [SOC_NUM] [Option]"
 			"\nOption:\n"
@@ -2319,6 +2360,7 @@ static oob_status_t validate_number(char *str, uint8_t base)
  */
 static oob_status_t parseesb_args(int argc, char **argv)
 {
+	union ras_df_err_dump df_err = {0};
 	struct nbio_err_log nbio;
 	struct lclk_dpm_level_range lclk;
 	struct pci_address pci_addr;
@@ -2415,6 +2457,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showSMTstatus",		no_argument,		&flag,	28},
 		{"showthreadspercoreandsocket",	no_argument,		&flag,	29},
 		{"showccxinfo",			no_argument,		&flag,	30},
+		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
+		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{0,			0,			0,	0},
 	};
 
@@ -2498,7 +2542,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'W' ||
 	    opt == 'w' ||
 	    opt == 0 && ((*long_options[long_index].flag) == 18 ||
-	    *(long_options[long_index].flag) == 19)) {
+			 *(long_options[long_index].flag) == 19 ||
+			 (*long_options[long_index].flag) == 41)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
 			printf("\nOption '-%c' require an argument"
@@ -2598,7 +2643,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
-	if (opt == 0 && *(long_options[long_index].flag) == 16) {
+	if (opt == 0 && (*long_options[long_index].flag == 16
+			 || *long_options[long_index].flag == 42)) {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
 			printf("\nOption '-%c' requires 3 arguments\n", opt);
@@ -2766,6 +2812,17 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 * and logical ccx instance numbers
 			 */
 			apml_get_ccx_info(soc_num);
+		} else if (*(long_options[long_index].flag) == 41) {
+			val1 = atoi(argv[optind - 1]);
+			apml_get_ras_df_validity_chk(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 42) {
+			/* Offset */
+			df_err.input[0] = atoi(argv[optind - 1]);
+			/* DF block ID */
+			df_err.input[1] = atoi(argv[optind++]);
+			/* DF block ID instance */
+			df_err.input[2] = atoi(argv[optind++]);
+			apml_get_ras_df_err_dump(soc_num, df_err);
 		} else {
 			printf(RED "Try `%s --help' for more "
 			       "information."RESET "\n\n", argv[0]);
