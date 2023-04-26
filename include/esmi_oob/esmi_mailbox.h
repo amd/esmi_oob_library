@@ -46,6 +46,12 @@
 
 #define BIT(N) (1 << N)		//!< Perform left shift operation by N bits //
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
+/* Maximum error log length */
+#define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
+/* Maximum DF block-ID's */
+#define MAX_DF_BLOCK_IDS                256	//!< Max DF block IDs //
+/* Maximum instances of DF - Block-ID */
+#define MAX_DF_BLOCK_INSTS              256	//!< Max DF block instances //
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
@@ -109,7 +115,9 @@ typedef enum {
 	READ_BMC_RAPL_PKG_COUNTER,
 	READ_BMC_CPU_BASE_FREQUENCY,
 	READ_BMC_CONTROL_PCIE_GEN5_RATE,
-	WRITE_PWR_EFFICIENCY_MODE = 0x5D,
+	READ_RAS_LAST_TRANS_ADDR_CHK,
+	READ_RAS_LAST_TRANS_ADDR_DUMP,
+	WRITE_PWR_EFFICIENCY_MODE,
 	WRITE_DF_PSTATE_RANGE,
 	READ_LCLK_DPM_LEVEL_RANGE,
 	READ_UCODE_REVISION
@@ -245,6 +253,33 @@ struct pstate_freq {
 	uint16_t mem_clk;	//!< DRAM Memory clock Frequency (MHz)(12 bit)
 	uint16_t fclk : 12;	//!< Data fabric clock (MHz)(12 bit data)
 	uint8_t uclk : 1;	//!< UMC clock divider (1 bit data)
+};
+
+/**
+ * @brief RAS df err validity check output status.
+ * Structure  contains the following members.
+ * df_block_instances number of block instance with error log to report (0 - 256)
+ * err_log_len length of error log in bytes per instance (0 - 256).
+ */
+struct ras_df_err_chk {
+	uint16_t df_block_instances : 9;  //!<  Number of DF block instances
+	uint16_t err_log_len : 9;        //!< len of er log in bytes per inst.
+};
+
+/**
+ * @brief RAS df error dump input.
+ * Union contains the following members.
+ * input[0] 4 byte alligned offset in error log ( 0 - 255)
+ * input[1] DF block ID (0 - 255)
+ * input[2] Zero based index of DF block instance (0 - 255)
+ * input[3] Reserved
+ * data_in  32-bit data input
+ *
+ */
+union ras_df_err_dump {
+	uint8_t input[4];     //!< [0] offset, [1] DF block ID
+			      //!< [2] block ID inst, [3] RESERVED
+	uint32_t data_in;     //!< 32 bit data in for the DF err dump
 };
 
 /**
@@ -1342,6 +1377,48 @@ oob_status_t read_lclk_dpm_level_range(uint8_t soc_num,
  *
  */
 oob_status_t read_ucode_revision(uint8_t soc_num, uint32_t *ucode_rev);
+
+/**
+ *  @brief Read number of instances of DF blocks of type DF_BLOCK_ID with errors.
+ *
+ *  @details This function reads the number instance of DF blocks
+ *  of type DF_BLOCK_ID that have an error log to report.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] df_block_id DF block ID.
+ *
+ *  @param[out] err_chk ras_df_err_chk Struct containing number of DF block
+ *  instances andclength of error log in bytes per instanace.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t read_ras_df_err_validity_check(uint8_t soc_num,
+					    uint8_t df_block_id,
+					    struct ras_df_err_chk *err_chk);
+
+/**
+ *  @brief Read RAS DF error dump.
+ *
+ *  @details This function reads 32 bits of data from the offset provided for
+ *  DF block instance retported by  read_ras_df_err_validity_check.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] ras_err ras_df_err_dump Union containing 4 byte offset,
+ *  DF block ID and block ID instance.
+ *
+ *  @param[out] data output data from offset of DF block instance.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t read_ras_df_err_dump(uint8_t soc_num,
+				  union ras_df_err_dump ras_err,
+				  uint32_t *data);
 
 /*
  * @} */  //  end of MailboxMsg

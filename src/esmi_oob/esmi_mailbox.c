@@ -1019,3 +1019,44 @@ oob_status_t read_ucode_revision(uint8_t soc_num, uint32_t *ucode_rev)
 	return esmi_oob_read_mailbox(soc_num, READ_UCODE_REVISION,
 				     0, ucode_rev);
 }
+
+oob_status_t read_ras_df_err_validity_check(uint8_t soc_num,
+					    uint8_t df_block_id,
+					    struct ras_df_err_chk *err_chk)
+{
+	uint32_t buffer;
+	oob_status_t ret;
+
+	if (!err_chk)
+		return OOB_ARG_PTR_NULL;
+
+	if (df_block_id > (MAX_DF_BLOCK_IDS - 1))
+		return OOB_INVALID_INPUT;
+
+	ret = esmi_oob_read_mailbox(soc_num, READ_RAS_LAST_TRANS_ADDR_CHK,
+				    (uint32_t)df_block_id, &buffer);
+	if (!ret) {
+		/* Number of df block instances */
+		err_chk->df_block_instances = buffer;
+		/* bits 16 - 24 of buffer will length of error log */
+		/* in bytes per instance  */
+		err_chk->err_log_len = buffer >> 16;
+	}
+
+	return ret;
+}
+
+oob_status_t read_ras_df_err_dump(uint8_t soc_num,
+                                  union ras_df_err_dump ras_err,
+                                  uint32_t *data)
+{
+	/* Validate error log offset, DF_BLOCK_ID and DF_BLOCK_INSTANCE */
+	if ((ras_err.input[0] & 3) != 0 ||
+	     ras_err.input[0] > (MAX_ERR_LOG_LEN - 1) ||
+	     ras_err.input[1] > (MAX_DF_BLOCK_IDS - 1) ||
+	     ras_err.input[2] > (MAX_DF_BLOCK_INSTS - 1))
+		return OOB_INVALID_INPUT;
+
+	return esmi_oob_read_mailbox(soc_num, READ_RAS_LAST_TRANS_ADDR_DUMP,
+				     ras_err.data_in, data);
+}
