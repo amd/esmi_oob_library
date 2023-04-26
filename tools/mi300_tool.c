@@ -50,8 +50,10 @@
 #include <unistd.h>
 
 #include <esmi_oob/apml.h>
+#include <esmi_oob/apml_common.h>
 #include <esmi_oob/esmi_tsi.h>
 #include <esmi_oob/rmi_mailbox_mi300.h>
+#include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/tsi_mi300.h>
 
 static int flag;
@@ -157,6 +159,48 @@ static void apml_set_gfx_core_clock(uint8_t soc_num, enum range_type type,
 	printf("%s GFX core clk freq set successfully\n", status);
 }
 
+static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
+{
+	uint8_t index = 0, size = 0;
+	char **alarm_status = {NULL};
+	char data[100]=" ";
+	bool status = false;
+
+	switch(type) {
+	case RAS:
+		alarm_status = ras_alarm_status;
+		size = ARRAY_SIZE(ras_alarm_status);
+		break;
+	case PM:
+		alarm_status = pm_alarm_status;
+		size = ARRAY_SIZE(pm_alarm_status);
+		break;
+	default:
+		break;
+	}
+
+	for (index = 0; index < size; index++) {
+		switch(buffer & BIT(index)) {
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+			if (status)
+				strcat(strcat(data, ", "), alarm_status[index]);
+			else
+				strcat(data, alarm_status[index]);
+			status = true;
+			break;
+		default:
+			break;
+		}
+	}
+	if (status)
+		printf("%-43s", data);
+	else
+		printf("%-43s", " No Alarm");
+}
+
 static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
 {
 	uint32_t buffer;
@@ -169,21 +213,12 @@ static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-
-	switch(type) {
-	case RAS:
-		status = ras_alarm_status[buffer];
-		break;
-	case PM:
-		status = pm_alarm_status[buffer];
-		break;
-	default:
-		return;
-	}
-
-	printf("----------------------------------------------------\n");
-	printf("| %-3s Alarm Status \t:%25s |\n", type ? "PM" : "RAS", status);
-	printf("----------------------------------------------------\n");
+	printf("------------------------------------------------------------"
+	       "----------\n");
+	printf("| %-3s Alarm Status \t: ", type ? "PM" : "RAS");
+	apml_display_alarms_status(type, buffer);
+	printf("|\n------------------------------------------------------------"
+	       "----------\n");
 }
 
 static void apml_get_psn(uint8_t soc_num, uint32_t die_index)
@@ -198,9 +233,9 @@ static void apml_get_psn(uint8_t soc_num, uint32_t die_index)
 		return;
 	}
 
-	printf("--------------------------------------------\n");
-	printf("| PSN \t| %-32llu |\n", buffer);
-	printf("--------------------------------------------\n");
+	printf("----------------------------------------------\n");
+	printf("| PSN \t| 0x%-32llx |\n", buffer);
+	printf("----------------------------------------------\n");
 }
 
 static void apml_get_link_info(uint8_t soc_num)
@@ -441,11 +476,10 @@ static void apml_show_bist_results(uint8_t soc_num, uint32_t die_id)
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-	printf("-----------------------------------------------"
-	"-------\n");
-	printf("| BIST RESULT\t  | %-32u |\n", bist_result);
-	printf("-----------------------------------------------"
-	"-------\n");
+	printf("-----------------------------------\n");
+	printf("| BIST RESULT\t  | \t%s |\n",
+	       bist_result == 0 ? "BIST PASS" : "BIST FAIL");
+	printf("-----------------------------------\n");
 }
 
 static void apml_get_svi_telemetry_by_rail(uint8_t soc_num,
@@ -481,8 +515,10 @@ static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
 	}
 	printf("-----------------------------------------------"
 	"--------------\n");
-	printf("| Energy Acuumulator (J) | %-32llu |\n", energy_acc);
-	printf("| %-22s | %-32llu |\n", "Time stamp (ns)", time_stamp);
+	printf("| Energy Acuumulator (MJ) | %-32.3f |\n",
+	       (double)energy_acc / MEGA);
+	printf("| %-23s | %-32.3f |\n", "Time stamp (s) ",
+	       (double)time_stamp / GIGA);
 	printf("-----------------------------------------------"
 	"--------------\n");
 }
@@ -673,8 +709,10 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
-		printf("\n| \tEnergy Acc (J) \t\t\t | %-16llu", energy_acc);
-		printf("\n| \tTime stamp (ns) \t\t | %-16llu", time_stamp);
+		printf("\n| \tEnergy Acc (MJ) \t\t | %-32.3f",
+		       (double)energy_acc / MEGA);
+		printf("\n| \tTime stamp (s) \t\t\t | %-32.3f",
+		       (double)time_stamp / GIGA);
 	}
 
 	printf("\n| RAS ALarms \t\t\t\t |");
@@ -682,21 +720,21 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
-		printf(" %-17u", d_out);
+		apml_display_alarms_status(RAS, d_out);
 
 	printf("\n| PM ALarms \t\t\t\t |");
 	ret = get_alarms(soc_num, PM, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
-		printf(" %-17u", d_out);
+		apml_display_alarms_status(PM, d_out);
 
 	printf("\n| PSN (0x%x)\t\t\t\t |", pstate_index);
 	ret = get_psn(soc_num, pstate_index, &psn);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
-		printf(" %llu", psn);
+		printf(" 0x%-llx", psn);
 	printf("\n| Link Info \t\t\t\t |");
 	ret = get_link_info(soc_num, &link_config, &module_id);
 	if (ret) {
@@ -842,7 +880,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "[MAX(0,1,2,3)]\t\t Set xGMIlink width, max value >= "
 	       "min value\n"
 	       "  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
-	       "Show df clock, memory clock and umc clock divider\n"
+	       "Show df clock, memory clock and umc clock frequencies\n"
 	       "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
 	       "[MINDPM]\t\t Set dpm level range, valid dpm "
 	       "values from 0 - 3, max value >= min value\n"

@@ -1187,16 +1187,7 @@ static void apml_get_cclklimit(uint8_t soc_num, uint32_t thread)
 static void apml_get_pwr_telemetry(uint8_t soc_num)
 {
 	uint32_t power;
-	uint16_t update_rate;
 	oob_status_t ret;
-	bool status;
-
-	ret = is_plat_form_mi300(soc_num, &status);
-	if (ret) {
-		printf("Failed to get platform information,"
-		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
-		return;
-	}
 
 	ret = read_pwr_svi_telemetry_all_rails(soc_num, &power);
 	if (ret != OOB_SUCCESS) {
@@ -1207,16 +1198,8 @@ static void apml_get_pwr_telemetry(uint8_t soc_num)
 	}
 	printf("------------------------------------------------------------"
 		"--\n");
-	printf("| Telemetry Power (Watts)\t\t |");
-	if (status) {
-		/* Assign lower 16 bits */
-		update_rate = power;
-		printf(" %-17u |\n", (power >> 16));
-		printf("| Update rate (ms)\t\t\t | %-17u |\n", update_rate);
-	}
-	else {
-		printf(" %-17.03f |\n", (float)power / 1000);
-	}
+	printf("| Telemetry Power (Watts)\t\t | %-17.03f |\n",
+	       (float)power / 1000);
 	printf("------------------------------------------------------------"
 		"--\n");
 }
@@ -1475,8 +1458,9 @@ static void apml_get_fclkmclkuclk(uint8_t soc_num)
 	printf(" %-17u |\n", df_pstate.fclk);
 	printf("| MEMCLK (MHz)\t\t |");
 	printf(" %-17u |\n", df_pstate.mem_clk);
-	printf("| UCLK Divider\t\t |");
-	printf(" %-17u |\n", df_pstate.uclk);
+	printf("| UCLK (MHz)\t\t |");
+	printf(" %-17u |\n", df_pstate.uclk ? (df_pstate.mem_clk / 2)
+	       : df_pstate.mem_clk);
 	printf("----------------------------------------------\n");
 }
 
@@ -2247,7 +2231,7 @@ static void get_mailbox_commands(char *exe_name)
 	       "  --enabledfpstatedynamic\t\t  \t\t\t\t\t "
 	       "Set df pstate dynamic\n"
 	       "  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
-	       "Show df clock, memory clock and umc clock divider\n"
+	       "Show df clock, memory clock and umc clock frequencies\n"
 	       "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
 	       "[MINDPM]\t\t Set dpm level range, valid dpm "
 	       "values from 0 - 3, max value >= min value\n"
@@ -2646,14 +2630,16 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf("\n| \tFmin \t\t\t\t | %u", fmin);
 	}
 	usleep(APML_SLEEP);
-	printf("\n| Data_Fabric_Freq\t\t\t |");
+	printf("\n| Data_Fabric_Freq (MHz)\t\t |");
 	ret = read_current_dfpstate_frequency(soc_num, &df_pstate);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else {
 		printf("\n| \tFclk \t\t\t\t | %u", df_pstate.fclk);
 		printf("\n| \tMclk \t\t\t\t | %u", df_pstate.mem_clk);
-		printf("\n| \tUclk \t\t\t\t | %u", df_pstate.uclk);
+		printf("\n| \tUclk \t\t\t\t | %u",
+		       df_pstate.uclk ? (df_pstate.mem_clk / 2)
+		       : df_pstate.mem_clk);
 	}
 	usleep(APML_SLEEP);
 	printf("\n| CPU_Base_Freq (MHz)\t\t\t |");
@@ -2664,7 +2650,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17u", freq);
 
 	usleep(APML_SLEEP);
-	printf("\n| Package_Energy (MJ)\t\t\t |");
+	printf("\n| Package_Energy_CORES (MJ)\t\t |");
 	ret = read_rapl_pckg_energy_counters(soc_num, &energy);
 	if (ret)
 		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
