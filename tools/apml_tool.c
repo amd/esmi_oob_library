@@ -2116,6 +2116,61 @@ static void apml_clear_ras_status_register(uint8_t soc_num, uint8_t value)
 	return;
 }
 
+static oob_status_t apml_get_ppin_fuse(uint8_t soc_num)
+{
+	uint64_t data = 0;
+	oob_status_t ret;
+
+	ret = read_ppin_fuse(soc_num, &data);
+	if (ret) {
+		printf("Failed to get the PPIN fuse data, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+
+	printf("------------------------------------------------------------"
+	       "---------------------\n");
+	printf("| PPIN Fuse | 0x%-64llx |\n", data);
+	printf("------------------------------------------------------------"
+	       "---------------------\n");
+}
+
+static oob_status_t apml_get_cclk_freqlimit(uint8_t soc_num)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret;
+
+	ret = read_cclk_freq_limit(soc_num, &buffer);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get cclk_freqlimit, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("-----------------------------------------------------\n");
+	printf("| cclk_freqlimit (MHz)\t\t | %-16u |\n", buffer);
+	printf("-----------------------------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
+static oob_status_t apml_get_sockc0_residency(uint8_t soc_num)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret;
+
+	ret = read_socket_c0_residency(soc_num, &buffer);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get c0_residency, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("----------------------------------------------\n");
+	printf("| c0_residency (%%)\t |  %-16u |\n", buffer);
+	printf("----------------------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2260,6 +2315,12 @@ static void get_mailbox_commands(char *exe_name)
 	       " recent 8 offsets\n"
 	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 	       "Show consumed power\n"
+	       "  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
+	       " fuse data\n"
+	       "  --showcclkfreqlimit\t\t\t\t\t\t\t\t Get "
+	       "cclk freqlimit for a given socket in MHz\n"
+	       "  --showc0residency\t\t\t\t\t\t\t\t Show "
+	       "c0_residency for a given socket\n"
 	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
 	       "Show RAS DF error validity check for a given blockID\n"
 	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
@@ -2852,9 +2913,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"rasoverridedelay",		required_argument,	&flag,  32},
 		{"getpostcode",			required_argument,	&flag,  33},
 		{"clearrasstatusregister",	required_argument,	&flag,	34},
+		{"showppinfuse",		no_argument,		&flag,  40},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
 		{"showdependency",		no_argument,		&flag,  45},
+		{"showcclkfreqlimit",		no_argument,		&flag,  43},
+		{"showc0residency",		no_argument,		&flag,  44},
 		{0,			0,			0,	0},
 	};
 
@@ -3263,6 +3327,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = atoi(argv[optind - 1]);
 			/* Set RAS Status Register */
 			apml_clear_ras_status_register(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 40) {
+			/* show PPIN Fuse data */
+			apml_get_ppin_fuse(soc_num);
 		} else if (*(long_options[long_index].flag) == 41) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_ras_df_validity_chk(soc_num, val1);
@@ -3274,6 +3341,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* DF block ID instance */
 			df_err.input[2] = atoi(argv[optind++]);
 			apml_get_ras_df_err_dump(soc_num, df_err);
+		} else if (*(long_options[long_index].flag) == 43) {
+			/* show cclk frequency limit */
+			apml_get_cclk_freqlimit(soc_num);
+		} else if (*(long_options[long_index].flag) == 44) {
+			/* show C0 residency */
+			apml_get_sockc0_residency(soc_num);
 		}
 		break;
 	case 'Y':

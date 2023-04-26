@@ -593,7 +593,6 @@ static void apml_clear_statistics(uint8_t soc_num)
 
 static void apml_set_hbm_high_threshold_temp(uint8_t soc_num, float temp_th)
 {
-	float curr_temp_th;
 	oob_status_t ret;
 
 	ret = write_sbtsi_hbm_hi_temp_th(soc_num, temp_th);
@@ -603,22 +602,11 @@ static void apml_set_hbm_high_threshold_temp(uint8_t soc_num, float temp_th)
 		return;
 	}
 
-	ret = read_sbtsi_hbm_hi_temp_th(soc_num, &curr_temp_th);
-	if (ret) {
-		printf("Failed to get hbm high temperature threshold,"
-		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
-		return;
-	}
-
-	if (temp_th != curr_temp_th)
-		printf("Failed to set hbm high temperature threshold");
-	else
-		printf("HBM high temperature threshold set successfully\n");
+	printf("HBM high temperature threshold set successfully\n");
 }
 
 static void apml_set_hbm_low_threshold_temp(uint8_t soc_num, float temp_th)
 {
-	float curr_temp_th;
 	oob_status_t ret;
 
 	ret = write_sbtsi_hbm_lo_temp_th(soc_num, temp_th);
@@ -628,17 +616,7 @@ static void apml_set_hbm_low_threshold_temp(uint8_t soc_num, float temp_th)
 		return;
 	}
 
-	ret = read_sbtsi_hbm_lo_temp_th(soc_num, &curr_temp_th);
-	if (ret) {
-		printf("Failed to get hbm low temperature threshold,"
-		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
-		return;
-	}
-
-	if (temp_th != curr_temp_th)
-		printf("Failed to set hbm low temperature threshold");
-	else
-		printf("HBM low temperature threshold set successfully\n");
+	printf("HBM low temperature threshold set successfully\n");
 }
 
 static oob_status_t apml_set_hbm_alert_config(uint8_t soc_num, int value)
@@ -970,6 +948,12 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       " recent 8 offsets\n"
 	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 	       "Show consumed power\n"
+	       "  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
+	       " fuse data\n"
+	       "  --showcclkfreqlimit\t\t\t\t\t\t\t\t Get "
+	       "cclk freqlimit for a given socket in MHz\n"
+	       "  --showc0residency\t\t\t\t\t\t\t\t Show "
+	       "c0_residency for a given socket\n"
 	       "  --showhbmbandwidth\t\t\t\t\t\t\t\t Show "
 	       "max, utilized HBM Bandwidth of the system\n"
 	       "  --set_hbmthrottle\t\t\t  [0 to 80%%]"
