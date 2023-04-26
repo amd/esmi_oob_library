@@ -45,13 +45,6 @@
 #include "apml_err.h"
 #include <stdbool.h>
 
-/* LO_WORD_REG used in rapl package energy and read RAS
- * last transaction address */
-#define LO_WORD_REG		0	//!< Low word register //
-/* HI_WORD_REG used in rapl package energy and read RAS
- * last transaction address */
-#define HI_WORD_REG		1	//!< High word register //
-
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
 /* Maximum DF block-ID's */
@@ -93,7 +86,10 @@ typedef enum {
 	READ_IOD_BIST = 0x13,
 	READ_CCD_BIST_RESULT,
 	READ_CCX_BIST_RESULT,
+	READ_PACKAGE_CCLK_FREQ_LIMIT,
+	READ_PACKAGE_C0_RESIDENCY,
 	READ_DDR_BANDWIDTH = 0x18,
+	READ_PPIN_FUSE = 0x1F,
 	GET_POST_CODE = 0x20,
 	WRITE_BMC_REPORT_DIMM_POWER = 0X40,
 	WRITE_BMC_REPORT_DIMM_THERMAL_SENSOR,
@@ -306,8 +302,8 @@ union ras_df_err_dump {
 
 struct ras_override_delay {
 	uint8_t delay_val_override;	//!< Delay value override [5 -120 mins]
-	bool disable_delay_counter;	//!< Disable delay counter
-	bool stop_delay_counter;	//!< stop delay counter
+	uint8_t disable_delay_counter : 1;	//!< Disable delay counter
+	uint8_t stop_delay_counter : 1;	//!< stop delay counter
 };
 
 /**
@@ -747,6 +743,38 @@ oob_status_t read_ccd_bist_result(uint8_t soc_num, uint32_t input,
  */
 oob_status_t read_ccx_bist_result(uint8_t soc_num, uint32_t value,
 				  uint32_t *ccx_bist);
+
+/**
+ *  @brief Read CCLK frequency limit for the given socket
+ *
+ *  @details This function will read CPU core clock frequency limit
+ *  for the given socket.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] cclk_freq CPU core clock frequency limit [MHz]
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t read_cclk_freq_limit(uint8_t soc_num, uint32_t *cclk_freq);
+
+/**
+ *  @brief Read socket C0 residency
+ *
+ *  @details This function will provides average C0 residency across all cores
+ *  in the socket. 100% specifies that all enabled cores in the socket are runningin C0.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] c0_res is to read Socket C0 residency[%].
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t read_socket_c0_residency(uint8_t soc_num, uint32_t *c0_res);
 
 /**
  *  @brief Get the Theoretical maximum DDR Bandwidth of the system in GB/s,
@@ -1529,6 +1557,19 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
  *
  */
 oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code);
+
+/**
+ *  @brief Get the 64 bit PPIN fuse
+ *
+ *  @details This function will read the 64 bit PPIN fuse available via OPN_PPIN
+ *  fuse.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] data PPIN fuse data
+ *
+ */
+oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data);
 
 /* @}
  */  // end of MailboxMsg

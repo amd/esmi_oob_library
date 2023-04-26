@@ -60,6 +60,12 @@ typedef enum {
  *  @details This function will recover the APML client device and
  *  returns successful on recovery or error if recovery is unsuccessful
  *
+ *  NOTE: This fix is a software workaround for the erratum,
+ *  Erratum:1444, "Advanced Platform Management Link (APML)
+ *  May Cease to Function After Incomplete Read Transaction"
+ *  Further details can be found in mentioned tech doc
+ *  https://www.amd.com/system/files/TechDocs/57095-PUB_1.00.pdf
+ *
  *  @param[in] soc_num Socket index.
  *
  *  @param[in] client DEV_SBRMI[0]/DEV_SBTSI[1] enum: apml_client

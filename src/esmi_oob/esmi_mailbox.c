@@ -271,6 +271,18 @@ oob_status_t read_ccx_bist_result(uint8_t soc_num,
 				     value, ccx_bist);
 }
 
+oob_status_t read_cclk_freq_limit(uint8_t soc_num, uint32_t *cclk_freq)
+{
+	return esmi_oob_read_mailbox(soc_num, READ_PACKAGE_CCLK_FREQ_LIMIT,
+				     0, cclk_freq);
+}
+
+oob_status_t read_socket_c0_residency(uint8_t soc_num, uint32_t *c0_res)
+{
+	return esmi_oob_read_mailbox(soc_num, READ_PACKAGE_C0_RESIDENCY,
+				     0, c0_res);
+}
+
 oob_status_t read_ddr_bandwidth(uint8_t soc_num,
 				struct max_ddr_bw *max_ddr)
 {
@@ -1093,5 +1105,29 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_num,
 oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code)
 {
 	return esmi_oob_read_mailbox(soc_num, GET_POST_CODE, offset, post_code);
+}
+
+oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data)
+{
+	uint32_t buffer;
+	oob_status_t ret;
+
+	/* NULL Pointer check */
+	if (!data)
+		return OOB_ARG_PTR_NULL;
+
+	/* Read lower 32 bit PPIN data */
+	ret = esmi_oob_read_mailbox(soc_num, READ_PPIN_FUSE,
+				    LO_WORD_REG, &buffer);
+	if (!ret) {
+		*data = buffer;
+		/* Read higher 32 bit PPIN data */
+		ret = esmi_oob_read_mailbox(soc_num, READ_PPIN_FUSE,
+					    HI_WORD_REG, &buffer);
+		if (!ret)
+			*data |= ((uint64_t)buffer << 32);
+	}
+
+	return ret;
 }
 
