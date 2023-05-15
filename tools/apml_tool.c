@@ -2619,6 +2619,13 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17.3f", (float)power / 1000);
+	usleep(APML_SLEEP);
+	printf("\n| Package_Energy_CORES (MJ)\t\t |");
+	ret = read_rapl_pckg_energy_counters(soc_num, &energy);
+	if (ret)
+		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+	else
+		printf(" %-17f", energy);
 
 	usleep(APML_SLEEP);
 	printf("\n| Socket_Freq_Range (MHz)\t\t |");
@@ -2629,6 +2636,13 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf("\n| \tFmax \t\t\t\t | %u", fmax);
 		printf("\n| \tFmin \t\t\t\t | %u", fmin);
 	}
+	usleep(APML_SLEEP);
+	printf("\n| CPU_Base_Freq (MHz)\t\t\t |");
+	ret = read_bmc_cpu_base_frequency(soc_num, &freq);
+	if (ret)
+		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
+	else
+		printf(" %-17u", freq);
 	usleep(APML_SLEEP);
 	printf("\n| Data_Fabric_Freq (MHz)\t\t |");
 	ret = read_current_dfpstate_frequency(soc_num, &df_pstate);
@@ -2641,22 +2655,9 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		       df_pstate.uclk ? (df_pstate.mem_clk / 2)
 		       : df_pstate.mem_clk);
 	}
-	usleep(APML_SLEEP);
-	printf("\n| CPU_Base_Freq (MHz)\t\t\t |");
-	ret = read_bmc_cpu_base_frequency(soc_num, &freq);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-17u", freq);
 
-	usleep(APML_SLEEP);
-	printf("\n| Package_Energy_CORES (MJ)\t\t |");
-	ret = read_rapl_pckg_energy_counters(soc_num, &energy);
-	if (ret)
-		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-17f", energy);
-
+	if (status)
+		get_mi_300_mailbox_cmds_summary(soc_num);
 	usleep(APML_SLEEP);
 	printf("\n| THREADS_PER_CORE\t\t\t |");
 	ret = esmi_get_threads_per_core(soc_num, &threads_per_core);
@@ -2672,10 +2673,6 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17d", threads_per_soc);
-
-
-	if (status)
-		get_mi_300_mailbox_cmds_summary(soc_num);
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 	return OOB_SUCCESS;
