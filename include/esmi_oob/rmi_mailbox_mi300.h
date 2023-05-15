@@ -118,14 +118,12 @@ enum clk_type {
 
 /**
  * @brief Structure for Max DDR/HBM bandwidth and utilization.
- * It contains max bandwidth(12 bit data) in GBps, current utilization
- * bandwidth(Read+Write)(12 bit data) in GBps, current utilized bandwidth
- * (8 bit data) in percentage.
+ * It contains max bandwidth(16 bit data) in GBps, current utilization
+ * bandwidth(Read+Write)(16 bit data) in GBps.
  */
 struct max_mem_bw {
-	uint16_t max_bw : 12;           //!< Max Bandwidth (12 bit data)
-	uint16_t utilized_bw : 12;      //!< Utilized Bandwidth  (12 bit data)
-	uint8_t utilized_pct;           //!< Utliized Bandwidth percentage
+	uint16_t max_bw;		//!< Max Bandwidth (16 bit data)
+	uint16_t utilized_bw;		//!< Utilized Bandwidth  (16 bit data)
 };
 
 /**
@@ -521,13 +519,12 @@ oob_status_t get_controller_status(uint8_t soc_num, bool *status);
  *  @brief Reads max memory bandwidth utilization.
  *
  *  @details This function will provide theoretic.al maximum HBM/memory
- *  bandwidth of the system in GB/s, utilized bandwidth in GB/S and current
- *  utilized HBM/memory bandwidth(%).
+ *  bandwidth of the system in GB/s, utilized bandwidth in GB/S.
  *
  *  @param[in] soc_num Socket index.
  *
  *  @param[out] bw struct max_mem_bw containing max bw,
- *  utilized b/w and utilized b/w %.
+ *  utilized b/w.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.

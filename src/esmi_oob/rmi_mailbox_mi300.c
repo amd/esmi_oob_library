@@ -341,9 +341,8 @@ oob_status_t get_max_mem_bw_util(uint8_t soc_num,
 	ret = esmi_oob_read_mailbox(soc_num, GET_MAX_MEM_BW_UTILIZATION,
 				    DEFAULT_DATA, &result);
 	if (!ret) {
-		bw->max_bw = result >> 20;
-		bw->utilized_bw = (result >> 8) & BW_MASK;
-		bw->utilized_pct = result & ONE_BYTE_MASK;
+		bw->max_bw = result >> WORD_BITS;
+		bw->utilized_bw = result;
 	}
 
 	return ret;
