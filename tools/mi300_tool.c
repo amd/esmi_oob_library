@@ -485,7 +485,7 @@ static void apml_show_bist_results(uint8_t soc_num, uint32_t die_id)
 static void apml_get_svi_telemetry_by_rail(uint8_t soc_num,
 					   struct svi_port_domain port)
 {
-	struct svi_telemetry_power pow = {0};
+	uint32_t pow = 0;
 	oob_status_t ret;
 
 	ret = get_svi_rail_telemetry(soc_num, port, &pow);
@@ -494,10 +494,9 @@ static void apml_get_svi_telemetry_by_rail(uint8_t soc_num,
 		       " rails,Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-printf("--------------------------------------------\n");
-printf("| Power (W) \t\t| %16u |\n", pow.power);
-printf("| Udaterate (ms) \t| %16u |\n", pow.update_rate);
-printf("--------------------------------------------\n");
+	printf("---------------------------------------------\n");
+	printf("| Power (W) \t\t| %-17.03f |\n", (float)pow / 1000);
+	printf("---------------------------------------------\n");
 }
 
 static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
@@ -886,7 +885,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "values from 0 - 3, max value >= min value\n"
 	       "  --showcpubasefreq\t\t\t  \t\t\t\t\t "
 	       "Show cpu base frequency\n"
-	       "  --setpwrefficiencymode\t\t  [MODE(1,2,4)]\t\t\t\t "
+	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
 	       "Set power efficiency profile policy\n"
 	       "  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
 	       "Show runnng average power on specified core\n"
