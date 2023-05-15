@@ -137,14 +137,6 @@ struct svi_port_domain {
 };
 
 /**
- * @brief struct containing power in watts and update rate in ms.
- */
-struct svi_telemetry_power {
-	uint16_t power;               //!< power
-	uint16_t update_rate;        //!< update rate
-};
-
-/**
  * @brief struct containing max frequency and min frequencey limit
  */
 struct freq_limits {
@@ -460,8 +452,7 @@ oob_status_t get_gfx_freq(uint8_t soc_num, enum gfx_domain_type type,
  *  @param[in] port struct svi_telemetry_domain containing port
  *  and slave address.
  *
- *  @param[out] pow strcut svi_telemetry_power containing
- *  power in watts and uodate rate in ms.
+ *  @param[out] pow power in milliwatts.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
@@ -469,7 +460,7 @@ oob_status_t get_gfx_freq(uint8_t soc_num, enum gfx_domain_type type,
  */
 oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
 				    struct svi_port_domain port,
-				    struct svi_telemetry_power *pow);
+				    uint32_t *pow);
 
 /**
  *  @brief Reads local ID of the hottest die and its temperature.

@@ -264,25 +264,16 @@ oob_status_t get_gfx_freq(uint8_t soc_num, enum gfx_domain_type type,
 
 oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
 				    struct svi_port_domain port,
-				    struct svi_telemetry_power *pow)
+				    uint32_t *pow)
 {
-	uint32_t input, buffer;
-	oob_status_t ret;
+	uint32_t input;
 
 	if (!pow)
 		return OOB_ARG_PTR_NULL;
 
 	input = (uint32_t)port.slave_addr << SEMI_NIBBLE_BITS | port.port;
-	ret = esmi_oob_read_mailbox(soc_num, GET_SVI_TELEMETRY_BY_RAIL,
-				    input, &buffer);
-	if (!ret) {
-		/* lower 16 bits is update rate in ms */
-		pow->update_rate = buffer;
-		/* Upper 16 bits is power in watts */
-		pow->power = buffer >> WORD_BITS;
-	}
-
-	return ret;
+	return esmi_oob_read_mailbox(soc_num, GET_SVI_TELEMETRY_BY_RAIL,
+				     input, pow);
 }
 
 oob_status_t get_die_hotspot_info(uint8_t soc_num, uint8_t *die_id,
