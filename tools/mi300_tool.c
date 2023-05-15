@@ -137,8 +137,7 @@ static void apml_get_hbm_bandwidth(uint8_t soc_num)
 	}
 	printf("---------------------------------------------------");
 	printf("\n| HBM Max BW (GB/s)\t        | %-17d|", bw.max_bw);
-	printf("\n| HBM Utilized BW (GB/s) \t| %-17d|", bw.utilized_bw);
-	printf("\n| HBM Utilized Percent(%%)\t| %-17d|\n", bw.utilized_pct);
+	printf("\n| HBM Utilized BW (GB/s) \t| %-17d|\n", bw.utilized_bw);
 	printf("---------------------------------------------------");
 }
 
@@ -790,8 +789,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tHBM Max BW (GB/s)\t\t | %-17u", bw.max_bw);
 		printf("\n| \tHBM Utilized BW (GB/s)\t\t | %-17u",
 		       bw.utilized_bw);
-		printf("\n| \tHBM Utilized Percent(%%)\t\t | %-17u",
-		       bw.utilized_pct);
 	}
 	printf("\n| HBM Throttle (%%)\t\t\t |");
 	ret = get_hbm_throttle(soc_num, &d_out);
@@ -913,7 +910,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 	       "Show consumed power\n"
 	       "  --showhbmbandwidth\t\t\t\t\t\t\t\t Show "
-	       "max, current & utilized HBM Bandwidth of the system\n"
+	       "max, utilized HBM Bandwidth of the system\n"
 	       "  --set_and_verify_hbmthrottle\t\t  [0 to 80%%]"
 	       "\t\t\t\t Set HBM Throttle\n"
 	       "  --showhbmthrottle\t\t\t  \t\t\t\t\t "
