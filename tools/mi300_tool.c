@@ -661,6 +661,67 @@ static oob_status_t apml_set_hbm_alert_config(uint8_t soc_num, int value)
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_maximum_die_id(uint8_t soc_num)
+{
+	uint32_t max_die_id;
+	oob_status_t ret;
+
+
+	ret = get_die_type(soc_num, BIT_LEN, &max_die_id);
+	if (ret) {
+		printf("Failed: to get maximum die-id, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("------------------------------------------\n");
+	printf("| Maximum Die-ID  | %-16u |\n", max_die_id & ONE_BYTE_MASK);
+	printf("------------------------------------------\n");
+}
+
+static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
+{
+	uint32_t buffer = 0;
+	char *die_type;
+	oob_status_t ret;
+
+	die_id = die_id << 1;
+
+	ret = get_die_type(soc_num, die_id, &buffer);
+	if (ret) {
+		printf("Failed: to get die-type, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+
+	switch (buffer & ONE_BYTE_MASK) {
+	case 0:
+		die_type = "NOT DEFINED";
+		break;
+	case 1:
+		die_type = "AID";
+		break;
+	case 2:
+		die_type = "XCD";
+		break;
+	case 3:
+		die_type = "CCD";
+		break;
+	case 4:
+		die_type = "HBM STACK";
+		break;
+	default:
+		die_type = "RESERVED";
+		break;
+	}
+	printf("-----------------------------------------------------\n");
+	printf("| Die Type\t\t\t | %-16s |\n", die_type);
+	printf("| Max count of current die-type  | %-16u |\n",
+	       (buffer >> BYTE_BITS) & ONE_BYTE_MASK);
+	printf("| AID associated with Die-IDi\t | %-16u |\n",
+	       (buffer >> WORD_BITS) & NIBBLE_MASK);
+	printf("-----------------------------------------------------\n");
+}
+
 void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 {
 	struct mclk_fclk_pstates pstate = {0};
@@ -971,7 +1032,11 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "  --querystatistics\t\t\t  [STAT_PARAM][OUTPUT_CONTROL]"
 	       "\t\t Query statistics for a given parameter\n"
 	       "  --clearstatistics\t\t\t  \t\t\t\t\t "
-	       "clear statistics\n", exe_name);
+	       "clear statistics\n"
+	       "  --showmaxdieid\t\t\t  \t\t\t\t\t "
+	       "Show maximum die-id\n"
+	       "  --showdietype\t\t\t\t  [die_id]\t\t\t\t"
+	       " Show dietype. Valid die_id is 0 - (maxdie-id - 1)\n", exe_name);
 }
 
 void get_mi300_tsi_commands(char *exec_name)
@@ -1152,6 +1217,8 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"sethbmlowtempthreshold",      required_argument,      &flag,  830},
 		{"sethbmalertthreshold",	required_argument,	&flag,	831},
 		{"sethbmalertconfig",		required_argument,	&flag,	832},
+		{"showmaxdieid",		no_argument,		&flag,	833},
+		{"showdietype",			required_argument,	&flag,  834},
 		{0,                     0,                      0,      0},
 	};
 
@@ -1192,7 +1259,8 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 				(*long_options[long_index].flag) == 829 ||
 				(*long_options[long_index].flag) == 830 ||
 				(*long_options[long_index].flag) == 831 ||
-				(*long_options[long_index].flag) == 832)) {
+				(*long_options[long_index].flag) == 832 ||
+				(*long_options[long_index].flag) == 834)) {
 			if (*long_options[long_index].flag == 829 ||
 			    *long_options[long_index].flag == 830) {
 				temp = strtof(argv[optind - 1], &end);
@@ -1392,6 +1460,15 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			/* Set HBM Alert config */
 			val1 = atoi(argv[optind - 1]);
 			apml_set_hbm_alert_config(soc_num, val1);
+			break;
+		case 833:
+			/* show max die id */
+			apml_get_maximum_die_id(soc_num);
+			break;
+		case 834:
+			/* Show die-type info */
+			val1 = atoi(argv[optind - 1]);
+			apml_get_die_type(soc_num, val1);
 			break;
 		default:
 			return ret;
