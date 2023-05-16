@@ -73,6 +73,7 @@ typedef enum {
 	GET_LINK_INFO,
 	GET_ABS_MAX_GFX_FREQ = 0x96,
 	GET_SVI_TELEMETRY_BY_RAIL,
+	GET_DIE_TYPE,
 	GET_ACT_GFX_FREQ_CAP_SELECTED = 0x9c,
 	GET_DIE_HOT_SPOT_INFO = 0xA0,
 	GET_MEM_HOT_SPOT_INFO,
@@ -673,6 +674,32 @@ oob_status_t get_statistics(uint8_t soc_num, struct statistics stat,
  */
 oob_status_t clear_statistics(uint8_t soc_num);
 
+/**
+ *  @brief Get die type
+ *
+ *  @details This function will read die-type, counts and
+ *  AID base die based on die-ID input.
+ *  If the bit[0] of input/data_in is 1 then it will get maximum die-ID
+ *  (0 - 255). If the bit[0] of input/data_in is 0 then the data_out[7:0]
+ *  will be die type i.e. 0 Not available, 1 means AID, 2 means XCD, 3 means
+ *  CCD and 4 means HBM stack and 5- 255 are reserved. data_out[15:8] means
+ *  maximum coumt of currently indexed die type. Data_out[19:16] means
+ *  AID associated with specified die-ID.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] data_in input to get the die-type, counts and
+ *  AID base.
+ *
+ *  @param[out] data_out maximum die id idnex or the die type
+ *  based on die-id input.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in,
+			  uint32_t *data_out);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

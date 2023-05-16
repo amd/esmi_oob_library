@@ -439,3 +439,8 @@ oob_status_t clear_statistics(uint8_t soc_num)
 {
 	return esmi_oob_write_mailbox(soc_num, CLEAR_STATISTICS, DEFAULT_DATA);
 }
+
+oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in, uint32_t *data_out)
+{
+	return esmi_oob_read_mailbox(soc_num, GET_DIE_TYPE, data_in, data_out);
+}
