@@ -186,8 +186,8 @@ enum alarms_type {
  */
 static char *ras_alarm_status[4] = {"RAS INIT FAILURE",
 				    "mGPU FALL BACK TO sGPU",
-				    "WAFL INIT ERROR",
-				    "XGMI INIT ERRPR"};
+				    "WAFL INITIALIZATION ERROR",
+				    "XGMI INITIALIZATION ERROR"};
 /**
  * @brief PM alarm status.
  */
