@@ -2384,6 +2384,8 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 				get_mailbox_commands(exe_name);
 				break;
 			}
+		} else {
+			get_mailbox_commands(exe_name);
 		}
 	} else if (!strcmp(command, "sbrmi") || !strcmp(command, "2")) {
 		get_rmi_commands(exe_name);
@@ -2399,6 +2401,8 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 				get_tsi_commands(exe_name);
 				break;
 			}
+		} else {
+			get_tsi_commands(exe_name);
 		}
 	} else if (!strcmp(command, "reg-access") || !strcmp(command, "4")) {
 		get_reg_access_commands(exe_name);
