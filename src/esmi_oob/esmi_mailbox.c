@@ -601,7 +601,6 @@ static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
 	case g6:
 	case g7:
 		ret = OOB_SUCCESS;
-
 		break;
 	default:
 		ret = OOB_INVALID_INPUT;
@@ -611,17 +610,27 @@ static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
 }
 
 oob_status_t read_current_io_bandwidth(uint8_t soc_num,
-				       struct mi300_link_id_bw_type link,
+				       struct link_id_bw_type link,
 				       uint32_t *io_bw)
 {
 	uint32_t input;
+	oob_status_t ret;
 
 	// Only Aggregate Banwdith is valid Bandwidth type
 	if (link.bw_type != 1)
 		return OOB_INVALID_INPUT;
+	ret = esmi_get_processor_info(soc_num, plat_info);
+	if (ret)
+		return ret;
 
-	if (validate_mi300_link_id_encoding(link.link_id))
-		return OOB_INVALID_INPUT;
+	if (plat_info->family == 0x19
+	    && (plat_info->model >= 0x90 && plat_info->model <=0x9F)) {
+		if (validate_mi300_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	} else {
+		if (validate_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	}
 
 	input = link.bw_type | link.link_id << 8;
 
@@ -631,16 +640,27 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
 }
 
 oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
-					 struct mi300_link_id_bw_type link,
+					 struct link_id_bw_type link,
 					 uint32_t *xgmi_bw)
 {
 	uint32_t input;
+	oob_status_t ret;
 
 	if (validate_bw_type(link.bw_type))
 		return OOB_INVALID_INPUT;
 
-	if (validate_mi300_link_id_encoding(link.link_id))
-		return OOB_INVALID_INPUT;
+	ret = esmi_get_processor_info(soc_num, plat_info);
+	if (ret)
+		return ret;
+
+	if (plat_info->family == 0x19
+	    && (plat_info->model >= 0x90 && plat_info->model <=0x9F)) {
+		if (validate_mi300_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	} else {
+		if (validate_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	}
 
 	input = link.bw_type | link.link_id << 8;
 

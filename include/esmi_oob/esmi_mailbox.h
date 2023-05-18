@@ -260,24 +260,17 @@ struct mca_bank {
 
 /**
  * @brief APML LINK ID and Bandwidth type Information.It contains
- * APML LINK ID Encoding. Valid Link ID encodings are 1(P0), 2(P1),
- * 4(P2), 8(P3), 16(G0), 32(G1), 64(G2), 128(G3). Valid APML IO Bandwidth
- *  types 1(Aggregate_BW), 2 (Read BW), 4 (Write BW).
+ * APML LINK ID Encoding. Non-MI300 Platforms Valid Link ID encodings are
+ * 1(P0), 2(P1), 4(P2), 8(P3), 16(G0), 32(G1), 64(G2), 128(G3). Valid APML
+ * MI300 APML LINK ID Encoding. Valid Link ID encodings are 3(P2), 4(P3),
+ * 8(G0), 9(G1), 10(G2), 11(G3), 12(G4), 13(G5), 14(G6), 15(G7).
+ * IO Bandwidth types 1(Aggregate_BW), 2 (Read BW), 4 (Write BW).
+ *
  */
 struct link_id_bw_type {
 	apml_io_bw_encoding bw_type;	//!< Bandwidth Type Information [1, 2, 4]
-	apml_link_id_encoding link_id;	//!< Link ID [1,2,4,8,16,32,64,128]
-};
-
-/**
- * @brief MI300 APML LINK ID and Bandwidth type Information.It contains
- * MI300 APML LINK ID Encoding. Valid Link ID encodings are 3(P2), 4(P3),
- * 8(G0), 9(G1), 10(G2), 11(G3), 12(G4), 13(G5), 14(G6), 15(G7).
- * Valid APML IO Bandwidth types 1(Aggregate_BW), 2 (Read BW), 4 (Write BW).
- */
-struct mi300_link_id_bw_type {
-	apml_io_bw_encoding bw_type;	//!< Bandwidth Type Information [1, 2, 4]
-	mi300_apml_link_id_encoding link_id;	//!< Link ID [3,4,8,9,10,11,12,13,14,15]
+	uint8_t link_id;		//!< Link ID [1,2,4,8,16,32,64,128] for Non-MI300 platforms
+					//!< Link ID [3,4,8,9,10,11,12,13,14,15] for MI300 platforms
 };
 
 /**
@@ -1062,7 +1055,7 @@ oob_status_t read_socket_freq_range(uint8_t soc_num,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] link mi300_link_id_bw_type struct containing bandwidth type
+ *  @param[in] link link_id_bw_type struct containing bandwidth type
  *  and mi300 Link ID encoding
  *  bandwidth type:
  *	001b Aggregate BW
@@ -1078,6 +1071,15 @@ oob_status_t read_socket_freq_range(uint8_t soc_num,
  *	00001101b: G5
  *	00001110b: G6
  *	00001111b: G7
+ *  For other platforms the APML Link ID Encoding:
+ *	00000001b: P0
+ *	00000010b: P1
+ *	00000100b: P2
+ *	00001000b: P3
+ *	00010000b: G0
+ *	00100000b: G1
+ *	01000000b: G2
+ *	10000000b: G3
  *
  *  @param[out] io_bw io bandwidth (Mbps).
  *
@@ -1086,7 +1088,7 @@ oob_status_t read_socket_freq_range(uint8_t soc_num,
  *
  */
 oob_status_t read_current_io_bandwidth(uint8_t soc_num,
-				       struct mi300_link_id_bw_type link,
+				       struct link_id_bw_type link,
 				       uint32_t *io_bw);
 
 /**
@@ -1096,7 +1098,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] link mi300_link_id_bw_type struct containing link id and
+ *  @param[in] link link_id_bw_type struct containing link id and
  *  bandwidth type info.
  *  Valid BW type are
  *	001b Aggregate BW
@@ -1114,6 +1116,15 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
  *      00001101b: G5
  *      00001110b: G6
  *      00001111b: G7
+ *  For other platforms the APML Link ID Encoding:
+ *	00000001b: P0
+ *	00000010b: P1
+ *	00000100b: P2
+ *	00001000b: P3
+ *	00010000b: G0
+ *	00100000b: G1
+ *	01000000b: G2
+ *	10000000b: G3
  *
  *  @param[out] xgmi_bw io bandwidth (Mbps).
  *
@@ -1122,7 +1133,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
  *
  */
 oob_status_t read_current_xgmi_bandwidth(uint8_t soc_num,
-					 struct mi300_link_id_bw_type link,
+					 struct link_id_bw_type link,
 					 uint32_t *xgmi_bw);
 
 /**
