@@ -1290,7 +1290,7 @@ static oob_status_t validate_bw_link_id(char *link_id, char *bw_type,
 
 static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
 					      bool is_xgmi_bw,
-					      struct mi300_link_id_bw_type *link)
+					      struct link_id_bw_type *link)
 {
 	const char *link_id_list[10] = {"p2", "p3", "g0", "g1",
 					"g2", "g3", "g4", "g5",
@@ -1334,18 +1334,28 @@ static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
 		}
 	}
 
-	printf("\n link_id: %u bw:%u \n", link->link_id, link->bw_type);
 	return OOB_SUCCESS;
 }
 
 static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 				 char *bw_type)
 {
-	struct mi300_link_id_bw_type link;
+	struct link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
+	bool status = false;
 
-	ret = validate_mi300_bw_link_id(link_id, bw_type, false, &link);
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret) {
+		printf("Failed to get platform info  Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	if (status)
+		ret = validate_mi300_bw_link_id(link_id, bw_type, false, &link);
+	else
+		ret = validate_bw_link_id(link_id, bw_type, false, &link);
 	if (ret) {
 		printf("Failed to get current IO bandwidth, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -1366,11 +1376,22 @@ static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 static void apml_get_xgmibandwidth(uint8_t soc_num, char *link_id,
 				   char *bw_type)
 {
-	struct mi300_link_id_bw_type link;
+	struct link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
+	bool status = false;
 
-	ret = validate_mi300_bw_link_id(link_id, bw_type, true, &link);
+	ret = is_plat_form_mi300(soc_num, &status);
+	if (ret) {
+		printf("Failed to get platform info  Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	if (status)
+		ret = validate_mi300_bw_link_id(link_id, bw_type, true, &link);
+	else
+		ret = validate_bw_link_id(link_id, bw_type, true, &link);
 	if (ret) {
 		printf("Failed to get current bandwidth on xGMI link, "
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
