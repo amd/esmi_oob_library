@@ -104,14 +104,17 @@ set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml_err.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_cpuid_msr.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_mailbox.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/rmi_mailbox_mi300.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_rmi.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/esmi_tsi.c")
 set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/apml_recovery.c")
+set(APML_LIB_SRC_LIST ${APML_LIB_SRC_LIST} "${SRC_DIR}/tsi_mi300.c")
 
 set(SMI_TOOL "apml_tool")
 set(SMI_CPUID "apml_cpuid_tool")
 
-add_executable(${SMI_TOOL} "${TOOL_DIR}/apml_tool.c")
+add_executable(${SMI_TOOL} "${TOOL_DIR}/apml_tool.c"
+		"${TOOL_DIR}/mi300_tool.c")
 add_executable(${SMI_CPUID} "${TOOL_DIR}/apml_cpuid_tool.c")
 
 target_link_libraries(${SMI_TOOL} ${APML_LIB_TARGET})
@@ -138,7 +141,8 @@ install(TARGETS ${APML_LIB_TARGET}
           LIBRARY DESTINATION lib COMPONENT ${APML_LIB_COMPONENT})
 install(DIRECTORY ${SOURCE_DIR}/include/esmi_oob/
 					DESTINATION include
-					PATTERN apml64Config.h EXCLUDE)
+					PATTERN apml64Config.h EXCLUDE
+					PATTERN apml_common.h EXCLUDE)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${SMI_TOOL}
 					DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/${SMI_CPUID}
