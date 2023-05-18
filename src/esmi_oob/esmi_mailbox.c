@@ -46,29 +46,9 @@
 
 #include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/apml.h>
+#include <esmi_oob/apml_common.h>
 #include <esmi_oob/esmi_cpuid_msr.h>
 #include <esmi_oob/esmi_rmi.h>
-
-/* MASKS */
-
-/* Mask for bmc control pcie rate */
-#define GEN5_RATE_MASK		3
-/* one byte mask for DDR bandwidth */
-#define ONE_BYTE_MASK		0XFF
-/* Teo byte mask */
-#define TWO_BYTE_MASK		0xFFFF
-/* Four byte mask used in raplcoreenergy, raplpackageenergy */
-#define FOUR_BYTE_MASK		0xFFFFFFFF
-/* CPU index mask used in boost limit write */
-#define CPU_INDEX_MASK		0xFFFF0000
-/* TU Mask used in read bmc rapl units */
-#define TU_MASK			0xF
-/* ESU Mask in read bmc rapl units */
-#define ESU_MASK		0x1F
-/* FCLK Mask used in read current df-pstate frequency */
-#define FCLK_MASK		0xFFF
-/* Bandwidth Mask used in reading ddr bandwidth */
-#define BW_MASK			0xFFF
 
 /* CONSTANTS OR MAGIC NUMBERS */
 

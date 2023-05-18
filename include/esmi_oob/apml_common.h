@@ -1,7 +1,7 @@
 /*
  * University of Illinois/NCSA Open Source License
  *
- * Copyright (c) 2020, Advanced Micro Devices, Inc.
+ * Copyright (c) 2023, Advanced Micro Devices, Inc.
  * All rights reserved.
  *
  * Developed by:
@@ -39,27 +39,51 @@
  *
  */
 
-#ifndef INCLUDE_COMMON_H_
-#define INCLUDE_COMMON_H_
+ #ifndef INCLUDE_APML_COMMON_H_
+ #define INCLUDE_APML_COMMON_H_
+
+#include <esmi_oob/apml.h>
+
+/* Default data for input */
+#define DEFAULT_DATA            0
+#define BIT_LEN			1	//!< Bit length //
+#define SEMI_NIBBLE_BITS	2	//!< Half nibble bits //
+#define NIBBLE_BITS		4	//!< Nibble bits //
+#define BYTE_BITS		8	//!< Byte bits //
+#define WORD_BITS		16	//!< word bits //
+#define D_WORD_BITS		32	//!< Double word bits //
+#define LO_WORD_REG             0	//!< Low word register //
+#define HI_WORD_REG             1	//!< High word register //
+
+/* MASKS */
+#define NIBBLE_MASK		0xF
+/* Mask for bmc control pcie rate */
+#define GEN5_RATE_MASK          3
+/* one byte mask for DDR bandwidth */
+#define ONE_BYTE_MASK           0XFF
+/* Teo byte mask */
+#define TWO_BYTE_MASK           0xFFFF
+/* Four byte mask used in raplcoreenergy, raplpackageenergy */
+#define FOUR_BYTE_MASK          0xFFFFFFFF
+/* CPU index mask used in boost limit write */
+#define CPU_INDEX_MASK          0xFFFF0000
+/* TU Mask used in read bmc rapl units */
+#define TU_MASK                 0xF
+/* ESU Mask in read bmc rapl units */
+#define ESU_MASK                0x1F
+/* FCLK Mask used in read current df-pstate frequency */
+#define FCLK_MASK               0xFFF
+/* Bandwidth Mask used in reading ddr bandwidth */
+#define BW_MASK                 0xFFF
 
 /**
- *  @brief Writes data to device file
- *
- *  @details This function will write data to character device file,
- *  through ioctl.
- *
- *  @param[in] soc_num  Socket index.
- *
- *  @param[in] file_name Character device file name for RMI/TSI I/F
- *
- *  @param[in] msg struct apml_message which contains information about the protocol,
- *  input/output data etc.
- *
- *  @retval ::OOB_SUCCESS is returned upon successful call.
- *  @retval Non-zero is returned upon failure.
- *
+ * @brief common utility functions
  */
-oob_status_t sbrmi_xfer_msg(uint8_t soc_num, char *file_name,
-			    struct apml_message *msg);
+static oob_status_t extract_n_bits(uint32_t num, uint8_t n_bits,
+			    uint8_t pos, uint8_t *buffer)
+{
+	*buffer = (((1 << n_bits) - 1) & (num >> (pos - 1)));
 
-#endif  // INCLUDE_COMMON_H_
+	return OOB_SUCCESS;
+}
+#endif  // INCLUDE_APML_COMMON_H_
