@@ -191,5 +191,23 @@ oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
  */
 oob_status_t sbrmi_xfer_msg(uint8_t soc_num, char *file_name,
 			    struct apml_message *msg);
+/**
+ *  @brief Validates sbrmi and sbtsi modules are present for the given socket
+ *
+ *  @details This function will validate sbrmi and sbtsi modules are present
+ *  for the specified socket.
+ *
+ *  @param[in] soc_num  Socket index.
+ *
+ *  @param[out] is_sbrmi returns true if the sbrmi is present else false
+ *
+ *  @param[out] is_sbtsi returns true if the sbtsi is present else false
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
+				      bool *is_sbtsi);
 
 #endif  // INCLUDE_APML_H_

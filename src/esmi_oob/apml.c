@@ -181,3 +181,29 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 	*buffer = msg.data_out.mb_out[0];
 	return OOB_SUCCESS;
 }
+
+oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
+				      bool *is_sbtsi)
+{
+	char dev_file[12];
+	oob_status_t ret = OOB_SUCCESS;
+
+	*is_sbrmi = true;
+	*is_sbtsi = true;
+	/* check if the sbrmi module is present for the given socket*/
+	sprintf(dev_file, "/dev/sbrmi%d", soc_num);
+
+	if (access(dev_file, F_OK) != 0) {
+		*is_sbrmi = false;
+		ret = OOB_FILE_ERROR;
+	}
+
+	/*check if the sbtsi module is present for the given socket */
+	sprintf(dev_file, "/dev/sbtsi%d", soc_num);
+	if (access(dev_file, F_OK) != 0) {
+		*is_sbtsi = false;
+		ret = OOB_FILE_ERROR;
+	}
+
+	return ret;
+}
