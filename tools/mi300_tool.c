@@ -269,8 +269,8 @@ static void apml_die_hotspot_info(uint8_t soc_num)
 	}
 
 	printf("--------------------------------------------\n");
-	printf("| Die ID \t\t| %17u|\n", die_id);
-	printf("| Temperature\t\t| %17u|\n", temp);
+	printf("| Die ID \t\t| %14u   |\n", die_id);
+	printf("| Temperature\t\t| %14u °C|\n", temp);
 	printf("--------------------------------------------\n");
 }
 
@@ -288,8 +288,8 @@ static void apml_mem_hotspot_info(uint8_t soc_num)
 	}
 
 	printf("--------------------------------------------\n");
-	printf("| HBM ID \t\t| %17u|\n", stack_id);
-	printf("| Temperature\t\t| %17u|\n", temp);
+	printf("| HBM ID \t\t| %14u   |\n", stack_id);
+	printf("| Temperature\t\t| %14u °C|\n", temp);
 	printf("--------------------------------------------\n");
 }
 
@@ -513,10 +513,10 @@ static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
 	}
 	printf("-----------------------------------------------"
 	"--------------\n");
-	printf("| Energy Acuumulator (MJ) | %-32.3f |\n",
-	       (double)energy_acc / MEGA);
-	printf("| %-23s | %-32.3f |\n", "Time stamp (s) ",
-	       (double)time_stamp / GIGA);
+	printf("| Energy Acuumulator (MJ) | %-32.6f |\n",
+	       (double)energy_acc / 1000000);
+	printf("| %-23s | %-32.6f |\n", "Time stamp (s) ",
+	       (double)time_stamp / 1000000000);
 	printf("-----------------------------------------------"
 	"--------------\n");
 }
@@ -768,10 +768,10 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
-		printf("\n| \tEnergy Acc (MJ) \t\t | %-32.3f",
-		       (double)energy_acc / MEGA);
-		printf("\n| \tTime stamp (s) \t\t\t | %-32.3f",
-		       (double)time_stamp / GIGA);
+		printf("\n| \tEnergy Acc (MJ) \t\t | %-32.6f",
+		       (double)energy_acc / 1000000);
+		printf("\n| \tTime stamp (s) \t\t\t | %-32.6f",
+		       (double)time_stamp / 1000000000);
 	}
 
 	printf("\n| RAS ALarms \t\t\t\t |");
