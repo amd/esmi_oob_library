@@ -195,9 +195,9 @@ static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
 		}
 	}
 	if (status)
-		printf("%-43s", data);
+		printf("%-51s", data);
 	else
-		printf("%-43s", " No Alarm");
+		printf("%-51s", " No Alarm");
 }
 
 static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
@@ -214,7 +214,7 @@ static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
 	}
 	printf("------------------------------------------------------------"
 	       "----------\n");
-	printf("| %-3s Alarm Status \t: ", type ? "PM" : "RAS");
+	printf("| %-3s Status \t: ", type ? "PM" : "RAS");
 	apml_display_alarms_status(type, buffer);
 	printf("|\n------------------------------------------------------------"
 	       "----------\n");
@@ -774,14 +774,14 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		       (double)time_stamp / 1000000000);
 	}
 
-	printf("\n| RAS ALarms \t\t\t\t |");
+	printf("\n| RAS Status \t\t\t\t |");
 	ret = get_alarms(soc_num, RAS, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		apml_display_alarms_status(RAS, d_out);
 
-	printf("\n| PM ALarms \t\t\t\t |");
+	printf("\n| PM Status \t\t\t\t |");
 	ret = get_alarms(soc_num, PM, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
@@ -983,10 +983,10 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Set max gfx core clock frequency in MHZ\n"
 	       "  --setmingfxcoreclock\t\t\t  [FREQ]\t\t\t\t "
 	       "Set min gfx core clock frequency in MHZ\n"
-	       "  --showrasalarmstatus\t\t\t  \t\t\t\t\t "
-	       "Show RAS alarm status\n"
-	       "  --showpmalarmstatus\t\t\t  \t\t\t\t\t "
-	       "Show PM alarm status\n"
+	       "  --showrasstatus\t\t\t  \t\t\t\t\t "
+	       "Show RAS status\n"
+	       "  --showpmstatus\t\t\t  \t\t\t\t\t "
+	       "Show PM status\n"
 	       "  --showpsn\t\t\t\t  [CORE/DIE_INDEX]\t\t\t "
 	       "Show 64 bit PSN\n"
 	       "  --showlinkinfo\t\t\t  \t\t\t\t\t "
@@ -996,7 +996,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Show die hot spot info\n"
 	       "  --showmemhotspotinfo\t\t\t  \t\t\t\t\t "
 	       "Show memory hot spot info\n"
-	       "  --showpmstatus\t\t\t  \t\t\t\t\t "
+	       "  --showpowercontrollerstatus\t\t\t  \t\t\t\t "
 	       "Show power management controller status\n"
 	       "  --showabsmaxgfxfreq\t\t  \t\t\t\t\t\t "
 	       "Show abs max gfx frequency in MHz\n"
@@ -1189,13 +1189,13 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"set_and_verify_hbmthrottle",  required_argument,      &flag,  802},
 		{"setmaxgfxcoreclock",          required_argument,      &flag,  803},
 		{"setmingfxcoreclock",          required_argument,      &flag,  804},
-		{"showrasalarmstatus",          no_argument,            &flag,  805},
-		{"showpmalarmstatus",           no_argument,            &flag,  806},
+		{"showrasstatus",		no_argument,            &flag,  805},
+		{"showpmstatus",		no_argument,            &flag,  806},
 		{"showpsn",                     required_argument,      &flag,  807},
 		{"showlinkinfo",                no_argument,            &flag,  808},
 		{"showdiehotspotinfo",          no_argument,            &flag,  809},
 		{"showmemhotspotinfo",          no_argument,            &flag,  810},
-		{"showpmstatus",                no_argument,            &flag,  811},
+		{"showpowercontrollerstatus",	no_argument,            &flag,  811},
 		{"showabsmaxgfxfreq",           no_argument,            &flag,  812},
 		{"showactfreqcapselected",      no_argument,            &flag,  813},
 		{"showgfxclkfreqlimit",         no_argument,            &flag,  814},
