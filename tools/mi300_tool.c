@@ -96,7 +96,7 @@ static void apml_get_hbm_throttle(uint8_t soc_num)
 	printf("------------------------------------\n");
 }
 
-static void set_and_verify_hbm_throttle(uint8_t soc_num, uint32_t mem_thr)
+static void apml_set_hbm_throttle(uint8_t soc_num, uint32_t mem_thr)
 {
 	uint32_t limit = 0;
 	oob_status_t ret;
@@ -108,19 +108,7 @@ static void set_and_verify_hbm_throttle(uint8_t soc_num, uint32_t mem_thr)
 		return;
 	}
 
-	usleep(APML_SLEEP);
-	ret = get_hbm_throttle(soc_num, &limit);
-	if (ret) {
-		printf("Failed to verify hbm throttle, Err[%d]: %s\n",
-		       ret, esmi_get_err_msg(ret));
-		return;
-	}
-	if (limit < mem_thr)
-		printf("Set to max hbm throttle: %u %%\n", limit);
-	else if (limit > mem_thr)
-		printf("Set to min hbm throttle: %u %%\n", limit);
-	else
-		printf("Set and Verify Success %u %%\n", limit);
+	printf("Hbm throttle set Successfully\n");
 	return;
 }
 
@@ -975,7 +963,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Show consumed power\n"
 	       "  --showhbmbandwidth\t\t\t\t\t\t\t\t Show "
 	       "max, utilized HBM Bandwidth of the system\n"
-	       "  --set_and_verify_hbmthrottle\t\t  [0 to 80%%]"
+	       "  --set_hbmthrottle\t\t\t  [0 to 80%%]"
 	       "\t\t\t\t Set HBM Throttle\n"
 	       "  --showhbmthrottle\t\t\t  \t\t\t\t\t "
 	       "Show hbm throttle value\n"
@@ -1060,9 +1048,6 @@ void get_mi300_tsi_commands(char *exec_name)
 	       "  --settempoffset\t\t       [VALUE]\t\t\t\t\t Set "
 	       "APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 "
 	       "°C]\n"
-	       "  --settimeoutconfig\t\t       [VALUE]\t\t"
-	       "\t\t\t Set/Reset APML CPU timeout config, VALUE = 0 or "
-	       "1\n"
 	       "  --setalertthreshold\t\t       [VALUE]\t\t\t\t\t "
 	       "Set APML CPU alert threshold sample, VALUE = 1 to 8\n"
 	       "  --sethbmalertthreshold\t       [VALUE]\t\t\t\t\t "
@@ -1186,7 +1171,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 	static struct option long_options[] = {
 		{"showhbmthrottle",             no_argument,            &flag,  800},
 		{"showhbmbandwidth",            no_argument,            &flag,  801},
-		{"set_and_verify_hbmthrottle",  required_argument,      &flag,  802},
+		{"set_hbmthrottle",  		required_argument,      &flag,  802},
 		{"setmaxgfxcoreclock",          required_argument,      &flag,  803},
 		{"setmingfxcoreclock",          required_argument,      &flag,  804},
 		{"showrasstatus",		no_argument,            &flag,  805},
@@ -1314,7 +1299,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		case 802:
 			/* Set and verify hbm throttle */
 			val1 = atoi(argv[optind - 1]);
-			set_and_verify_hbm_throttle(soc_num, val1);
+			apml_set_hbm_throttle(soc_num, val1);
 			break;
 		case 803:
 			/* Set max gfx core clock frequency */
