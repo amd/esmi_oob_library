@@ -1292,9 +1292,9 @@ static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
 					      bool is_xgmi_bw,
 					      struct link_id_bw_type *link)
 {
-	const char *link_id_list[10] = {"p2", "p3", "g0", "g1",
-					"g2", "g3", "g4", "g5",
-					"g6", "g7"};
+	const char *link_id_list[10] = {"P2", "P3", "G0", "G1",
+					"G2", "G3", "G4", "G5",
+					"G6", "G7"};
 	const char *bw_type_list[3] = {"AGG_BW", "RD_BW", "WR_BW"};
 	const char *io_bw_type = "AGG_BW";
 	uint8_t index, arr_size;
@@ -1302,7 +1302,7 @@ static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
 
 	link->bw_type = 0;
 	link->link_id = 0;
-	convert_to_lower_case(link_id);
+	convert_to_upper_case(link_id);
 	convert_to_upper_case(bw_type);
 
 	if (is_xgmi_bw)
