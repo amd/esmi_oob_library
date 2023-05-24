@@ -590,16 +590,16 @@ static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
 	oob_status_t ret;
 
 	switch (link_id) {
-	case p2:
-	case p3:
-	case g0:
-	case g1:
-	case g2:
-	case g3:
-	case g4:
-	case g5:
-	case g6:
-	case g7:
+	case MI300_P2:
+	case MI300_P3:
+	case MI300_G0:
+	case MI300_G1:
+	case MI300_G2:
+	case MI300_G3:
+	case MI300_G4:
+	case MI300_G5:
+	case MI300_G6:
+	case MI300_G7:
 		ret = OOB_SUCCESS;
 		break;
 	default:

@@ -159,16 +159,16 @@ typedef enum {
  * @brief MI300 APML IO LINK ID Encoding defined in the APML library
  */
 typedef enum {
-	p2 = 3,
-	p3,
-	g0 = 8,
-	g1,
-	g2,
-	g3,
-	g4,
-	g5,
-	g6,
-	g7
+	MI300_P2 = 3,
+	MI300_P3,
+	MI300_G0 = 8,
+	MI300_G1,
+	MI300_G2,
+	MI300_G3,
+	MI300_G4,
+	MI300_G5,
+	MI300_G6,
+	MI300_G7
 } mi300_apml_link_id_encoding;
 
 /**
@@ -1056,11 +1056,11 @@ oob_status_t read_socket_freq_range(uint8_t soc_num,
  *  @param[in] soc_num Socket index.
  *
  *  @param[in] link link_id_bw_type struct containing bandwidth type
- *  and mi300 Link ID encoding
+ *  and Link ID encoding
  *  bandwidth type:
  *	001b Aggregate BW
  *	Other Reserved
- *  MI300 APML Link ID Encoding:
+ *  MI300A APML Link ID Encoding:
  *	00000011b: P2
  *	00000100b: P3
  *	00001000b: G0
@@ -1105,7 +1105,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_num,
  *	010b Read BW
  *	100b Write BW
  *	Other Reserved
- *  MI300 APML Link ID Encoding:
+ *  MI300A APML Link ID Encoding:
  *      00000011b: P2
  *      00000100b: P3
  *      00001000b: G0
