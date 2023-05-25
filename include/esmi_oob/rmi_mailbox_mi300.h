@@ -140,10 +140,10 @@ struct svi_port_domain {
  */
 struct freq_limits {
 	uint16_t max;                   //!< Max clock frequency
-	uint16_t min;                   // Min clock frequency
+	uint16_t min;                   //!< Min clock frequency
 };
 
-/*
+/**
  * @brief struct containing memory clock and fabric clock
  * pstate mappings.
  */
@@ -152,7 +152,7 @@ struct mclk_fclk_pstates {
 	uint16_t f_clk;                 //!< fabric clock frequnecy in MHz
 };
 
-/*
+/**
  * @brief struct containing statistics parameter of interest and output control
  * pstate mappings.
  */
@@ -161,7 +161,7 @@ struct statistics {
 	uint16_t output_control;	//!< Output control
 };
 
-/*
+/**
  * @brief struct containing xgmi speed rate in MHZ and link width in units
  * of Gpbs. If link_width[0] = 1 then XGMI link X2 is supported. If
  * link_width[1] = 1 then XGMI link X4 is supported. If Link_width[2] = 1
@@ -246,12 +246,10 @@ oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_num, uint32_t pstate);
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] pstate index of the pstate.
+ *  @param[in] pstate_ind index of the pstate.
  *
- *  @param[out] pstate struct containing mem_clk and
+ *  @param[out] pstate struct mclk_fclk_pstates containing mem_clk and
  *  f_clk frequency in MHz.
- *
- *  @param[out] mem_clk memory clk frequency in MHZ.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
@@ -612,7 +610,7 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
  *
  *  @details This function will read number of sockets in system.
  *
- *  @param[out] sockets Numbers of sockets in system
+ *  @param[out] sockets_count Numbers of sockets in system
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
@@ -648,10 +646,10 @@ oob_status_t get_bist_results(uint8_t soc_num, uint8_t die_id,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] stat_param struct containing statistics parameter of interest
- *  and output control.
+ *  @param[in] stat struct statistics containing statistics parameter
+ *  of interest and output control.
  *
- *  @param[out] Param parameter or timestamp HI/Lo value.
+ *  @param[out] param parameter or timestamp HI/Lo value.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
