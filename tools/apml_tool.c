@@ -755,11 +755,11 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	       "-----------------------\n");
 	printf(" FUNCTION/Reg Name\t| Reg offset\t| Hexa(0x)\t| Value [Units]\n");
 	printf("------------------------------------------------------------"
-	       "-----------------------\n");
-	printf("_CPUTEMP\t\t|\t\t|\t\t| %.3f °C\n", temp_value[0]);
-	printf("\tCPU_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n", SBTSI_CPUTEMPINT,
+	       "-------------------------------\n");
+	printf("_PROCTEMP\t\t|\t\t|\t\t| %.3f °C\n", temp_value[0]);
+	printf("\tPROC_INT \t| 0x%x \t\t| 0x%-5x\t| %u °C\n", SBTSI_CPUTEMPINT,
 	       intr, intr);
-	printf("\tCPU_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n", SBTSI_CPUTEMPDEC,
+	printf("\tPROC_DEC \t| 0x%x \t\t| 0x%-5x\t| %.3f °C\n", SBTSI_CPUTEMPDEC,
 	       (uint8_t)(dec / TEMP_INC), dec);
 
 	usleep(APML_SLEEP);
@@ -767,13 +767,13 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	if (ret)
 		return ret;
 	printf("_STATUS\t\t\t| 0x%x \t\t|\t\t| \n", SBTSI_STATUS);
-	printf("\t CPU Temp Alert |\t\t|\t\t| ");
+	printf("\t PROC Temp Alert|\t\t|\t\t| ");
 	if (lowalert)
-		printf("CPU Temp Low Alert\n");
+		printf("PROC Temp Low Alert\n");
 	else if (hialert)
-		printf("CPU Temp Hi Alert\n");
+		printf("PROC Temp Hi Alert\n");
 	else
-		printf("CPU No Temp Alert\n");
+		printf("PROC No Temp Alert\n");
 
 	if (status) {
 		ret = get_hbm_temp_status(soc_num);
@@ -883,7 +883,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		return ret;
 	printf("_THRESHOLD_SAMPLE\t| 0x%x \t\t|\t\t| \n",
 	       SBTSI_ALERTTHRESHOLD);
-	printf("\t CPU Alert TH\t|\t\t|\t\t| %u\n", buf);
+	printf("\t PROC Alert TH\t|\t\t|\t\t| %u\n", buf);
 	if (status) {
 		ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
 		if (ret)
@@ -897,7 +897,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		return ret;
 	printf("_TSI_ALERT_CONFIG\t| 0x%x \t\t|\t\t| \n",
 	       SBTSI_ALERTCONFIG);
-	printf("\t CPU Alert CFG\t|\t\t|\t\t| %s\n",
+	printf("\t PROC Alert CFG\t|\t\t|\t\t| %s\n",
 	       buf ? "Enabled" : "Disabled");
 	if (status) {
 		usleep(APML_SLEEP);
@@ -2272,8 +2272,8 @@ static void get_mailbox_commands(char *exe_name)
 	       "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
 	       "[MINDPM]\t\t Set dpm level range, valid dpm "
 	       "values from 0 - 3, max value >= min value\n"
-	       "  --showcpubasefreq\t\t\t  \t\t\t\t\t "
-	       "Show cpu base frequency\n"
+	       "  --showprocbasefreq\t\t\t  \t\t\t\t\t "
+	       "Show processor base frequency\n"
 	       "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
 	       "Set PCIe link rate control\n"
 	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
@@ -2353,23 +2353,23 @@ static void get_tsi_commands(char *exe_name)
 	       "  --setlowtempthreshold\t\t	  [TEMP(°C)]\t\t"
 	       "\t\t Set APML Low Temp Threshold\n"
 	       "  --settempoffset\t\t	  [VALUE]\t\t\t\t Set "
-	       "APML CPU Temp Offset, VALUE = [-CPU_TEMP(°C), 127 "
+	       "APML processor Temp Offset, VALUE = [-CPU_TEMP(°C), 127 "
 	       "°C]\n"
 	       "  --settimeoutconfig\t\t	  [VALUE]\t\t"
-	       "\t\t Set/Reset APML CPU timeout config, VALUE = 0 or "
+	       "\t\t Set/Reset APML processor timeout config, VALUE = 0 or "
 	       "1\n"
 	       "  --setalertthreshold\t\t\t  [VALUE]\t\t\t\t "
-	       "Set APML CPU alert threshold sample, VALUE = 1 to 8\n"
+	       "Set APML processor alert threshold sample, VALUE = 1 to 8\n"
 	       "  --setalertconfig\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML CPU alert config, VALUE = 0 or 1\n"
+	       "Set/Reset APML processor alert config, VALUE = 0 or 1\n"
 	       "  --setalertmask\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML CPU alert mask, VALUE = 0 or 1\n"
+	       "Set/Reset APML processor alert mask, VALUE = 0 or 1\n"
 	       "  --setrunstop\t\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML CPU runstop, VALUE = 0 or 1\n"
+	       "Set/Reset APML processor runstop, VALUE = 0 or 1\n"
 	       "  --setreadorder\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML CPU read order, VALUE = 0 or 1\n"
+	       "Set/Reset APML processor read order, VALUE = 0 or 1\n"
 	       "  --setara\t\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML CPU ARA, VALUE = 0 or 1\n", exe_name);
+	       "Set/Reset APML processor ARA, VALUE = 0 or 1\n", exe_name);
 }
 
 static void get_reg_access_commands(char *exe_name)
@@ -2886,7 +2886,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"enabledfpstatedynamic",		no_argument,	&flag,	 9 },
 		{"showfclkmclkuclk",			no_argument,	&flag,	 10},
 		{"setlclkdpmlevel",			required_argument,	0,	'N'},
-		{"showcpubasefreq",			no_argument,	&flag,	 11},
+		{"showprocbasefreq",			no_argument,	&flag,	 11},
 		{"showraplcore",			required_argument,	0,	'J'},
 		{"showraplpkg",				no_argument,	&flag,	 12},
 		{"setPCIegenratectrl",			required_argument,	0,	'Z'},
