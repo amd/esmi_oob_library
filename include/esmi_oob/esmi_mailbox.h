@@ -47,29 +47,29 @@
 
 /* RAS OOB Config bits position for 0x61 - 0x65 msgs */
 /* DRAM cecc oob ec mode */
-#define DRAM_CECC_OOB_EC_MODE   1
+#define DRAM_CECC_OOB_EC_MODE   1	//!< DRAM CECC OOB EC Mode //
 /* Error count threshold position */
-#define ERR_COUNT_TH            2
+#define ERR_COUNT_TH            2	//!< Error count threshold position //
 /* DRAM cecc leak rate */
-#define DRAM_CECC_LEAK_RATE     3
+#define DRAM_CECC_LEAK_RATE     3	//!< DRAM CECC Leak rate	//
 /* PCIE error reporting enable */
-#define PCIE_ERR_REPORT_EN      8
+#define PCIE_ERR_REPORT_EN      8	//!< PCIE oob counter enable //
 /* MCA Threshold Interrupt */
-#define MCA_TH_INTR             11
+#define MCA_TH_INTR             11	//!< MCA threshold interrupt //
 /* CECC Threshold Interrupt */
-#define CECC_TH_INTR            12
+#define CECC_TH_INTR            12	//!< CECC threshold interrupt //
 /* PCIE Threshold Interrupt */
-#define PCIE_TH_INTR		13
+#define PCIE_TH_INTR		13	//!< PCIE threshold interrupt //
 /* MCA Max interrupt rate */
-#define MCA_MAX_INTR_RATE       15
+#define MCA_MAX_INTR_RATE       15	//!< MCA max interrupt rate //
 /* Interrupt rate position */
-#define MAX_INTR_RATE_POS       18
+#define MAX_INTR_RATE_POS       18	//!< Max interrupt rate position //
 /* DRAM CECC Max Interrupt rate */
-#define DRAM_CECC_MAX_INTR_RATE 19
+#define DRAM_CECC_MAX_INTR_RATE 19	//!< DRAM CECC Max interrupt rate //
 /* PCIE Max Interrrupt rate */
 #define PCIE_MAX_INTR_RATE	23     //!< PCIE Max interrupt rate //
 /* core mca error reporting enable*/
-#define CORE_MCA_ERR_REPORT_EN  31
+#define CORE_MCA_ERR_REPORT_EN  31	//!< CORE MCA error report enable //
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
 /* Maximum DF block-ID's */
@@ -1741,8 +1741,9 @@ oob_status_t set_bmc_ras_oob_config(uint8_t soc_num,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[out] out struct oob_config_d_in containing mca_oob_misc0_ec_enable,
- *  dram_cecc_oob_ec_mode, dram_cecc_leak_rate, pcie_err_reporting_en,
+ *  @param[out] oob_config oob configuration data containing
+ *  mca_oob_misc0_ec_enable, dram_cecc_oob_ec_mode,
+ *  dram_cecc_leak_rate, pcie_err_reporting_en,
  *  pcie_ue_oob_counter_en and core_mca_err_reporting_en.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
