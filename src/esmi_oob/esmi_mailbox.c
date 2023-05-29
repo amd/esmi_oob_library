@@ -66,6 +66,9 @@
 float esu_multiplier;
 struct processor_info plat_info[1];
 
+const struct apml_encodings encodings[] = {{1, "P0"}, {2, "P1"}, {4, "P2"},
+					   {8, "P3"}, {16, "G0"}, {32, "G1"},
+					   {64, "G2"}, {128, "G3"}};
 /*
  * Validates max and min values.Max values should always be greater
  * than or equal to the min value.
@@ -590,16 +593,16 @@ static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
 	oob_status_t ret;
 
 	switch (link_id) {
-	case MI300_P2:
-	case MI300_P3:
-	case MI300_G0:
-	case MI300_G1:
-	case MI300_G2:
-	case MI300_G3:
-	case MI300_G4:
-	case MI300_G5:
-	case MI300_G6:
-	case MI300_G7:
+        case 3:
+        case 4:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+        case 15:
 		ret = OOB_SUCCESS;
 		break;
 	default:

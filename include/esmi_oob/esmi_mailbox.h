@@ -156,22 +156,6 @@ typedef enum {
 } apml_link_id_encoding;
 
 /**
- * @brief MI300 APML IO LINK ID Encoding defined in the APML library
- */
-typedef enum {
-	MI300_P2 = 3,
-	MI300_P3,
-	MI300_G0 = 8,
-	MI300_G1,
-	MI300_G2,
-	MI300_G3,
-	MI300_G4,
-	MI300_G5,
-	MI300_G6,
-	MI300_G7
-} mi300_apml_link_id_encoding;
-
-/**
  * @brief DIMM power(mW), update rate(ms) and dimm address
  */
 struct dimm_power {

@@ -58,6 +58,10 @@
 #define D_WORD_BITS		32	//!< Double word bits //
 #define LO_WORD_REG             0	//!< Low word register //
 #define HI_WORD_REG             1	//!< High word register //
+/* Legacy APML encodings count */
+#define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
+/* MI300A APML encoding count */
+#define MI300A_ENCODING_SIZE		10	//!< MI300A encoding size //
 
 /* MASKS */
 #define NIBBLE_MASK		0xF
@@ -81,6 +85,41 @@
 #define FCLK_MASK               0xFFF
 /* Bandwidth Mask used in reading ddr bandwidth */
 #define BW_MASK                 0xFFF
+
+/**
+ * @brief APML link ID encodings for legacy platforms and MI300A.
+ * Structure  contains the following members.
+ * Link ID encoding value and its name.
+ *  MI300A APML Link ID Encoding:
+ *      00000011b: P2
+ *      00000100b: P3
+ *      00001000b: G0
+ *      00001001b: G1
+ *      00001010b: G2
+ *      00001011b: G3
+ *      00001100b: G4
+ *      00001101b: G5
+ *      00001110b: G6
+ *      00001111b: G7
+ *  For other platforms the APML Link ID Encoding:
+ *      00000001b: P0
+ *      00000010b: P1
+ *      00000100b: P2
+ *      00001000b: P3
+ *      00010000b: G0
+ *      00100000b: G1
+ *      01000000b: G2
+ *      10000000b: G3
+ */
+struct apml_encodings {
+        uint8_t val;            //!< Link ID encoding value
+        char    name[3];        //!< Link ID encoding name
+};
+
+/* Apml link ID encodings for legacy platforms */
+extern const struct apml_encodings encodings[LEGACY_ENCODING_SIZE];             //!< Legacy platforms link ID encodings
+/* Apml link ID encodings for MI300A encodings */
+extern const struct apml_encodings mi300A_encodings[MI300A_ENCODING_SIZE];      //!< MI300A platforms link ID encodings
 
 /**
  * @brief common utility functions
