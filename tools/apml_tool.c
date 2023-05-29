@@ -1244,61 +1244,49 @@ static void convert_to_lower_case(char *str)
 	}
 }
 
-static oob_status_t validate_bw_link_id(char *link_id, char *bw_type,
-					bool is_xgmi_bw,
-					struct link_id_bw_type *link)
+static oob_status_t validate_legacy_link_id(uint8_t size, char *link_id,
+					    struct link_id_bw_type *link)
 {
-	const char *link_id_list[8] = {"P0", "P1", "P2", "P3",
-				       "G0", "G1", "G2", "G3"};
-	const char *bw_type_list[3] = {"AGG_BW", "RD_BW", "WR_BW"};
-	const char *io_bw_type = "AGG_BW";
-	uint8_t index, arr_size;
-	oob_status_t ret;
+	uint8_t index = 0;
 
-	link->bw_type = 0;
-	link->link_id = 0;
-	convert_to_upper_case(link_id);
-	convert_to_upper_case(bw_type);
-
-	if (is_xgmi_bw)
-		arr_size = ARRAY_SIZE(bw_type_list);
-	else
-		arr_size = 1;
-
-	if (!is_xgmi_bw) {
-		if (strcmp(bw_type, io_bw_type) == 0)
-			link->bw_type = 1;
-	} else {
-		for (index = 0; index < arr_size; index++) {
-			if (strcmp(bw_type, bw_type_list[index]) == 0) {
-				link->bw_type = 1 << index;
-				break;
-			}
-		}
+	for (index = 0; index < size; index++) {
+		 if (strcmp(link_id, encodings[index].name) == 0) {
+			 link->link_id = encodings[index].val;
+			 return OOB_SUCCESS;
+		 }
 	}
 
-	arr_size = ARRAY_SIZE(link_id_list);
-	for (index = 0; index < arr_size; index++) {
-		if (strcmp(link_id, link_id_list[index]) == 0) {
-			link->link_id = 1 << index;
-			break;
-		}
-	}
-
-	return OOB_SUCCESS;
+	return OOB_INVALID_INPUT;
 }
 
-static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
-					      bool is_xgmi_bw,
-					      struct link_id_bw_type *link)
+static oob_status_t validate_mi300A_link_id(uint8_t size, char *link_id,
+					    struct link_id_bw_type *link)
 {
-	const char *link_id_list[10] = {"P2", "P3", "G0", "G1",
-					"G2", "G3", "G4", "G5",
-					"G6", "G7"};
+	uint8_t index = 0;
+
+	for (index = 0; index < size; index++) {
+		if (strcmp(link_id, mi300A_encodings[index].name) == 0) {
+			link->link_id = mi300A_encodings[index].val;
+			return OOB_SUCCESS;
+		}
+	}
+
+	return OOB_INVALID_INPUT;
+}
+
+static oob_status_t validate_bw_link_id(uint8_t soc_num, char *link_id,
+					char *bw_type, bool is_xgmi_bw,
+					struct link_id_bw_type *link)
+{
 	const char *bw_type_list[3] = {"AGG_BW", "RD_BW", "WR_BW"};
 	const char *io_bw_type = "AGG_BW";
 	uint8_t index, arr_size;
 	oob_status_t ret;
+	bool status = 0;
+
+	ret = is_mi300A(soc_num, &status);
+	if (ret)
+		return ret;
 
 	link->bw_type = 0;
 	link->link_id = 0;
@@ -1322,19 +1310,13 @@ static oob_status_t validate_mi300_bw_link_id(char *link_id, char *bw_type,
 		}
 	}
 
-	arr_size = ARRAY_SIZE(link_id_list);
-	for (index = 0; index < arr_size; index++) {
-		if (strcmp(link_id, link_id_list[index]) == 0) {
-			if (index <= 1)
-				link->link_id = index + 3;
-
-			else
-				link->link_id = index + 6;
-			break;
-		}
+	if (status) {
+		arr_size = ARRAY_SIZE(mi300A_encodings);
+		return validate_mi300A_link_id(arr_size, link_id, link);
+	} else {
+		arr_size = ARRAY_SIZE(encodings);
+		return validate_legacy_link_id(arr_size, link_id, link);
 	}
-
-	return OOB_SUCCESS;
 }
 
 static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
@@ -1343,19 +1325,8 @@ static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 	struct link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
-	bool status = false;
 
-	ret = is_mi300A(soc_num, &status);
-	if (ret) {
-		printf("Failed to get platform info  Err[%d]:%s\n",
-		       ret, esmi_get_err_msg(ret));
-		return;
-	}
-
-	if (status)
-		ret = validate_mi300_bw_link_id(link_id, bw_type, false, &link);
-	else
-		ret = validate_bw_link_id(link_id, bw_type, false, &link);
+	ret = validate_bw_link_id(soc_num, link_id, bw_type, false, &link);
 	if (ret) {
 		printf("Failed to get current IO bandwidth, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -1379,19 +1350,8 @@ static void apml_get_xgmibandwidth(uint8_t soc_num, char *link_id,
 	struct link_id_bw_type link;
 	uint32_t buffer;
 	oob_status_t ret;
-	bool status = false;
 
-	ret = is_mi300A(soc_num, &status);
-	if (ret) {
-		printf("Failed to get platform info  Err[%d]:%s\n",
-		       ret, esmi_get_err_msg(ret));
-		return;
-	}
-
-	if (status)
-		ret = validate_mi300_bw_link_id(link_id, bw_type, true, &link);
-	else
-		ret = validate_bw_link_id(link_id, bw_type, true, &link);
+	ret = validate_bw_link_id(soc_num, link_id, bw_type, true, &link);
 	if (ret) {
 		printf("Failed to get current bandwidth on xGMI link, "
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
