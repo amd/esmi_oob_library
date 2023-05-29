@@ -80,7 +80,7 @@ static oob_status_t get_platform_info(uint8_t soc_num,
 	return esmi_get_processor_info(soc_num, plat_info);
 }
 
-static oob_status_t is_plat_form_mi300(uint8_t soc_num, bool *status)
+static oob_status_t is_mi300A(uint8_t soc_num, bool *status)
 {
 	struct processor_info plat_info[1];
 	oob_status_t ret;
@@ -735,7 +735,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	bool status;
 	oob_status_t ret;
 
-	ret = is_plat_form_mi300(soc_num, &status);
+	ret = is_mi300A(soc_num, &status);
 	if (ret)
 		return ret;
 	usleep(APML_SLEEP);
@@ -1345,7 +1345,7 @@ static void apml_get_iobandwidth(uint8_t soc_num, char *link_id,
 	oob_status_t ret;
 	bool status = false;
 
-	ret = is_plat_form_mi300(soc_num, &status);
+	ret = is_mi300A(soc_num, &status);
 	if (ret) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -1381,7 +1381,7 @@ static void apml_get_xgmibandwidth(uint8_t soc_num, char *link_id,
 	oob_status_t ret;
 	bool status = false;
 
-	ret = is_plat_form_mi300(soc_num, &status);
+	ret = is_mi300A(soc_num, &status);
 	if (ret) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -2481,7 +2481,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 
-	ret = is_plat_form_mi300(soc_num, &status);
+	ret = is_mi300A(soc_num, &status);
 	if (ret) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
