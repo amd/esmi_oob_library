@@ -207,7 +207,7 @@ oob_status_t get_psn(uint8_t soc_num, uint32_t die_index, uint64_t *buffer)
 	*buffer = data;
 
 	/* Read upper 32 bits of psn data */
-	input = die_index << BIT_LEN | HI_WORD_REG;
+	input |= HI_WORD_REG;
 	ret = esmi_oob_read_mailbox(soc_num, GET_PSN, input, &data);
 	if (!ret)
 		*buffer = (uint64_t) data << D_WORD_BITS | *buffer;

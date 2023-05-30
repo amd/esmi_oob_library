@@ -373,7 +373,7 @@ oob_status_t set_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t mode)
 	if (ret)
 		return ret;
 	/* If the bit-1 of previous value is same as mode value */
-	if (mode == (prev >> 1) & BIT(0))
+	if (mode == ((prev >> 1) & BIT(0)))
 		return OOB_SUCCESS;
 	/* [7:2] reserved, [1] HBM Alert config bit */
 	new = (prev & 0xFD) | (mode << 1);
