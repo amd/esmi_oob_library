@@ -87,7 +87,7 @@ oob_status_t write_sbtsi_hbm_hi_temp_th(uint8_t soc_num, float hi_temp_th)
 	float temp_dec;
 	oob_status_t ret;
 
-	if (hi_temp_th < MIN_TEMP || hi_temp_th >= MAX_TEMP)
+	if (hi_temp_th < MIN_TEMP || hi_temp_th > MAX_TEMP)
 		return OOB_INVALID_INPUT;
 
 	int_temp = hi_temp_th;
@@ -163,7 +163,7 @@ oob_status_t write_sbtsi_hbm_lo_temp_th(uint8_t soc_num, float temp_th)
 	float temp_dec;
 	oob_status_t ret;
 
-	if (temp_th < MIN_TEMP || temp_th >= MAX_TEMP)
+	if (temp_th < MIN_TEMP || temp_th > MAX_TEMP)
 		return OOB_INVALID_INPUT;
 
 	int_temp = temp_th;
