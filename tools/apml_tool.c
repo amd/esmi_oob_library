@@ -2958,7 +2958,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 		if (opt == 'u' || opt == 'X' || opt == 'w' ||
 		     opt == 'x') {
-			temp = strtof(argv[optind - 1], &end);
+			strtof(argv[optind - 1], &end);
 			if (*end != '\0') {
 				printf("\nOption '-%c' require argument as valid"
 				       " decimal value\n\n", opt);

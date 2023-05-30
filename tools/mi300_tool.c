@@ -148,9 +148,11 @@ static void apml_set_gfx_core_clock(uint8_t soc_num, enum range_type type,
 
 static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
 {
+	uint16_t alarms_len = 0;
 	uint8_t index = 0, size = 0;
 	char **alarm_status = {NULL};
-	char data[100]=" ";
+	char *separator = ", ";
+	char data[100] = " ";
 	bool status = false;
 
 	switch(type) {
@@ -172,10 +174,15 @@ static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
 		case 2:
 		case 4:
 		case 8:
+			alarms_len = (status ? strlen(alarm_status[index]) + strlen(separator)
+				      : strlen(alarm_status[index]));
+			if ((strlen(data) + alarms_len) > 100)
+				break;
 			if (status)
-				strcat(strcat(data, ", "), alarm_status[index]);
+				strncat(strncat(data, separator, strlen(separator)),
+					alarm_status[index], alarms_len);
 			else
-				strcat(data, alarm_status[index]);
+				strncat(data, alarm_status[index], alarms_len);
 			status = true;
 			break;
 		default:
@@ -664,6 +671,7 @@ static oob_status_t apml_get_maximum_die_id(uint8_t soc_num)
 	printf("------------------------------------------\n");
 	printf("| Maximum Die-ID  | %-16u |\n", max_die_id & ONE_BYTE_MASK);
 	printf("------------------------------------------\n");
+	return OOB_SUCCESS;
 }
 
 static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
@@ -708,6 +716,7 @@ static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
 	printf("| AID associated with Die-IDi\t | %-16u |\n",
 	       (buffer >> WORD_BITS) & NIBBLE_MASK);
 	printf("-----------------------------------------------------\n");
+	return OOB_SUCCESS;
 }
 
 void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
@@ -1248,7 +1257,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 				(*long_options[long_index].flag) == 834)) {
 			if (*long_options[long_index].flag == 829 ||
 			    *long_options[long_index].flag == 830) {
-				temp = strtof(argv[optind - 1], &end);
+				strtof(argv[optind - 1], &end);
 				if (*end != '\0') {
 					printf("\nOption '--%s' require"
 					       " argument as valid decimal "
