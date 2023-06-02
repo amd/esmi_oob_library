@@ -732,7 +732,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	uint8_t intr;
 	int8_t intr_offset;
 	uint8_t id, buf;
-	bool status;
+	bool status = false;
 	oob_status_t ret;
 
 	ret = is_mi300A(soc_num, &status);
