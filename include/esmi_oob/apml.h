@@ -94,6 +94,10 @@ typedef enum {
 
 #define SBRMI		"sbrmi"		//!< SBRMI module //
 #define SBTSI		"sbtsi"		//!< SBTSI module //
+#define MAX_DEV_COUNT	8		//!< APML ADDRESSES count
+
+extern const char *sbrmi_addr[MAX_DEV_COUNT];	//!< SBRMI addresses //
+extern const char *sbtsi_addr[MAX_DEV_COUNT];	//!< SBTSI addresses //
 
 /**
  *  @brief Reads data for the given register.

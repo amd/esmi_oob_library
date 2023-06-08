@@ -50,27 +50,58 @@
 #include <sys/ioctl.h>
 
 #include <esmi_oob/apml.h>
+#include <esmi_oob/apml_common.h>
 
 #define SBRMI_CTRL	0x1
 #define SBRMI_STATUS	0x2
 #define SW_ALERT_MASK	0x2
-/* SBRMI DEVICE FILE PATH */
-#define SBRMI_DEV	"/dev/"
+/* SBRMI/SBTSI DEVICE FILE PATH */
+#define DEV	"/dev/"
 /* READ MODE */
 #define READ_MODE		1
 /*WRITE MODE */
 #define WRITE_MODE		0
+/* DEVICE FILE LENGTH */
+#define DEV_SIZE		14
+/* SBRMI or SBTSI address size */
+#define ADDR_SIZE		3
+
+/* Static address inforamtion is from the PPR */
+const char *sbrmi_addr[MAX_DEV_COUNT] = {"3c", "38", "3e", "3f",
+					 "34", "35", "36", "37"};	//!< SBRMI Addresses
+const char *sbtsi_addr[MAX_DEV_COUNT] = {"4c", "48", "4e", "4f",
+					 "44", "45", "46", "47"};	//!< SBTSI Addresses
 
 oob_status_t sbrmi_xfer_msg(uint8_t socket_num, char *filename, struct apml_message *msg)
 {
 	int fd = 0, ret = 0;
-	char dev_file[12];
+	char dev_file[DEV_SIZE] = "";
+	char soc_addr[ADDR_SIZE] = "";
 
-	sprintf(dev_file, "/dev/%s%d", filename, socket_num);
+	if (strcmp(filename, "sbrmi") == 0) {
+		if (socket_num >= ARRAY_SIZE(sbrmi_addr))
+			return OOB_FILE_ERROR;
+		else
+			strncpy(soc_addr, sbrmi_addr[socket_num],
+				strlen(sbrmi_addr[socket_num]));
 
-	fd = open(dev_file, O_RDWR);
-	if (fd < 0)
+	} else if(strcmp(filename, "sbtsi") == 0) {
+		if (socket_num >= ARRAY_SIZE(sbtsi_addr))
+			return OOB_FILE_ERROR;
+		else
+			strncpy(soc_addr, sbtsi_addr[socket_num],
+				strlen(sbtsi_addr[socket_num]));
+	} else {
 		return OOB_FILE_ERROR;
+	}
+	sprintf(dev_file, "%s%s-%s", DEV, filename, soc_addr);
+	fd = open(dev_file, O_RDWR);
+	if (fd < 0) {
+		sprintf(dev_file, "%s%s%d", DEV, filename, socket_num);
+		fd = open(dev_file, O_RDWR);
+		if (fd < 0)
+			return OOB_FILE_ERROR;
+	}
 
 	if (ioctl(fd, SBRMI_IOCTL_CMD, msg) < 0)
 		ret = errno;
@@ -185,24 +216,46 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
 				      bool *is_sbtsi)
 {
-	char dev_file[12];
+	char dev_file[DEV_SIZE] = "";
+	char addr[ADDR_SIZE] = "";
 	oob_status_t ret = OOB_SUCCESS;
 
 	*is_sbrmi = true;
 	*is_sbtsi = true;
-	/* check if the sbrmi module is present for the given socket*/
-	sprintf(dev_file, "/dev/sbrmi%d", soc_num);
-
-	if (access(dev_file, F_OK) != 0) {
+	if (soc_num >= ARRAY_SIZE(sbrmi_addr)) {
 		*is_sbrmi = false;
 		ret = OOB_FILE_ERROR;
 	}
 
-	/*check if the sbtsi module is present for the given socket */
-	sprintf(dev_file, "/dev/sbtsi%d", soc_num);
-	if (access(dev_file, F_OK) != 0) {
+	if (soc_num >= ARRAY_SIZE(sbtsi_addr)) {
 		*is_sbtsi = false;
 		ret = OOB_FILE_ERROR;
+	}
+
+	if (!*is_sbrmi && !*is_sbtsi)
+		return ret;
+
+	strncpy(addr, sbrmi_addr[soc_num], strlen(sbrmi_addr[soc_num]));
+	/* check if the sbrmi module is present for the given socket*/
+	sprintf(dev_file, "%s%s-%s", DEV, SBRMI, addr);
+
+	if (access(dev_file, F_OK) != 0) {
+		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
+		if (access(dev_file, F_OK) != 0) {
+			*is_sbrmi = false;
+			ret = OOB_FILE_ERROR;
+		}
+	}
+
+	strncpy(addr, sbtsi_addr[soc_num], strlen(sbtsi_addr[soc_num]));
+	/*check if the sbtsi module is present for the given socket */
+	sprintf(dev_file, "%s%s-%s", DEV, SBTSI, addr);
+	if (access(dev_file, F_OK) != 0) {
+		sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
+		if (access(dev_file, F_OK) != 0) {
+			*is_sbtsi = false;
+			ret = OOB_FILE_ERROR;
+		}
 	}
 
 	return ret;
