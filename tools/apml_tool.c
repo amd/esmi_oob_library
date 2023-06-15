@@ -2252,6 +2252,13 @@ static void get_mailbox_commands(char *exe_name)
 	       "Show micro code revision number\n"
 	       "  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
 	       "Request warm reset after sync flood\n"
+	       "  --rasoverridedelay\t\t\t"
+	       "  [DELAYVALUE(5 -120 mins)\n\t\t\t\t\t  "
+	       "[DISABLEDELAY(0 - 1)][STOPDELAY(0 -1)] "
+	       "Override delay reset cpu on sync flood\n"
+	       "  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
+	       "/summary)] Get post code for the given offset or"
+	       " recent 8 offsets\n"
 	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
 	       "Show consumed power\n"
 	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
@@ -2265,8 +2272,10 @@ static void get_rmi_commands(char *exe_name)
 	printf("Usage: %s [SOC_NUM] [Option]"
 	       "\nOption:\n"
 	       "\n< SB-RMI COMMANDS >:\n"
-	       "  --showrmiregisters\t\t\t Get "
-	       "values of SB-RMI reg commands for a given socket\n", exe_name);
+	       "  --showrmiregisters\t\t\t\t\t\t Get "
+	       "values of SB-RMI reg commands for a given socket\n"
+	       "  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t "
+	       "Clear the RAS status register value\n", exe_name);
 }
 
 static void get_tsi_commands(char *exe_name)
