@@ -668,9 +668,9 @@ static oob_status_t apml_get_maximum_die_id(uint8_t soc_num)
 		       ret, esmi_get_err_msg(ret));
 		return ret;
 	}
-	printf("------------------------------------------\n");
+	printf("--------------------------------------\n");
 	printf("| Maximum Die-ID  | %-16u |\n", max_die_id & ONE_BYTE_MASK);
-	printf("------------------------------------------\n");
+	printf("--------------------------------------\n");
 	return OOB_SUCCESS;
 }
 
