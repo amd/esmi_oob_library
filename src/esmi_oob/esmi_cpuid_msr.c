@@ -229,7 +229,7 @@ static oob_status_t esmi_oob_extend_thread(uint8_t soc_num, uint32_t *thread)
 		*thread -= 128;
 		val = 1;
 	}
-	return esmi_oob_write_byte(soc_num, SBRMI_THREAD128CS, SBRMI, val);
+	return esmi_oob_rmi_write_byte(soc_num, SBRMI_THREAD128CS, val);
 }
 
 static oob_status_t validate_thread(uint8_t soc_num, uint32_t thread_num)
@@ -281,7 +281,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 
 	/* Assign 7 byte to READ Mode */
 	msg.data_in.reg_in[7] = 1;
-	ret = sbrmi_xfer_msg(soc_num, SBRMI, &msg);
+	ret = sbrmi_xfer_msg(soc_num, &msg);
 	if (ret)
 		return ret;
 
@@ -352,7 +352,7 @@ static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_num, uint32_t thread,
         msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in | ((uint64_t) ext << 48);
 	/* Assign 7 byte to READ Mode */
 	msg.data_in.reg_in[7] = 1;
-        ret = sbrmi_xfer_msg(soc_num, SBRMI, &msg);
+        ret = sbrmi_xfer_msg(soc_num, &msg);
         if (ret)
                 return ret;
 

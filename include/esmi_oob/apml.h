@@ -103,6 +103,8 @@ extern const uint16_t sbtsi_addr[MAX_DEV_COUNT];	//!< SBTSI addresses //
  *  @brief Reads data for the given register.
  *
  *  @details This function will read the data for the given register.
+ *  NOTE: In future, this API will be deprecated, as individual APIs for
+ *  read SBRMI and read SBTSI support is available.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -123,6 +125,8 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @brief Writes data to the specified register.
  *
  *  @details This function will write the data to the specified register.
+ *  NOTE: In future, this API will be deprecated, as individual APIs for
+ *  write SBRMI and write SBTSI support is available.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -138,6 +142,77 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint8_t reg_offset,
  */
 oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint8_t reg_offset,
 				 char *file_name, uint8_t value);
+
+/**
+ *  @brief Reads data for the given RMI register.
+ *
+ *  @details This function will read the data for the given RMI register.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] reg_offset RMI register offset.
+ *
+ *  @param[out] buffer output value for the register.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+				    uint8_t *buffer);
+/**
+ *  @brief Reads data for the given TSI register.
+ *
+ *  @details This function will read the data for the given TSI register.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] reg_offset TSI register offset.
+ *
+ *  @param[out] buffer output value for the register.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+				    uint8_t *buffer);
+
+/**
+ *  @brief Writes data to the specified RMI register.
+ *
+ *  @details This function will write the data to the specified RMI register.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] reg_offset RMI register offset.
+ *
+ *  @param[in] value data to write to the TSI register.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+				     uint8_t value);
+
+/**
+ *  @brief Writes data to the specified TSI register.
+ *
+ *  @details This function will write the data to the specified TSI register.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] reg_offset TSI register offset.
+ *
+ *  @param[in] value data to write to the TSI register.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+				     uint8_t value);
 
 /**
  *  @brief Reads mailbox command data.
@@ -177,14 +252,12 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num, uint32_t cmd,
 oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
 				    uint32_t cmd, uint32_t data);
 /**
- *  @brief Writes data to device file
+ *  @brief Writes data to RMI device file
  *
- *  @details This function will write data to character device file,
+ *  @details This function will write data to RMI device file,
  *  through ioctl.
  *
  *  @param[in] soc_num  Socket index.
- *
- *  @param[in] file_name Character device file name for RMI/TSI I/F
  *
  *  @param[in] msg struct apml_message which contains information about the protocol,
  *  input/output data etc.
@@ -193,8 +266,25 @@ oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t sbrmi_xfer_msg(uint8_t soc_num, char *file_name,
-			    struct apml_message *msg);
+oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
+
+/**
+ *  @brief Writes data to TSI device file
+ *
+ *  @details This function will write data to TSI device file,
+ *  through ioctl.
+ *
+ *  @param[in] soc_num  Socket index.
+ *
+ *  @param[in] msg struct apml_message which contains information about the protocol,
+ *  input/output data etc.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
+
 /**
  *  @brief Validates sbrmi and sbtsi modules are present for the given socket
  *

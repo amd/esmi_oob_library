@@ -73,7 +73,7 @@ static oob_status_t apml_recover_sbrmi(uint8_t soc_num)
 
 	/* Write 1 to bit 0 of sbtsi config register to notify recovery of sbrmi */
 	config |= CONFIG_MASK;
-	ret = esmi_oob_write_byte(soc_num, SBTSI_CONFIGWR, SBTSI, config);
+	ret = esmi_oob_tsi_write_byte(soc_num, SBTSI_CONFIGWR, config);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
@@ -116,7 +116,7 @@ static oob_status_t apml_recover_sbtsi(uint8_t soc_num)
 
 	/* Write 1 to bit 1 of sbrmi control register to notify recovery of sbtsi */
 	control |= CTRL_MASK;
-	ret = esmi_oob_write_byte(soc_num, SBRMI_CONTROL, SBRMI, control);
+	ret = esmi_oob_rmi_write_byte(soc_num, SBRMI_CONTROL, control);
 	if (ret != OOB_SUCCESS)
 		return ret;
 

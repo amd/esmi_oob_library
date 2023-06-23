@@ -70,30 +70,21 @@ const uint16_t sbrmi_addr[MAX_DEV_COUNT] = {0x3c, 0x38, 0x3e, 0x3f,
 const uint16_t sbtsi_addr[MAX_DEV_COUNT] = {0x4c, 0x48, 0x4e, 0x4f,
 					    0x44, 0x45, 0x46, 0x47};	//!< SBTSI Addresses
 
-oob_status_t sbrmi_xfer_msg(uint8_t socket_num, char *filename, struct apml_message *msg)
+oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 {
 	int fd = 0, ret = 0;
 	char dev_file[DEV_SIZE] = "";
 	uint16_t soc_addr = 0;
 
-	if (strcmp(filename, "sbrmi") == 0) {
-		if (socket_num >= ARRAY_SIZE(sbrmi_addr))
-			return OOB_FILE_ERROR;
-		else
-			soc_addr = sbrmi_addr[socket_num];
-
-	} else if(strcmp(filename, "sbtsi") == 0) {
-		if (socket_num >= ARRAY_SIZE(sbtsi_addr))
-			return OOB_FILE_ERROR;
-		else
-			soc_addr = sbtsi_addr[socket_num];
-	} else {
+	if (soc_num >= ARRAY_SIZE(sbrmi_addr))
 		return OOB_FILE_ERROR;
-	}
-	sprintf(dev_file, "%s%s-%x", DEV, filename, soc_addr);
+	else
+		soc_addr = sbrmi_addr[soc_num];
+
+	sprintf(dev_file, "%s%s-%x", DEV, SBRMI, soc_addr);
 	fd = open(dev_file, O_RDWR);
 	if (fd < 0) {
-		sprintf(dev_file, "%s%s%d", DEV, filename, socket_num);
+		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
 		fd = open(dev_file, O_RDWR);
 		if (fd < 0)
 			return OOB_FILE_ERROR;
@@ -114,10 +105,36 @@ oob_status_t sbrmi_xfer_msg(uint8_t socket_num, char *filename, struct apml_mess
 	return errno_to_oob_status(ret);
 }
 
-oob_status_t esmi_oob_read_byte(uint8_t soc_num,
-				uint8_t reg_offset,
-				char *file_name,
-				uint8_t *buffer)
+oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
+{
+	int fd = 0, ret = 0;
+	char dev_file[DEV_SIZE] = "";
+	uint16_t soc_addr = 0;
+
+	if (soc_num >= ARRAY_SIZE(sbtsi_addr))
+		return OOB_FILE_ERROR;
+	else
+		soc_addr = sbtsi_addr[soc_num];
+
+	sprintf(dev_file, "%s%s-%x", DEV, SBTSI, soc_addr);
+	fd = open(dev_file, O_RDWR);
+	if (fd < 0) {
+		sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
+		fd = open(dev_file, O_RDWR);
+		if (fd < 0)
+			return OOB_FILE_ERROR;
+	}
+
+	if (ioctl(fd, SBRMI_IOCTL_CMD, msg) < 0)
+		ret = errno;
+
+	close(fd);
+
+	return errno_to_oob_status(ret);
+}
+
+oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+				    uint8_t *buffer)
 {
 	struct apml_message msg = {0};
 	oob_status_t ret;
@@ -132,19 +149,38 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num,
 	/* Assign 1  to the msg.data_in[7] for the read operation */
 	msg.data_in.reg_in[7] = 1;
 
-	ret = sbrmi_xfer_msg(soc_num, file_name, &msg);
-	if (ret)
-		return ret;
+	ret = sbrmi_xfer_msg(soc_num, &msg);
+	if (!ret)
+		*buffer = msg.data_out.reg_out[0];
 
-	*buffer = msg.data_out.reg_out[0];
-
-        return OOB_SUCCESS;
+	return ret;
 }
 
-oob_status_t esmi_oob_write_byte(uint8_t soc_num,
-				 uint8_t reg_offset,
-				 char *file_name,
-				 uint8_t value)
+oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+				    uint8_t *buffer)
+{
+	struct apml_message msg = {0};
+	oob_status_t ret;
+
+	/* NULL Pointer check */
+	if (!buffer)
+		return OOB_ARG_PTR_NULL;
+	/* Readi/write register command is 0x1002 */
+	msg.cmd = 0x1002;
+	/* Assign register_offset to msg.data_in[0] */
+	msg.data_in.reg_in[0] = reg_offset;
+	/* Assign 1  to the msg.data_in[7] for the read operation */
+	msg.data_in.reg_in[7] = 1;
+
+	ret = sbtsi_xfer_msg(soc_num, &msg);
+	if (!ret)
+		*buffer = msg.data_out.reg_out[0];
+
+	return ret;
+}
+
+oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+				     uint8_t value)
 {
 	struct apml_message msg = {0};
 
@@ -155,13 +191,59 @@ oob_status_t esmi_oob_write_byte(uint8_t soc_num,
 
 	/* Assign value to write to the data_in[4] */
 	msg.data_in.reg_in[4] = value;
-
 	/* Assign 0 to the msg.data_in[7] */
 	msg.data_in.reg_in[7] = 0;
 
-	return sbrmi_xfer_msg(soc_num, file_name, &msg);
+	return sbrmi_xfer_msg(soc_num, &msg);
 }
 
+oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+				     uint8_t value)
+{
+	struct apml_message msg = {0};
+
+	/* Read/Write register command is 0x1002 */
+	msg.cmd = 0x1002;
+	/* Assign register_offset to msg.data_in[0] */
+	msg.data_in.reg_in[0] = reg_offset;
+
+	/* Assign value to write to the data_in[4] */
+	msg.data_in.reg_in[4] = value;
+	/* Assign 0 to the msg.data_in[7] */
+	msg.data_in.reg_in[7] = 0;
+
+	return sbtsi_xfer_msg(soc_num, &msg);
+}
+
+oob_status_t esmi_oob_read_byte(uint8_t soc_num,
+				uint8_t reg_offset,
+				char *file_name,
+				uint8_t *buffer)
+{
+	/* NULL Pointer check */
+	if (!buffer)
+		return OOB_ARG_PTR_NULL;
+
+	if (!strcmp(file_name, SBRMI))
+		return esmi_oob_rmi_read_byte(soc_num, reg_offset, buffer);
+	else if (!strcmp(file_name, SBTSI))
+		return esmi_oob_tsi_read_byte(soc_num, reg_offset, buffer);
+	else
+		return OOB_FILE_ERROR;
+}
+
+oob_status_t esmi_oob_write_byte(uint8_t soc_num,
+				 uint8_t reg_offset,
+				 char *file_name,
+				 uint8_t value)
+{
+	if (!strcmp(file_name, SBRMI))
+		return esmi_oob_rmi_write_byte(soc_num,	reg_offset, value);
+	else if (!strcmp(file_name, SBTSI))
+		return esmi_oob_tsi_write_byte(soc_num,	reg_offset, value);
+	else
+		return OOB_FILE_ERROR;
+}
 /*
  * For a Mailbox write:
  *
@@ -181,7 +263,7 @@ oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
 
 	msg.data_in.mb_in[1] = (uint32_t)WRITE_MODE << 24;
 
-	return sbrmi_xfer_msg(soc_num, SBRMI, &msg);
+	return sbrmi_xfer_msg(soc_num, &msg);
 }
 
 /*
@@ -201,7 +283,7 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 	msg.data_in.mb_in[0] = input;
 
 	msg.data_in.mb_in[1] = (uint32_t)READ_MODE << 24;
-	ret = sbrmi_xfer_msg(soc_num, SBRMI, &msg);
+	ret = sbrmi_xfer_msg(soc_num, &msg);
 	if (ret)
 		return ret;
 
