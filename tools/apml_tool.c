@@ -2180,18 +2180,18 @@ static void apml_get_ras_runtime_err_info(uint8_t soc_num,
 		sub_ch = (d_out >> SUB_CH_POS) & BIT_MASK;
 		chip_sel_num = (d_out >> CHIP_SEL_NUM_POS) & TRIBBLE_BITS;
 		rank_mult = (d_out >> RANK_MUL_NUM_POS) & RANK_MUL_MASK;
-		printf("---------------------------------\n");
-		printf("|Error Count | %16u |\n", err_count);
-		printf("|CHAN Number | %16u |\n", ch_num);
-		printf("|SUB Channel | %16u |\n", sub_ch);
-		printf("|Chip sel num| %16u |\n", chip_sel_num);
-		printf("|Rank Mul num| %16u |\n", rank_mult);
-		printf("---------------------------------\n");
+		printf("------------------------------------\n");
+		printf("|Error Count  | %-16u   |\n", err_count);
+		printf("|CHAN Number  | 0x%-16x |\n", ch_num);
+		printf("|SUB Channel  | 0x%-16x |\n", sub_ch);
+		printf("|Chip sel num | 0x%-16x |\n", chip_sel_num);
+		printf("|Rank Mul num | 0x%-16x |\n", rank_mult);
+		printf("------------------------------------\n");
 		return;
 	}
-	printf("------------------------------------\n");
-	printf("| Data\t\t| %16u |\n", d_out);
-	printf("------------------------------------\n");
+	printf("--------------------------------------\n");
+	printf("| Data\t\t| 0x%-16x |\n", d_out);
+	printf("--------------------------------------\n");
 }
 
 static void apml_set_ras_err_threshold(uint8_t soc_num,
