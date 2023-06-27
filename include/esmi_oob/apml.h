@@ -92,6 +92,16 @@ typedef enum {
 	SBRMI_INBNDMSG7,
 } sbrmi_inbnd_msg;
 
+/**
+ * @brief processor family and model details
+ */
+typedef enum {
+	LEGACY_PLATFORMS,
+	FAM_19_MOD_10,
+	FAM_19_MOD_90,
+	FAM_1A_MOD_00,
+} PROC_DETAILS;
+
 #define SBRMI		"sbrmi"		//!< SBRMI module //
 #define SBTSI		"sbtsi"		//!< SBTSI module //
 #define MAX_DEV_COUNT	8		//!< APML ADDRESSES count
