@@ -75,6 +75,7 @@ typedef enum {
  *
  *  @details This function will read high hbm temperature interger threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -92,6 +93,7 @@ oob_status_t read_sbtsi_hbm_hi_temp_int_th(uint8_t soc_num, uint8_t *buffer);
  *
  *  @details This function will set high hbm temperature interger and decimal
  *  threshold in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -109,6 +111,7 @@ oob_status_t write_sbtsi_hbm_hi_temp_th(uint8_t soc_num, float hi_temp_th);
  *
  *  @details This function will read high hbm temperature decimal threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -126,6 +129,7 @@ oob_status_t read_sbtsi_hbm_hi_temp_dec_th(uint8_t soc_num, float *buffer);
  *
  *  @details This function will read high hbm temperature threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -142,6 +146,7 @@ oob_status_t read_sbtsi_hbm_hi_temp_th(uint8_t soc_num, float *buffer);
  *
  *  @details This function will read low hbm temperature interger threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -159,6 +164,7 @@ oob_status_t read_sbtsi_hbm_lo_temp_int_th(uint8_t soc_num, uint8_t *buffer);
  *
  *  @details This function will low high hbm temperature decimal threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -176,6 +182,7 @@ oob_status_t read_sbtsi_hbm_lo_temp_dec_th(uint8_t soc_num, float *buffer);
  *
  *  @details This function will set low hbm temperature threshold
  *  in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -190,6 +197,7 @@ oob_status_t write_sbtsi_hbm_lo_temp_th(uint8_t soc_num, float temp_th);
  *  @brief Get max hbm integer temperature
  *
  *  @details This function will read max hbm interger temperature in °C
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -205,6 +213,7 @@ oob_status_t read_sbtsi_max_hbm_temp_int(uint8_t soc_num, uint8_t *buffer);
  *  @brief Get max hbm decimal temperature
  *
  *  @details This function will read max hbm decimal temperature in °C
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -219,6 +228,7 @@ oob_status_t read_sbtsi_max_hbm_temp_dec(uint8_t soc_num, float *buffer);
 
 /**
  *  @brief Get hbm integer temperature
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @details This function will read hbm integer temperature in °C.
  *
@@ -236,6 +246,7 @@ oob_status_t read_sbtsi_hbm_temp_int(uint8_t soc_num, uint8_t *buffer);
  *  @brief Get hbm decimal temperature
  *
  *  @details This function will read hbm decimal temperature in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -251,6 +262,7 @@ oob_status_t read_sbtsi_hbm_temp_dec(uint8_t soc_num, float *buffer);
  *  @brief Get hbm low temperature threshold
  *
  *  @details This function will read hbm low threshold temperature in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -267,6 +279,7 @@ oob_status_t read_sbtsi_hbm_lo_temp_th(uint8_t soc_num, float *buffer);
  *  @brief Get hbm maximum temperature
  *
  *  @details This function will read maximum hbm temperature in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -282,6 +295,7 @@ oob_status_t read_sbtsi_max_hbm_temp(uint8_t soc_num, float *buffer);
  *  @brief Get hbm temperature
  *
  *  @details This function will read maximum hbm temperature in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -297,6 +311,7 @@ oob_status_t read_sbtsi_hbm_temp(uint8_t soc_num, float *buffer);
  *  @brief Get hbm alert threshold
  *
  *  @details This function will read hbm alert threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -312,6 +327,7 @@ oob_status_t read_sbtsi_hbm_alertthreshold(uint8_t soc_num, uint8_t *samples);
  *  @brief Set hbm alert samples
  *
  *  @details This function will set hbm alert samples.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -329,6 +345,7 @@ oob_status_t sbtsi_set_hbm_alert_threshold(uint8_t soc_num,
  *  @details This function will read hbm alert config. 1 indicates
  *  Enable hbm high and low temperature alert and 0 indicates
  *  disbale hbm high and low temperature alert.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -346,6 +363,7 @@ oob_status_t get_sbtsi_hbm_alertconfig(uint8_t soc_num, uint8_t *mode);
  *  @details This function will set hbm alert config.
  *  1 indicates enable hbm high and low temperature alert
  *  and 0 indicates disable hbm high and low temperature alert.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *

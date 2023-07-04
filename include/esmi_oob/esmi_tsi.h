@@ -112,6 +112,8 @@ typedef enum {
  *  offset(SBTSI::CpuTempOffInt, SBTSI::CpuTempOffDec) to the processor control
  *  temperature (Tctl). SBTSI::CpuTempInt and SBTSI::CpuTempDec
  *  combine to return the CPU temperature.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  This field returns the integer portion of the CPU temperature
  *
@@ -131,6 +133,8 @@ oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
  *  high until the alert is read. If SBTSI::AlertConfig[AlertCompEn] == 1,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -145,6 +149,8 @@ oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
 /**
  *  @brief The bits in this register are Read-only and can be written
  *  by Writing to the corresponding bits in SBTSI::ConfigWr
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -160,6 +166,8 @@ oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
  *  @brief This register value specifies the rate at which CPU temperature
  *  is compared against the temperature thresholds to determine if an alert
  *  event has occurred.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -175,6 +183,8 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
  *  @brief This register value specifies the rate at which CPU temperature
  *  is compared against the temperature thresholds to determine if an alert
  *  event has occurred.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -192,6 +202,8 @@ oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
  *  The high temperature threshold specifies the CPU temperature that
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -209,6 +221,8 @@ oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
  *  The low temperature threshold specifies the CPU temperature that causes
  *  ALERT_L to assert if the CPU temperature is less than or equal to the
  *  threshold
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -222,6 +236,8 @@ oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief This register provides write access to SBTSI::Config
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -235,6 +251,8 @@ oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
 
 /**
  *  @brief The value returns the decimal portion of the CPU temperature
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -249,6 +267,8 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
  *  the CPU temperature offset
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -263,6 +283,8 @@ oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
 /**
  *  @brief This value specifies the decimal/fractional portion of the
  *  CPU temperature offset added to Tctl to calculate the CPU temperature.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -277,6 +299,8 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
 /**
  *  @brief This value specifies the decimal portion of the high temperature
  *  threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -291,6 +315,8 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
 /**
  *  @brief value specifies the decimal portion of the low temperature
  *  threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -309,6 +335,8 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
  *  be enabled or disabled in a consistent manner on both interfaces.
  *  SMBus defined timeouts are not disabled for SB-RMI when this bit is set
  *  to 0.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -324,6 +352,8 @@ oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
  *  @brief Specifies the number of consecutive CPU temperature
  *  samples for which a temperature alert condition needs to remain valid
  *  before the corresponding alert bit is set.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -341,6 +371,8 @@ oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
  *  high until the alert is read. If SBTSI::AlertConfig[AlertCompEn] == 1,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -354,6 +386,8 @@ oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
 
 /**
  *  @brief Returns the AMD manufacture ID
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -367,6 +401,8 @@ oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
 
 /**
  *  @brief Specifies the SBI temperature sensor interface revision
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -383,6 +419,8 @@ oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
  *  @brief CPU temperature value
  *  The CPU temperature is calculated by adding SBTSI::CpuTempInt
  *  and SBTSI::CpuTempDec combine to return the CPU temperature.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -400,6 +438,8 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
  *  high until the alert is read. If SBTSI::AlertConfig[AlertCompEn] == 1,
  *  the alert is cleared when the temperature does not meet the threshold
  *  conditions for temperature and number of samples.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -419,6 +459,8 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 /**
  *  @brief The bits in this register are Read-only and can be written
  *  by Writing to the corresponding bits in SBTSI::ConfigWr
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -446,6 +488,8 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
 /**
  *  @brief The bits in this register are defined sbtsi_config_write and can
  *  be written by writing to the corresponding bits in SBTSI::ConfigWr
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  NOTE: Currently testing is not done for this API.
  *
@@ -464,6 +508,8 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 
 /**
  *  @brief To verify if timeout support enabled or disabled
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -484,6 +530,8 @@ oob_status_t sbtsi_get_timeout(uint8_t soc_num,
 
 /**
  *  @brief To enable/disable timeout support
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -507,6 +555,8 @@ oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
  *  The high temperature threshold specifies the CPU temperature that
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -524,6 +574,8 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
  *  The low temperature threshold specifies the CPU temperature that
  *  causes ALERT_L to assert if the CPU temperature is less than or
  *  equal to the threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -541,6 +593,8 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
  *  The high temperature threshold specifies the CPU temperature that
  *  causes ALERT_L to assert if the CPU temperature is greater than or
  *  equal to the threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -558,6 +612,8 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
  *  The low temperature threshold specifies the CPU temperature that
  *  causes ALERT_L to assert if the CPU temperature is less than or
  *  equal to the threshold.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -573,6 +629,8 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
  *  the CPU temperature offset
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -588,6 +646,8 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to set
  *  the CPU temperature offset
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -604,6 +664,8 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
  *  @brief Specifies the number of consecutive CPU temperature
  *  samples for which a temperature alert condition needs to remain valid
  *  before the corresponding alert bit is set.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -621,6 +683,8 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 
 /**
  *  @brief Alert comparator mode enable
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -636,7 +700,6 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
  */
 oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
 				    uint8_t mode);
-
 /** @} */  // end of SB-TSI Register access
 /*****************************************************************************/
 

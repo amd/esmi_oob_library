@@ -152,31 +152,68 @@ extern const uint8_t alert_mask[MAX_ALERT_REG];
  *  @brief This value specifies the APML specification revision that the
  *  product is compliant to. 0x10 = 1.0x Revision.
  */
+/* SBRMI registers Revision 0x10 */
+/**
+ * @brief thread enable register revision 0x10
+ */
+extern const uint8_t thread_en_reg_v10[MAX_THREAD_REG_V10];
+
+/* SBRMI registers Revision 0x20 */
+/**
+ * @brief thread enable register revision 0x20
+ */
+extern const uint8_t thread_en_reg_v20[MAX_THREAD_REG_V20];
+
+/**
+ * @brief alert status register
+ */
+extern const uint8_t alert_status[MAX_ALERT_REG];
+
+/**
+ * @brief alert mask
+ */
+extern const uint8_t alert_mask[MAX_ALERT_REG];
+
+/**
+ *  @brief Read revision from SB_RMI register command.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ */
 oob_status_t read_sbrmi_revision(uint8_t soc_num,
 				 uint8_t *buffer);
 /**
  *  @brief Read Control byte from SB_RMI register command.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_control(uint8_t soc_num,
 				uint8_t *buffer);
 /**
  *  @brief Read one byte of Status value from SB_RMI register command.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_status(uint8_t soc_num,
 			       uint8_t *buffer);
 /**
  *  @brief This register specifies the number of bytes to return when using
  *  the block read protocol to read SBRMI_x[4F:10].
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_readsize(uint8_t soc_num,
 				 uint8_t *buffer);
 /**
  *  @brief Read one byte of Thread Status from SB_RMI register command.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_threadenablestatus(uint8_t soc_num,
 					   uint8_t *buffer);
 /**
  *  @brief Read one byte of Thread Status from SB_RMI register command.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
 						uint8_t *buffer);
@@ -184,17 +221,23 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
  *  @brief This register is used by the SMBus master to generate an
  *  interrupt to the processor to indicate that a message is
  *  available..
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_swinterrupt(uint8_t soc_num,
 				    uint8_t *buffer);
 /**
  *  @brief This register indicates the maximum number of threads present.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_threadnumber(uint8_t soc_num,
 				     uint8_t *buffer);
 
 /**
  *  @brief This register will read the message running on the MP0.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
 				uint8_t *buffer);
@@ -203,6 +246,8 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
  *  @brief This function will read bit vector for all the threads.
  *  Value of 1 indicates MCE occured for the thread and is set by
  *  hardware.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -225,6 +270,8 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
  *  @brief This function will read bit vector for all the threads.
  *  Value of 1 indicates alert signaling disabled for corresponding
  *  SBRMI::AlertStatus[MceStat] for the thread.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -245,42 +292,56 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 
 /**
  *  @brief This register will read the inbound message.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
 				    uint8_t *buffer);
 
 /**
  *  @brief This register will read the outbound message.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
 				     uint8_t *buffer);
 
 /**
  *  @brief This register indicates the low part of maximum number of threads.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_num,
 					uint8_t *buffer);
 
 /**
  *  @brief This register indicates the upper part of maximum number of threads.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_num,
 				       uint8_t *buffer);
 
 /**
  *  @brief This register is used to read the thread cs.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
 				  uint8_t *buffer);
 
 /**
  *  @brief This register will read the ras status.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
 oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
 				   uint8_t *buffer);
 
 /**
  *  @brief This API will clear ras status register.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *

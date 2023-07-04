@@ -191,6 +191,7 @@ static char *pm_alarm_status[4] = {"VRHOT", "DIE OVER TEMP",
  *
  *  @details This function sets user provied frequency as MAX GFX/MIN GFX core
  *  clock frequency in MHZ based on enumeration type #range_type.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -212,6 +213,7 @@ oob_status_t set_gfx_core_clock(uint8_t soc_num, enum range_type freq_type,
  *  @details This function sets the maximum memory and fabric clock power state.
  *  Mappings from memory and fabric clock pstate to MEMCLK/FCLK frequency can be
  *  found by issuing GetPstates command.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  In case if the in-band has also set the maximum Pstate, then lower of the
  *  limits is used.
@@ -234,6 +236,7 @@ oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_num, uint32_t pstate);
  *  in units of 1MHz for the available clock power states (Pstates).
  *  Each MEMCLK/FCLK frequency pair is returned independently
  *  for each pstate.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -255,6 +258,7 @@ oob_status_t get_mclk_fclk_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  @details This function sets the specified XGMI Pstate. This disables all
  *  active XGMI Pstate management although XGMI power down modes will still
  *  be supported. Only 2 XGMI states are supported (0/1).
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -272,6 +276,7 @@ oob_status_t set_xgmi_pstate(uint8_t soc_num, uint32_t pstate);
  *  @details This function resets the XGMI Pstate specified in the
  *  SetXgmiPstate, causing XGMI link speed/width to be actively managed
  *  by the GPU.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -287,6 +292,7 @@ oob_status_t unset_xgmi_pstate(uint8_t soc_num);
  *  @details This function reads the XGMI power state mappings.Reads the
  *  supported XGMI link speeds and widths available to the SetXgmiPstate
  *  message.Link speeds reported in units of 1Gpbs.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -308,6 +314,7 @@ oob_status_t get_xgmi_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  @details This function will provide the average xcc idle residency across
  *  all GFX cores in the socket.100% specifies that all enabled GFX cores
  *  in the socket are running in idle.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -324,6 +331,7 @@ oob_status_t get_xcc_idle_residency(uint8_t soc_num, uint32_t *gfx_cores_idle_re
  *
  *  @details This function will read 64 bits energy accumulator
  *  and the 56 bit time stamp.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -366,6 +374,7 @@ oob_status_t get_alarms(uint8_t soc_num, enum alarms_type type,
  *
  *  @details This function will return 64 bit public serial number (PSN)
  *  unique to each die.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -384,6 +393,7 @@ oob_status_t get_psn(uint8_t soc_num, uint32_t die_index, uint64_t *buffer);
  *
  *  @details This function will read link info. Function will
  *  read the module ID and link config reflecting strapping pins.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -442,6 +452,7 @@ oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq);
  *
  *  @details This function will read SVI based telemetry for
  *  individual rails.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -464,6 +475,7 @@ oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
  *  @details This function will read local ID of the hottest die and its
  *  corresponding die temperature. Measured in every 1 ms and
  *  the most recently measured temperature in °C is reported.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -484,6 +496,7 @@ oob_status_t get_die_hotspot_info(uint8_t soc_num, uint8_t *die_id,
  *  @details This function will read local ID of the HBM stack and its
  *  corresponding HBM stack temperature. Measured in every 1 ms and
  *  the most recently measured temperature is reported.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -503,6 +516,7 @@ oob_status_t get_mem_hotspot_info(uint8_t soc_num, uint8_t *hbm_stack_id,
  *
  *  @details This function will read PM controller status
  *  and driver running status in a bit vector
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -520,6 +534,7 @@ oob_status_t get_host_status(uint8_t soc_num, struct host_status *status);
  *
  *  @details This function will provide theoretic.al maximum HBM/memory
  *  bandwidth of the system in GB/s, utilized bandwidth in GB/S.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -537,6 +552,7 @@ oob_status_t get_max_mem_bw_util(uint8_t soc_num,
  *  @brief Reads HBM throttle.
  *
  *  @details This function will read HBM throttle in percentage.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -552,6 +568,7 @@ oob_status_t get_hbm_throttle(uint8_t soc_num, uint32_t *mem_th);
  *  @brief writes HBM throttle.
  *
  *  @details This function will write HBM throttle.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -567,6 +584,7 @@ oob_status_t set_hbm_throttle(uint8_t soc_num, uint32_t mem_th);
  *  @brief Reads hbm stack temperature.
  *
  *  @details This function will read particular hbm stack temperature.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -590,6 +608,7 @@ oob_status_t get_hbm_temperature(uint8_t soc_num, uint32_t index,
  *  The function reads GFX clk frequency limits if the enumberation
  *  type #clk_type is GFX_CLK = 0 else it will read F_CLK frequency
  *  limits.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -610,6 +629,7 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
  *  @brief Reads number of sockets in system
  *
  *  @details This function will read number of sockets in system.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -626,6 +646,7 @@ oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count);
  *
  *  @details This function will read die level bist result status
  *  from package.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -646,6 +667,7 @@ oob_status_t get_bist_results(uint8_t soc_num, uint8_t die_id,
  *
  *  @details This function will read statistics for a given parameter
  *  since the last clear statistics command.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -666,6 +688,7 @@ oob_status_t get_statistics(uint8_t soc_num, struct statistics stat,
  *
  *  @details This function will clear all stored query statistics timestamps
  *  and then resumes data collection or aggregation.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -686,6 +709,7 @@ oob_status_t clear_statistics(uint8_t soc_num);
  *  CCD and 4 means HBM stack and 5- 255 are reserved. data_out[15:8] means
  *  maximum coumt of currently indexed die type. Data_out[19:16] means
  *  AID associated with specified die-ID.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
