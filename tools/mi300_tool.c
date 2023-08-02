@@ -711,6 +711,120 @@ static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
 	return OOB_SUCCESS;
 }
 
+static void apml_get_curr_xgmi_pstate(uint8_t soc_num)
+{
+	uint8_t xgmi_pstate = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_curr_xgmi_pstate(soc_num, &xgmi_pstate);
+	if (ret) {
+		printf("Failed to get current xgmi pstate "
+		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------------\n");
+	printf("| Curr XGMI pstate\t\t | %-17u|\n", xgmi_pstate);
+	printf("-----------------------------------------------------\n");
+}
+
+static void apml_get_max_operating_temp(uint8_t soc_num)
+{
+	uint16_t core_ctf_temp = 0, hbm_ctf_temp = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_max_operating_temp(soc_num, &core_ctf_temp, &hbm_ctf_temp);
+	if (ret) {
+		printf("Failed to get max operating temperature "
+		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-------------------------------------------------\n");
+	printf("| CTF core (ºC)\t\t | %-17u\t|\n", core_ctf_temp);
+	printf("| CTF HBM  (ºC)\t\t | %-17u\t|\n", core_ctf_temp);
+	printf("-------------------------------------------------\n");
+}
+
+static void apml_get_slow_down_temp(uint8_t soc_num)
+{
+	uint16_t temp = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_slow_down_temp(soc_num, &temp);
+	if (ret) {
+		printf("Failed to get slow down temperature "
+		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------------\n");
+	printf("| Slow Down Temperature (ºC)\t | %-17u|\n", temp);
+	printf("-----------------------------------------------------\n");
+
+}
+
+static void apml_get_hbm_dev_info(uint8_t soc_num)
+{
+	struct hbm_device_info dev_info = {0};
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_hbm_dev_info(soc_num, &dev_info);
+	if (ret) {
+		printf("Failed to get hbm device info "
+		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------------\n");
+	printf("|  Device Vendor\t\t | 0x%-15x|\n", dev_info.dev_vendor);
+	printf("|  Part Number\t\t\t | 0x%-15x|\n", dev_info.part_num);
+	printf("|  Total Memory (GBs)\t\t | 0x%-15x|\n", dev_info.total_mem);
+	printf("-----------------------------------------------------\n");
+}
+
+static void apml_get_pcie_stats(uint8_t soc_num, uint32_t pcie_select)
+{
+	uint32_t pcie_stat = 0;
+	char *stat;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_pciestats(soc_num, pcie_select, &pcie_stat);
+	if (ret) {
+		printf("Failed to get PCI statistics "
+		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------------\n");
+	switch(pcie_select) {
+	case 0:
+		/* L0 to recovery count */
+		stat = "L0 to Recovery Count";
+		break;
+	case 1:
+		/* Replay count */
+		stat = "Replay count";
+		break;
+	case 2:
+		/* NAK sent count */
+		stat = "NAK sent count";
+		break;
+	case 3:
+		/* NAK received count */
+		stat = "NAK received count";
+		break;
+	default:
+		printf("| Invalid Input\t\t\t\t\t|\n");
+		printf("--------------------------------------------------"
+		       "---\n");
+		return;
+	}
+
+	printf("|  %-29s | 0x%-15x|\n", stat, pcie_stat);
+	printf("-----------------------------------------------------\n");
+}
+
 void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 {
 	struct mclk_fclk_pstates pstate = {0};
@@ -1035,7 +1149,18 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "  --showmaxdieid\t\t\t  \t\t\t\t\t "
 	       "Show maximum die-id\n"
 	       "  --showdietype\t\t\t\t  [die_id]\t\t\t\t"
-	       " Show dietype. Valid die_id is 0 - (maxdie-id - 1)\n", exe_name);
+	       " Show dietype. Valid die_id is 0 - (maxdie-id - 1)\n"
+	       "  --getcurrxgmipstate\t\t\t  \t\t\t\t\t "
+	       "Get current xgmi pstate\n"
+	       "  --getoperatingtemp\t\t\t  \t\t\t\t\t "
+	       "Get CTF core and CTF hbm\n"
+	       "  --getslowdowntemp\t\t\t  \t\t\t\t\t "
+	       "Get slow down temperature\n"
+	       "  --gethbmdeviceinfo\t\t\t  \t\t\t\t\t "
+	       "Get HBM device vendor, part number and memory size(GBs)\n"
+	       "  --getpciestats\t\t\t  [STAT_SELECTOR]\t\t\t "
+	       "Get PCIe statistics including L0 to recovery count, replay count,"
+	       "NAK sent count, NAK received count\n", exe_name);
 }
 
 void get_mi300_tsi_commands(char *exec_name)
@@ -1214,6 +1339,11 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"sethbmalertconfig",		required_argument,	&flag,	832},
 		{"showmaxdieid",		no_argument,		&flag,	833},
 		{"showdietype",			required_argument,	&flag,  834},
+		{"getcurrxgmipstate",           no_argument,            &flag,  835},
+		{"getoperatingtemp",            no_argument,            &flag,  836},
+		{"getslowdowntemp",             no_argument,            &flag,  837},
+		{"gethbmdeviceinfo",            no_argument,            &flag,  838},
+		{"getpciestats",                required_argument,      &flag,  839},
 		{0,                     0,                      0,      0},
 	};
 
@@ -1460,6 +1590,27 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			/* Show die-type info */
 			val1 = atoi(argv[optind - 1]);
 			apml_get_die_type(soc_num, val1);
+			break;
+		case 835:
+			/* Get current XGMI pstate */
+			apml_get_curr_xgmi_pstate(soc_num);
+			break;
+		case 836:
+			/* Get Max operating temperature */
+			apml_get_max_operating_temp(soc_num);
+			break;
+		case 837:
+			/* Get slow down temperature */
+			apml_get_slow_down_temp(soc_num);
+			break;
+		case 838:
+			/* Get hbm device info */
+			apml_get_hbm_dev_info(soc_num);
+			break;
+		case 839:
+			/* Get PCIe statistics */
+			val1 = atoi(argv[optind - 1]);
+			apml_get_pcie_stats(soc_num, val1);
 			break;
 		default:
 			return ret;
