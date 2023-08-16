@@ -305,22 +305,38 @@ static void apml_get_pm_status(uint8_t soc_num)
 	printf("--------------------------------------\n");
 }
 
-static void apml_get_gfx_freq(uint8_t soc_num, uint32_t type)
+static void apml_get_max_min_gfx_freq(uint8_t soc_num)
 {
-	uint16_t freq = 0;
-	char *gfx_domain;
-	oob_status_t ret;
+	uint16_t max_freq = 0, min_freq = 0;
+	oob_status_t ret = OOB_SUCCESS;
 
-	gfx_domain = type ? "Act freq selected" : "Abs max freq";
-	ret = get_gfx_freq(soc_num, type, &freq);
+	ret = get_max_min_gfx_freq(soc_num, &max_freq, &min_freq);
 	if (ret) {
-		printf("Failed to read %s, Err[%d]:"
-		       "%s\n", gfx_domain, ret, esmi_get_err_msg(ret));
+		printf("Failed to read absoulte max, min freq, Err[0x%x]:"
+		       "%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 
 	printf("-----------------------------------------------\n");
-	printf("| %-25s | %16u|\n", gfx_domain, freq);
+	printf("| %-25s | %16u|\n", "Max Freq (HHz)", max_freq);
+	printf("| %-25s | %16u|\n", "Min Freq (HHz)", min_freq);
+	printf("-----------------------------------------------\n");
+}
+
+static void apml_get_act_gfx_freq(uint8_t soc_num)
+{
+	uint16_t freq = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = get_act_gfx_freq_cap(soc_num, &freq);
+	if (ret) {
+		printf("Failed to actual gfx freq cap selected, Err[0x%x]:"
+		       "%s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------\n");
+	printf("| %-25s | %16u|\n", "Act Freq (HHz)", freq);
 	printf("-----------------------------------------------\n");
 }
 
@@ -705,7 +721,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	struct freq_limits limit = {0};
 	uint64_t energy_acc = 0, time_stamp = 0, psn = 0;
 	uint32_t d_out = 0;
-	uint16_t freq = 0, temp = 0;
+	uint16_t max_freq = 0, min_freq = 0, freq = 0, temp = 0;
 	uint8_t pstate_index = 0, die_id = 0, link_config = 0, module_id = 0;
 	uint8_t hbm_id = 0;
 	oob_status_t ret;
@@ -778,15 +794,19 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tModule ID\t\t\t | %-16u", module_id);
 	}
 
-	printf("\n| Abs Max Gfx Freq (MHz) \t\t |");
-	ret = get_gfx_freq(soc_num, ABS_MAX_GFX, &freq);
-	if (ret)
+	printf("\n| Abs Gfx Freq (MHz) \t\t\t |");
+	ret = get_max_min_gfx_freq(soc_num, &max_freq, &min_freq);
+	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-16u", freq);
+	} else {
+		printf("\n| \tMax Freq \t\t\t |");
+		printf(" %-16u", max_freq);
+		printf("\n| \tMin Freq \t\t\t |");
+		printf(" %-16u", min_freq);
+	}
 
 	printf("\n| Act Max Gfx Freq (MHz) \t\t |");
-	ret = get_gfx_freq(soc_num, CUR_GFX, &freq);
+	ret = get_act_gfx_freq_cap(soc_num, &freq);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
@@ -983,8 +1003,8 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Show memory hot spot info\n"
 	       "  --showpowercontrollerstatus\t\t\t  \t\t\t\t "
 	       "Show power management controller status\n"
-	       "  --showabsmaxgfxfreq\t\t  \t\t\t\t\t\t "
-	       "Show abs max gfx frequency in MHz\n"
+	       "  --showabsmaxmingfxfreq\t\t  \t\t\t\t\t "
+	       "Show abs max and min gfx frequency in MHz\n"
 	       "  --showactfreqcapselected\t\t  \t\t\t\t\t "
 	       "Show actual freq cap selected in MHz\n"
 	       "  --showgfxclkfreqlimit\t\t  \t\t\t\t\t\t "
@@ -1178,7 +1198,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"showdiehotspotinfo",          no_argument,            &flag,  809},
 		{"showmemhotspotinfo",          no_argument,            &flag,  810},
 		{"showpowercontrollerstatus",	no_argument,            &flag,  811},
-		{"showabsmaxgfxfreq",           no_argument,            &flag,  812},
+		{"showabsmaxmingfxfreq",        no_argument,            &flag,  812},
 		{"showactfreqcapselected",      no_argument,            &flag,  813},
 		{"showgfxclkfreqlimit",         no_argument,            &flag,  814},
 		{"showflckfreqlimit",           no_argument,            &flag,  815},
@@ -1339,11 +1359,11 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			break;
 		case 812:
 			/* Get absolute max gfx frequnecy */
-			apml_get_gfx_freq(soc_num, ABS_MAX_GFX);
+			apml_get_max_min_gfx_freq(soc_num);
 			break;
 		case 813:
 			 /* Get act freq cap selected */
-			apml_get_gfx_freq(soc_num, CUR_GFX);
+			apml_get_act_gfx_freq(soc_num);
 			break;
 		case 814:
 			/* Get gfx freq limit */
