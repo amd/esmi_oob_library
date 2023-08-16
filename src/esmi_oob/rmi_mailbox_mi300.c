@@ -242,30 +242,38 @@ oob_status_t get_link_info(uint8_t soc_num, uint8_t *link_config,
 	return OOB_SUCCESS;
 }
 
-oob_status_t get_gfx_freq(uint8_t soc_num, enum gfx_domain_type type,
-			  uint16_t *freq)
+oob_status_t get_max_min_gfx_freq(uint8_t soc_num, uint16_t *max_freq,
+				  uint16_t *min_freq)
 {
-	uint32_t buffer;
-	uint8_t cmd;
-	oob_status_t ret;
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!max_freq || !min_freq)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_ABS_MAX_MIN_GFX_FREQ,
+				    DEFAULT_DATA, &buffer);
+	if (!ret) {
+		*max_freq = buffer;
+		*min_freq = extract_val(buffer, BIT(4));
+	}
+	return ret;
+}
+
+oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
 
 	if (!freq)
 		return OOB_ARG_PTR_NULL;
 
-	switch (type) {
-	case ABS_MAX_GFX:
-		cmd = GET_ABS_MAX_GFX_FREQ;
-		break;
-	case CUR_GFX:
-		cmd = GET_ACT_GFX_FREQ_CAP_SELECTED;
-		break;
-	default:
-		return OOB_INVALID_INPUT;
-	}
+	ret = esmi_oob_read_mailbox(soc_num, GET_ACT_GFX_FREQ_CAP_SELECTED,
+				    DEFAULT_DATA, &buffer);
 
-	ret = esmi_oob_read_mailbox(soc_num, cmd, DEFAULT_DATA, &buffer);
 	if (!ret)
 		*freq = buffer;
+
 	return ret;
 }
 

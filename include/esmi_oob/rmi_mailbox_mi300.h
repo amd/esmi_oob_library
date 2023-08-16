@@ -71,7 +71,7 @@ typedef enum {
 	GET_PM_ALARMS,
 	GET_PSN,
 	GET_LINK_INFO,
-	GET_ABS_MAX_GFX_FREQ = 0x96,
+	GET_ABS_MAX_MIN_GFX_FREQ = 0x96,
 	GET_SVI_TELEMETRY_BY_RAIL,
 	GET_DIE_TYPE,
 	GET_ACT_GFX_FREQ_CAP_SELECTED = 0x9c,
@@ -97,15 +97,6 @@ typedef enum {
 enum range_type {
 	MIN = 0,
 	MAX
-};
-
-/**
- * @brief APML gfx_domain_type. Absolute maximum gfx and current gfx.
- * ABS_MAX_GFX value is 0 and CUR_GFX is 1.
- */
-enum gfx_domain_type {
-	ABS_MAX_GFX = 0,
-	CUR_GFX
 };
 
 /**
@@ -414,29 +405,43 @@ oob_status_t get_link_info(uint8_t soc_num, uint8_t *link_config,
 			   uint8_t *module_id);
 
 /**
- *  @brief Read maximum allowed/Current selected  GFX engine frequency
- *  based on enumeration type #gfx_domain_type.
+ *  @brief Read maximum and minimum allowed GFX engine frequency
  *
- *  @details This function will read maximum allowed GFX engine frequency
- *  if the enumeration type #gfx_domain_type is "ABS_MAX_GFX" = 0.
- *
- *  This function will also read current selected GFX frequency if the
- *  enumeration type #gfx_domain_type is "CUR_GFX" = 1. This reflects minimum
- *  of all frequency caps selected via in-band or out-ofband controls.
+ *  @details This function will read maximum and minimum
+ *  allowed GFX engine frequency.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] type enumberation type #gfx_domain_type.
- *  values are "ABS_MAX_GFX" = 0 and "CUR_GFX".
+ *  @param[out] max_freq maximum GFX frequency in MHZ.
  *
- *  @param[out] freq frequency in MHZ.
+ *  @param[out] min_freq minimum GFX frequency in MHZ.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_gfx_freq(uint8_t soc_num, enum gfx_domain_type type,
-			  uint16_t *freq);
+oob_status_t get_max_min_gfx_freq(uint8_t soc_num, uint16_t *max_freq,
+				  uint16_t *min_freq);
+
+/**
+ *  @brief Read Actual GFX frequency cap selected
+ *
+ *  @details This function will read current seleted
+ *  GFX engine clock frequency.It reflects minimum of
+ *  all frequency caps seleted via in-band and out-of-band
+ *  controls.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] freq maximum GFX frequency in MHZ.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq);
 
 /**
  *  @brief Read SVI based telemetry for individual rails
