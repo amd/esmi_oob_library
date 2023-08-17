@@ -476,27 +476,25 @@ oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate)
 	return ret;
 }
 
-oob_status_t get_max_operating_temp(uint8_t soc_num, uint16_t *core_ctf_temp,
-				    uint16_t *hbm_ctf_temp)
+oob_status_t get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type,
+				    uint16_t *temp)
 {
 	uint32_t buffer = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	if (!core_ctf_temp || !hbm_ctf_temp)
+	if (!temp)
 		return OOB_ARG_PTR_NULL;
 
 	ret = esmi_oob_read_mailbox(soc_num, GET_MAX_OP_TEMP,
-				    DEFAULT_DATA, &buffer);
-	if (!ret) {
-		*core_ctf_temp = buffer;
-		*hbm_ctf_temp = buffer >> WORD_BITS;
-	}
+				    ctf_type, &buffer);
+	if (!ret)
+		*temp = buffer;
 
 	return ret;
 }
 
-
-oob_status_t get_slow_down_temp(uint8_t soc_num, uint16_t *slow_down_temp)
+oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
+				uint16_t *slow_down_temp)
 {
 	uint32_t buffer = 0;
 	oob_status_t ret = OOB_SUCCESS;
@@ -505,7 +503,7 @@ oob_status_t get_slow_down_temp(uint8_t soc_num, uint16_t *slow_down_temp)
 		return OOB_ARG_PTR_NULL;
 
 	ret = esmi_oob_read_mailbox(soc_num, GET_SLOW_DOWN_TEMP,
-				    DEFAULT_DATA, &buffer);
+				    ctf_type, &buffer);
 	if (!ret)
 		*slow_down_temp = buffer;
 

@@ -762,21 +762,25 @@ oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[out] core_ctf_temp critical temp fault core in °C
+ *  @param[in] ctf_type critical temperature fault type. 0 for AID,
+ *  1 for CCD, 2 for XCD and 3 for HBM.
  *
- *  @param[out] hbm_ctf_temp critical temp fault hbm in °C
+ *  @param[out] temp Max operating temp in °C
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_max_operating_temp(uint8_t soc_num, uint16_t *core_ctf_temp,
-                                    uint16_t *hbm_ctf_temp);
+oob_status_t get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type,
+                                    uint16_t *temp);
 
 /**
  *  @brief Get slow down temperature
  *
  *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] ctf_type critical temperature fault type. 0 for AID,
+ *  1 for CCD, 2 for XCD and 3 for HBM.
  *
  *  @param[out] slow_down_temp slow down temperature in °C
  *
@@ -784,7 +788,8 @@ oob_status_t get_max_operating_temp(uint8_t soc_num, uint16_t *core_ctf_temp,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_slow_down_temp(uint8_t soc_num, uint16_t *slow_down_temp);
+oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
+				uint16_t *slow_down_temp);
 
 /**
  *  @brief Get hbm device information
