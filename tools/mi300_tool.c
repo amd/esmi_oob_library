@@ -728,40 +728,44 @@ static void apml_get_curr_xgmi_pstate(uint8_t soc_num)
 	printf("-----------------------------------------------------\n");
 }
 
-static void apml_get_max_operating_temp(uint8_t soc_num)
+static void apml_get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type)
 {
-	uint16_t core_ctf_temp = 0, hbm_ctf_temp = 0;
+	uint16_t temp = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_max_operating_temp(soc_num, &core_ctf_temp, &hbm_ctf_temp);
+	ret = get_max_operating_temp(soc_num, ctf_type, &temp);
 	if (ret) {
 		printf("Failed to get max operating temperature "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 
-	printf("-------------------------------------------------\n");
-	printf("| CTF core (ºC)\t\t | %-17u\t|\n", core_ctf_temp);
-	printf("| CTF HBM  (ºC)\t\t | %-17u\t|\n", core_ctf_temp);
-	printf("-------------------------------------------------\n");
+	printf("-------------------------------------------------"
+	       "-----------------------\n");
+	printf("| Max Operating Temp ctf type[%u](ºC)\t\t | %-17u\t|\n",
+	       ctf_type, temp);
+	printf("-------------------------------------------------"
+	       "-----------------------\n");
 }
 
-static void apml_get_slow_down_temp(uint8_t soc_num)
+static void apml_get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type)
 {
 	uint16_t temp = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_slow_down_temp(soc_num, &temp);
+	ret = get_slow_down_temp(soc_num, ctf_type, &temp);
 	if (ret) {
 		printf("Failed to get slow down temperature "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 
-	printf("-----------------------------------------------------\n");
-	printf("| Slow Down Temperature (ºC)\t | %-17u|\n", temp);
-	printf("-----------------------------------------------------\n");
-
+	printf("-----------------------------------------------------"
+	       "--------\n");
+	printf("| Slow Down Temperature ctf type[%u](ºC)\t | %-17u|\n",
+	       ctf_type, temp);
+	printf("-----------------------------------------------------"
+	       "--------\n");
 }
 
 static void apml_get_hbm_dev_info(uint8_t soc_num)
@@ -1152,10 +1156,10 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       " Show dietype. Valid die_id is 0 - (maxdie-id - 1)\n"
 	       "  --getcurrxgmipstate\t\t\t  \t\t\t\t\t "
 	       "Get current xgmi pstate\n"
-	       "  --getoperatingtemp\t\t\t  \t\t\t\t\t "
-	       "Get CTF core and CTF hbm\n"
-	       "  --getslowdowntemp\t\t\t  \t\t\t\t\t "
-	       "Get slow down temperature\n"
+	       "  --getoperatingtemp\t\t\t  [CTF_TYPE(0 - 3)]\t\t\t "
+	       "Get max operating temperature(°C)\n"
+	       "  --getslowdowntemp\t\t\t  [CTF_TYPE(0 - 3)]\t\t\t "
+	       "Get slow down temperature(°C)\n"
 	       "  --gethbmdeviceinfo\t\t\t  \t\t\t\t\t "
 	       "Get HBM device vendor, part number and memory size(GBs)\n"
 	       "  --getpciestats\t\t\t  [STAT_SELECTOR]\t\t\t "
@@ -1340,8 +1344,8 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"showmaxdieid",		no_argument,		&flag,	833},
 		{"showdietype",			required_argument,	&flag,  834},
 		{"getcurrxgmipstate",           no_argument,            &flag,  835},
-		{"getoperatingtemp",            no_argument,            &flag,  836},
-		{"getslowdowntemp",             no_argument,            &flag,  837},
+		{"getoperatingtemp",            required_argument,	&flag,  836},
+		{"getslowdowntemp",             required_argument,	&flag,  837},
 		{"gethbmdeviceinfo",            no_argument,            &flag,  838},
 		{"getpciestats",                required_argument,      &flag,  839},
 		{0,                     0,                      0,      0},
@@ -1385,7 +1389,9 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 				(*long_options[long_index].flag) == 830 ||
 				(*long_options[long_index].flag) == 831 ||
 				(*long_options[long_index].flag) == 832 ||
-				(*long_options[long_index].flag) == 834)) {
+				(*long_options[long_index].flag) == 834 ||
+				(*long_options[long_index].flag) == 836 ||
+				(*long_options[long_index].flag) == 837)) {
 			if (*long_options[long_index].flag == 829 ||
 			    *long_options[long_index].flag == 830) {
 				strtof(argv[optind - 1], &end);
@@ -1597,11 +1603,13 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			break;
 		case 836:
 			/* Get Max operating temperature */
-			apml_get_max_operating_temp(soc_num);
+			val1 = atoi(argv[optind - 1]);
+			apml_get_max_operating_temp(soc_num, val1);
 			break;
 		case 837:
 			/* Get slow down temperature */
-			apml_get_slow_down_temp(soc_num);
+			val1 = atoi(argv[optind - 1]);
+			apml_get_slow_down_temp(soc_num, val1);
 			break;
 		case 838:
 			/* Get hbm device info */
