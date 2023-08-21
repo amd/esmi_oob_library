@@ -156,10 +156,6 @@ static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
 	bool status = false;
 
 	switch(type) {
-	case RAS:
-		alarm_status = ras_alarm_status;
-		size = ARRAY_SIZE(ras_alarm_status);
-		break;
 	case PM:
 		alarm_status = pm_alarm_status;
 		size = ARRAY_SIZE(pm_alarm_status);
@@ -209,7 +205,7 @@ static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
 	}
 	printf("------------------------------------------------------------"
 	       "----------\n");
-	printf("| %-3s Status \t: ", type ? "PM" : "RAS");
+	printf("| %-3s Status \t: ", "PM");
 	apml_display_alarms_status(type, buffer);
 	printf("|\n------------------------------------------------------------"
 	       "----------\n");
@@ -288,21 +284,23 @@ static void apml_mem_hotspot_info(uint8_t soc_num)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_get_pm_status(uint8_t soc_num)
+static void apml_get_host_status(uint8_t soc_num)
 {
-	bool status = 0;
+	struct host_status status = {0};
 	oob_status_t ret;
 
-	ret = get_controller_status(soc_num, &status);
+	ret = get_host_status(soc_num, &status);
 	if (ret) {
 		printf("Failed to read PM status, Err[%d]:"
 		       "%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-	printf("--------------------------------------\n");
-	printf("| PM Controller Status | %12s |\n",
-	status ? "Running" : "Not Running");
-	printf("--------------------------------------\n");
+	printf("-----------------------------------------\n");
+	printf("| PM Controller Status\t | %12s |\n",
+	status.controller_status ? "Running" : "Not Running");
+	printf("| Driver Status\t\t | %12s |\n",
+	status.driver_status ? "Running" : "Not Running");
+	printf("-----------------------------------------\n");
 }
 
 static void apml_get_max_min_gfx_freq(uint8_t soc_num)
@@ -725,7 +723,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	uint8_t pstate_index = 0, die_id = 0, link_config = 0, module_id = 0;
 	uint8_t hbm_id = 0;
 	oob_status_t ret;
-	bool pm_status = false;
+	struct host_status h_status = {0};
 
 	printf("\n| MemClk/FClk_Pstate [0x%x] \t\t |", pstate_index);
 	ret = get_mclk_fclk_pstates(soc_num, pstate_index, &pstate);
@@ -764,13 +762,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tTime stamp (s) \t\t\t | %-32.6f",
 		       (double)time_stamp / 1000000000);
 	}
-
-	printf("\n| RAS Status \t\t\t\t |");
-	ret = get_alarms(soc_num, RAS, &d_out);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		apml_display_alarms_status(RAS, d_out);
 
 	printf("\n| PM Status \t\t\t\t |");
 	ret = get_alarms(soc_num, PM, &d_out);
@@ -830,12 +821,17 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tTemperature (ºC)\t\t | %-16u", temp);
 	}
 
-	printf("\n| PM Controller Status \t\t\t |");
-	ret = get_controller_status(soc_num, &pm_status);
-	if (ret)
+	printf("\n| Host Status \t\t\t\t |");
+	ret = get_host_status(soc_num, &h_status);
+	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-25s", pm_status ? "Running" : "Not Running");
+	} else {
+		printf("\n| \t PM Status\t\t\t | %-25s",
+		       h_status.controller_status ? "Running" : "Not Running");
+		printf("\n| \t Driver status\t\t\t | %-25s",
+		       h_status.driver_status ? "Running" : "Not Running");
+	}
+
 
 	printf("\n| Max Mem BW and utilization \t\t |");
 	ret = get_max_mem_bw_util(soc_num, &bw);
@@ -988,8 +984,6 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Set max gfx core clock frequency in MHZ\n"
 	       "  --setmingfxcoreclock\t\t\t  [FREQ]\t\t\t\t "
 	       "Set min gfx core clock frequency in MHZ\n"
-	       "  --showrasstatus\t\t\t  \t\t\t\t\t "
-	       "Show RAS status\n"
 	       "  --showpmstatus\t\t\t  \t\t\t\t\t "
 	       "Show PM status\n"
 	       "  --showpsn\t\t\t\t  [CORE/DIE_INDEX]\t\t\t "
@@ -1001,8 +995,8 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Show die hot spot info\n"
 	       "  --showmemhotspotinfo\t\t\t  \t\t\t\t\t "
 	       "Show memory hot spot info\n"
-	       "  --showpowercontrollerstatus\t\t\t  \t\t\t\t "
-	       "Show power management controller status\n"
+	       "  --showhoststatus\t\t\t  \t\t\t\t\t "
+	       "Show power management controller and driver running status\n"
 	       "  --showabsmaxmingfxfreq\t\t  \t\t\t\t\t "
 	       "Show abs max and min gfx frequency in MHz\n"
 	       "  --showactfreqcapselected\t\t  \t\t\t\t\t "
@@ -1191,13 +1185,12 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		{"set_hbmthrottle",  		required_argument,      &flag,  802},
 		{"setmaxgfxcoreclock",          required_argument,      &flag,  803},
 		{"setmingfxcoreclock",          required_argument,      &flag,  804},
-		{"showrasstatus",		no_argument,            &flag,  805},
 		{"showpmstatus",		no_argument,            &flag,  806},
 		{"showpsn",                     required_argument,      &flag,  807},
 		{"showlinkinfo",                no_argument,            &flag,  808},
 		{"showdiehotspotinfo",          no_argument,            &flag,  809},
 		{"showmemhotspotinfo",          no_argument,            &flag,  810},
-		{"showpowercontrollerstatus",	no_argument,            &flag,  811},
+		{"showhoststatus",		no_argument,            &flag,  811},
 		{"showabsmaxmingfxfreq",        no_argument,            &flag,  812},
 		{"showactfreqcapselected",      no_argument,            &flag,  813},
 		{"showgfxclkfreqlimit",         no_argument,            &flag,  814},
@@ -1328,10 +1321,6 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			val1 = atoi(argv[optind - 1]);
 			apml_set_gfx_core_clock(soc_num, MIN, val1);
 			break;
-		case 805:
-			/* GET RAS ALARMS status */
-			apml_get_alarms(soc_num, RAS);
-			break;
 		case 806:
 			/* Get PM ALARMS status */
 			apml_get_alarms(soc_num, PM);
@@ -1355,7 +1344,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			break;
 		case 811:
 			/* Get Status */
-			apml_get_pm_status(soc_num);
+			apml_get_host_status(soc_num);
 			break;
 		case 812:
 			/* Get absolute max gfx frequnecy */
