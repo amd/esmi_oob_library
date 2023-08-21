@@ -177,9 +177,6 @@ oob_status_t get_alarms(uint8_t soc_num, enum alarms_type type,
 	uint8_t cmd;
 
 	switch (type) {
-	case RAS:
-		cmd = GET_RAS_ALARMS;
-		break;
 	case PM:
 		cmd = GET_PM_ALARMS;
 		break;
@@ -333,14 +330,20 @@ oob_status_t get_mem_hotspot_info(uint8_t soc_num,
 	return ret;
 }
 
-oob_status_t get_controller_status(uint8_t soc_num, bool *status)
+oob_status_t get_host_status(uint8_t soc_num, struct host_status *status)
 {
-	uint32_t buffer;
-	oob_status_t ret;
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!status)
+		return OOB_ARG_PTR_NULL;
 
 	ret = esmi_oob_read_mailbox(soc_num, GET_STATUS, DEFAULT_DATA, &buffer);
-	if (!ret)
-		*status = buffer & BIT_LEN;
+	if (!ret) {
+		status->controller_status = buffer & BIT(0);
+		status->driver_status = extract_val(buffer, BIT(0));
+	}
+
 	return ret;
 }
 

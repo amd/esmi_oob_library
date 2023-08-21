@@ -165,21 +165,21 @@ struct xgmi_speed_rate_n_width {
 };
 
 /**
- * @brief APML alarms type. RAS_ALARMS and PM_ALARMS. RAS is 0
- * and PM is 1.
+ * @brief struct containing power management controlling status,
+ * driving running status.
  */
-enum alarms_type {
-	RAS = 0,
-	PM
+struct host_status {
+        uint8_t controller_status : 1;	//!< power mangagement controller status
+        uint8_t driver_status : 1;	//!< driver running status
 };
 
 /**
- * @brief RAS alarm status.
+ * @brief APML alarms type. PM_ALARMS. PM is 0.
  */
-static char *ras_alarm_status[4] = {"RAS INIT FAILURE",
-				    "mGPU FALL BACK TO sGPU",
-				    "WAFL INITIALIZATION ERROR",
-				    "XGMI INITIALIZATION ERROR"};
+enum alarms_type {
+	PM
+};
+
 /**
  * @brief PM alarm status.
  */
@@ -339,24 +339,18 @@ oob_status_t get_energy_accum_with_timestamp(uint8_t soc_num, uint64_t *energy,
 					     uint64_t *time_stamp);
 
 /**
- *  @brief Read RAS/PM alarm status based on enumeration type #alarms_type
+ *  @brief Read PM alarm status based on enumeration type #alarms_type
  *
- *  @details This function provides RAS alarm status if the enumeration type
- *  #alarms_type is RAS = 0.
- *  If buffer value is 1 the status is RAS init failure. If the buffer
- *  value is 2 status is mGPU fallback to sGPU.If the buffer value is 4
- *  status is WAFL initialization error and if the buffer is 8 then status
- *  is XGMI initialization error.
- *
- *  If the enumeration type #alarms_type is PM = 1 then it will retrieve
- *  PM alarm status .
+ *  @details This function provides PM alarm status if the enumeration type
+ *  #alarms_type is PM = 0 then it will retrieve PM alarm status .
  *  If buffer value  is 1 the status is VRHOT. If the buffer
  *  value is 2 status is die over temp. If the buffer value is 4 status is
  *  HBM over temp and if the buffer is 8 then status is PWRBRK.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] type enumeration type #alarms_type. RAS = 0 or PM = 1.
+ *  @param[in] type enumeration type #alarms_type. PM = 0.
  *
  *  @param[out] buffer returns PSP fw return data.
  *
@@ -505,19 +499,21 @@ oob_status_t get_mem_hotspot_info(uint8_t soc_num, uint8_t *hbm_stack_id,
 				  uint16_t *hbm_temp);
 
 /**
- *  @brief Reads power management controller status
+ *  @brief Reads the status in a bit vector
  *
- *  @details This function will read PM status in a bit vector
+ *  @details This function will read PM controller status
+ *  and driver running status in a bit vector
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[out] status reports running status of power management controller.
+ *  @param[out] status struct host_status containing power management
+ *  controller status and driver running status.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_controller_status(uint8_t soc_num, bool *status);
+oob_status_t get_host_status(uint8_t soc_num, struct host_status *status);
 
 /**
  *  @brief Reads max memory bandwidth utilization.
