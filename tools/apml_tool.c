@@ -793,8 +793,6 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	       "Comparison Enabled");
 	printf("\tAtomic Rd order |\t\t|\t\t| %s\n", read_ord ? "Decimal Latches "
 	       "Integer" : "Integer latches Decimal");
-	printf("\tARA response\t|\t\t|\t\t| %s\n", ara ? "Disabled"
-	       : "Enabled");
 	if (!status)
 		printf("\tARA response\t|\t\t|\t\t| %s\n", ara ? "Disabled"
 		       : "Enabled");
