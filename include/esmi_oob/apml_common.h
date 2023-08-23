@@ -46,6 +46,10 @@
 
 #define BIT(N) ((uint32_t)1 << N)		//!< Perform left shift operation by N bits //
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0])) //!< Returns the array size //
+#define MASK(N) (((uint32_t)1 << N) - 1)	//!< Perform masking for N bits //
+#define extract_val(val, bits) ((uint32_t)val >> bits)	//!< extract value after performing
+							//!< right shift operations of specified bits
+							//!< on a given value
 
 /* Default data for input */
 #define DEFAULT_DATA            0
