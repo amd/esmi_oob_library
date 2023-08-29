@@ -767,7 +767,7 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	if (ret)
 		return ret;
 	printf("_STATUS\t\t\t| 0x%x \t\t|\t\t| \n", SBTSI_STATUS);
-	printf("\t PROC Temp Alert|\t\t|\t\t| ");
+	printf("\tPROC Temp Alert |\t\t|\t\t| ");
 	if (lowalert)
 		printf("PROC Temp Low Alert\n");
 	else if (hialert)
@@ -883,12 +883,12 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		return ret;
 	printf("_THRESHOLD_SAMPLE\t| 0x%x \t\t|\t\t| \n",
 	       SBTSI_ALERTTHRESHOLD);
-	printf("\t PROC Alert TH\t|\t\t|\t\t| %u\n", buf);
+	printf("\tPROC Alert TH \t|\t\t|\t\t| %u\n", buf);
 	if (status) {
 		ret = read_sbtsi_hbm_alertthreshold(soc_num, &buf);
 		if (ret)
 			return ret;
-		printf("\t HBM Alert TH\t|\t\t|\t\t| %u\n", buf);
+		printf("\tHBM Alert TH \t|\t\t|\t\t| %u\n", buf);
 	}
 
 	usleep(APML_SLEEP);
@@ -897,14 +897,14 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 		return ret;
 	printf("_TSI_ALERT_CONFIG\t| 0x%x \t\t|\t\t| \n",
 	       SBTSI_ALERTCONFIG);
-	printf("\t PROC Alert CFG\t|\t\t|\t\t| %s\n",
+	printf("\tPROC Alert CFG \t|\t\t|\t\t| %s\n",
 	       buf ? "Enabled" : "Disabled");
 	if (status) {
 		usleep(APML_SLEEP);
 		ret = get_sbtsi_hbm_alertconfig(soc_num, &buf);
 		if (ret)
 			return ret;
-		printf("\t HBM Alert CFG\t|\t\t|\t\t| %s\n",
+		printf("\tHBM Alert CFG \t|\t\t|\t\t| %s\n",
 		       buf ? "Enabled" : "Disabled");
 	}
 
@@ -2503,7 +2503,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	nbio.quadrant = 0x03;
 	nbio.offset = 0x20;
 
-	printf("\n\t\t *** SB-RMI MAILBOX SUMMARY ***\n");
+	printf("\t\t *** SB-RMI MAILBOX SUMMARY ***\n");
 	printf("------------------------------------------------------------"
 	       "----\n");
 	printf("| Function [INPUT VALUE] (UNITS)\t | VALUE");
@@ -2752,7 +2752,7 @@ static void show_smi_parameters(uint8_t soc_num)
 static void show_smi_message(void)
 {
 	printf("\n================================= APML System Management "
-	       "Interface ====================================\n\n");
+	       "Interface ====================================\n");
 }
 
 static void show_smi_end_message(void)
