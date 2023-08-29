@@ -67,7 +67,7 @@ oob_status_t get_hbm_temp_status(uint8_t soc_num)
 	ret = read_sbtsi_status(soc_num, &reg_val);
 	if (ret)
 		return ret;
-	printf("\t Mem Temp Alert |\t\t|\t\t|");
+	printf("\tMem Temp Alert  |\t\t|\t\t|");
 	if (reg_val >> 6 & 1)
 		printf(" HBM High Temp Alert\n");
 	else if (reg_val >> 5 & 1)
@@ -976,7 +976,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "Show RAS DF error dump\n"
 	       "  --showhbmbandwidth\t\t\t\t\t\t\t\t Show "
 	       "max, utilized HBM Bandwidth of the system\n"
-	       "  --set_hbmthrottle\t\t\t  [0 to 80%%]"
+	       "  --sethbmthrottle\t\t\t  [0 to 80%%]"
 	       "\t\t\t\t Set HBM Throttle\n"
 	       "  --showhbmthrottle\t\t\t  \t\t\t\t\t "
 	       "Show hbm throttle value\n"
@@ -1182,7 +1182,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 	static struct option long_options[] = {
 		{"showhbmthrottle",             no_argument,            &flag,  800},
 		{"showhbmbandwidth",            no_argument,            &flag,  801},
-		{"set_hbmthrottle",  		required_argument,      &flag,  802},
+		{"sethbmthrottle",  		required_argument,      &flag,  802},
 		{"setmaxgfxcoreclock",          required_argument,      &flag,  803},
 		{"setmingfxcoreclock",          required_argument,      &flag,  804},
 		{"showpmstatus",		no_argument,            &flag,  806},
