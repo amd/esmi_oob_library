@@ -291,6 +291,21 @@ oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  */
 oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer);
+
+/**
+ *  @brief Get the number of threads per socket
+ *
+ *  @details Get the total number of threads in a socket.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[inout] threads_per_socket is returned
+ *
+ *  @retval threads_per_socket is returned upon successful call.
+ *
+ */
+oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
+					 uint32_t *threads_per_socket);
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 

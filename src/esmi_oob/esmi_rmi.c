@@ -305,3 +305,32 @@ oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer)
 {
 	return esmi_oob_write_byte(soc_num, SBRMI_RASSTATUS, SBRMI, buffer);
 }
+
+oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
+					 uint32_t *threads_per_socket)
+{
+	oob_status_t ret = 0;
+	uint8_t thread_num_low = 0;
+	uint8_t thread_num_hi = 0;
+
+	if (!threads_per_socket)
+		return OOB_ARG_PTR_NULL;
+
+	/* Verify if requested thread number is for Milan */
+	ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBER, SBRMI, &thread_num_low);
+	if (ret != OOB_SUCCESS)
+		return ret;
+
+	if (!thread_num_low) {
+		ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBERLOW, SBRMI, &thread_num_low);
+		if (ret != OOB_SUCCESS)
+			return ret;
+
+		ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBERHIGH, SBRMI, &thread_num_hi);
+		if (ret != OOB_SUCCESS)
+			return ret;
+	}
+
+	*threads_per_socket = ((uint32_t)thread_num_hi << 8) | thread_num_low;
+	return ret;
+}

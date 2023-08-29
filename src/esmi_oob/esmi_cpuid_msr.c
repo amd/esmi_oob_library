@@ -167,31 +167,6 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
 	return ret;
 }
 
-oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
-					 uint32_t *threads_per_socket)
-{
-	uint32_t value;
-	uint32_t thread_ind = 0;
-	uint32_t cpuid_fn = 1;
-	uint32_t cpuid_extd_fn = 0;
-	oob_status_t ret;
-
-	if (!threads_per_socket)
-		return OOB_ARG_PTR_NULL;
-
-	ret = esmi_oob_cpuid_ebx(soc_num, thread_ind, cpuid_fn,
-				 cpuid_extd_fn, &value);
-
-	if (ret != OOB_SUCCESS)
-		return ret;
-	/*
-	 * In CPUID_Fn00000001_EBX, Bits 23:16 logical processor count.
-	 * Specifies the number of threads in the processor
-	 */
-	*threads_per_socket = (value >> 16) & 0xFF;
-	return ret;
-}
-
 oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
 				       uint32_t *threads_per_core)
 {
