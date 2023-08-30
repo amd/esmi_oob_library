@@ -535,12 +535,12 @@ static void apml_get_xcc_idle_residency(uint8_t soc_num)
 	"---\n");
 }
 
-static void apml_get_number_of_soc()
+static void apml_get_number_of_soc(uint8_t soc_num)
 {
 	uint32_t sockets = 0;
 	oob_status_t ret;
 
-	ret = get_sockets_in_system(&sockets);
+	ret = get_sockets_in_system(soc_num, &sockets);
 	if (ret) {
 		printf("Failed to read number of sockets,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -855,7 +855,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tMin Freq\t\t\t | %-16u", limit.min);
 	}
 	printf("\n| Number of Sockets \t\t\t |");
-	ret = get_sockets_in_system(&d_out);
+	ret = get_sockets_in_system(soc_num, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
@@ -954,6 +954,10 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "cclk freqlimit for a given socket in MHz\n"
 	       "  --showc0residency\t\t\t\t\t\t\t\t Show "
 	       "c0_residency for a given socket\n"
+	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
+	       "Show RAS DF error validity check for a given blockID\n"
+	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
+	       "Show RAS DF error dump\n"
 	       "  --showhbmbandwidth\t\t\t\t\t\t\t\t Show "
 	       "max, utilized HBM Bandwidth of the system\n"
 	       "  --set_hbmthrottle\t\t\t  [0 to 80%%]"
@@ -1405,7 +1409,7 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 			break;
 		case 826:
 			/* Get number of sockets */
-			apml_get_number_of_soc();
+			apml_get_number_of_soc(soc_num);
 			break;
 		case 827:
 			/* Get query statistics */

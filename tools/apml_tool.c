@@ -2133,6 +2133,8 @@ static oob_status_t apml_get_ppin_fuse(uint8_t soc_num)
 	printf("| PPIN Fuse | 0x%-64llx |\n", data);
 	printf("------------------------------------------------------------"
 	       "---------------------\n");
+
+	return OOB_SUCCESS;
 }
 
 static oob_status_t apml_get_cclk_freqlimit(uint8_t soc_num)
