@@ -65,10 +65,6 @@
 #define ARGS_MAX 64
 #define APML_SLEEP 10000
 #define SCALING_FACTOR	0.25
-/* CPUID function for max threads per l3 */
-#define THREADS_L3_FUNC         0x8000001D
-/* CPUID extended function for max threads per l3 */
-#define THREADS_L3_EXTD         0x3
 /* Maximum post code offset */
 #define MAX_POST_CODE_OFFSET	8
 
@@ -1649,22 +1645,6 @@ static void read_cpuid_register(uint8_t soc_num, uint32_t func,
 	printf("---------------------------------------------------------\n");
 }
 
-static oob_status_t read_max_threads_per_l3(uint8_t soc_num,
-					    uint32_t *threads_l3)
-{
-	uint32_t thread;
-	oob_status_t ret;
-
-	/* Get maximum threads per l3 */
-	thread = 0;
-	ret = esmi_oob_cpuid_eax(soc_num, thread, THREADS_L3_FUNC,
-				 THREADS_L3_EXTD, threads_l3);
-	if (ret)
-		return ret;
-	*threads_l3 = (*threads_l3 >> 14) & 0xFFF;
-	return ret;
-}
-
 static oob_status_t read_ccx_info(uint8_t soc_num,
 				  uint16_t *max_cores_per_ccx,
 				  uint16_t *ccx_instances)
@@ -1688,7 +1668,7 @@ static oob_status_t read_ccx_info(uint8_t soc_num,
 		return ret;
 
 	/* Max number of cores per ccx */
-	*max_cores_per_ccx = threads_l3 / threads_c + 1;
+	*max_cores_per_ccx = threads_l3 / threads_c;
 	/* Logical CCX instances */
 	*ccx_instances = threads_s / threads_l3;
 
