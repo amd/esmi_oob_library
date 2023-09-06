@@ -49,6 +49,8 @@
 #include <esmi_oob/esmi_rmi.h>
 
 /* Default message lengths as per APML command protocol */
+/* CPUID extended function for max threads per l3 */
+#define THREADS_L3_EXTD         0x3
 #define MSR_RD_LEN	0xa
 #define MSR_WR_LEN	0x9
 #define CPUID_RD_LEN	0xa
@@ -65,6 +67,8 @@
 #define THREAD_MASK	0xFFFF
 /* Legacy platforms(Milan & Rome) threads per socket */
 #define LEGACY_PLAT_THREADS_PER_SOC 128
+/* CPUID function for max threads per l3 */
+#define THREADS_L3_FUNC         0x8000001D
 
 static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 {
@@ -421,4 +425,19 @@ oob_status_t esmi_oob_cpuid_edx(uint8_t soc_num,
 {
         return esmi_oob_cpuid_fn(soc_num, thread, fn_eax, fn_ecx,
 				 EDX, edx);
+}
+
+oob_status_t read_max_threads_per_l3(uint8_t soc_num, uint32_t *threads_l3)
+{
+	uint32_t thread;
+	oob_status_t ret;
+
+	/* Get maximum threads per l3 */
+	thread = 0;
+	ret = esmi_oob_cpuid_eax(soc_num, thread, THREADS_L3_FUNC,
+				 THREADS_L3_EXTD, threads_l3);
+	if (!ret)
+		*threads_l3 = ((*threads_l3 >> 14) & 0xFFF) + 1;
+
+	return ret;
 }

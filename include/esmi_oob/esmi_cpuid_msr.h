@@ -325,6 +325,20 @@ oob_status_t esmi_oob_cpuid_edx(uint8_t soc_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *edx);
 
+/**
+ *  @brief Read max threads per L3 cache.
+ *
+ *  @details Reads max threads per L3 cache.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] threads_l3 threads per L3 cache.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval None-zero is returned upon failure.
+ */
+oob_status_t read_max_threads_per_l3(uint8_t soc_num, uint32_t *threads_l3);
+
 /** @} */  // end of cpuidAccess
 
 /*****************************************************************************/
