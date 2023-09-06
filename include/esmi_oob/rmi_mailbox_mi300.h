@@ -610,13 +610,15 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
  *
  *  @details This function will read number of sockets in system.
  *
+ *  @param[in] soc_num Socket index.
+ *
  *  @param[out] sockets_count Numbers of sockets in system
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_sockets_in_system(uint32_t *sockets_count);
+oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count);
 
 /**
  *  @brief Reads die level bist result status from package

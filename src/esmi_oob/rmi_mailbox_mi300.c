@@ -409,12 +409,9 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
 	return ret;
 }
 
-oob_status_t get_sockets_in_system(uint32_t *sockets_count)
+oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count)
 {
-	/* Socket number is not needed to get the number of sockets */
-	/* hence passing DEFAULT_DATA i.e. 0 as socket number to the */
-	/* read_mailbox function */
-	return esmi_oob_read_mailbox(DEFAULT_DATA, GET_SOCKETS_IN_SYSTEM,
+	return esmi_oob_read_mailbox(soc_num, GET_SOCKETS_IN_SYSTEM,
 				     DEFAULT_DATA, sockets_count);
 }
 
