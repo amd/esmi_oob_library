@@ -1744,6 +1744,9 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 		}
 		printf("| L3 BIST \t| %s\t|\n",
 		       bist_res & 1 ? "Bist pass": "Bist fail");
+		printf("| L3 X3D  \t| %s\t|\n",
+		       extract_val(bist_res, BIT(0)) & MASK(1)
+		       ? "Bist pass": "Bist fail");
 		for (index = 0; index < max_cores_per_ccx; index++)
 			printf("| CORE[%d] \t| %s\t|\n", index,
 			       ((bist_res >> (index + 16)) & 1)
