@@ -1626,6 +1626,71 @@ static void write_register(uint8_t soc_num, uint32_t reg, char *file_name,
 	printf("Write to register 0x%x is successful\n", reg);
 }
 
+static void read_rmi_register(uint8_t soc_num, uint32_t reg)
+{
+	uint8_t buffer;
+	oob_status_t ret;
+
+	ret = esmi_oob_rmi_read_byte(soc_num, reg, &buffer);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to read rmi register %x, Err[%d]:%s\n",
+		       reg, ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------");
+	printf("\n| Register \t| Value \t|");
+	printf("\n---------------------------------");
+	printf("\n| 0x%x \t\t| 0x%x \t\t|", reg, buffer);
+	printf("\n---------------------------------\n");
+}
+
+static void read_tsi_register(uint8_t soc_num, uint32_t reg)
+{
+	uint8_t buffer;
+	oob_status_t ret;
+
+	ret = esmi_oob_tsi_read_byte(soc_num, reg, &buffer);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to read tsi register %x, Err[%d]:%s\n",
+		       reg, ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------");
+	printf("\n| Register \t| Value \t|");
+	printf("\n---------------------------------");
+	printf("\n| 0x%x \t\t| 0x%x \t\t|", reg, buffer);
+	printf("\n---------------------------------\n");
+}
+
+static void write_rmi_register(uint8_t soc_num, uint32_t reg,
+			       uint32_t value)
+{
+	uint8_t buffer;
+	oob_status_t ret;
+
+	ret = esmi_oob_rmi_write_byte(soc_num, reg, value);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to write rmi register %x, Err[%d]:%s\n",
+		       reg, ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("Write to register 0x%x is successful\n", reg);
+}
+
+static void write_tsi_register(uint8_t soc_num, uint32_t reg,
+			       uint32_t value)
+{
+	uint8_t buffer;
+	oob_status_t ret;
+
+	ret = esmi_oob_tsi_write_byte(soc_num, reg, value);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to write tsi register %x, Err[%d]:%s\n",
+		       reg, ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("Write to register 0x%x is successful\n", reg);
+}
 static void read_msr_register(uint8_t soc_num, uint32_t addr,
 			      uint32_t thread)
 {
@@ -2575,6 +2640,14 @@ static void get_reg_access_commands(char *exe_name)
 	       "Read a register\n"
 	       "  --writeregister\t\t\t  [sbrmi/sbtsi][REGISTER(hex)]"
 	       "[VALUE(int)]\t Write to a register\n"
+	       "  --readrmiregister\t\t\t  [REGISTER(hex)]\t\t\t\t "
+	       "Read a rmi register\n"
+	       "  --readtsiregister\t\t\t  [REGISTER(hex)]\t\t\t\t "
+	       "Read a tsi register\n"
+	       "  --writermiregister\t\t\t  [REGISTER(hex)]"
+	       "[VALUE(int)]\t\t\t Write to a rmi register\n"
+	       "  --writetsiregister\t\t\t  [REGISTER(hex)]"
+	       "[VALUE(int)]\t\t\t Write to a tsi register\n"
 	       "  --readmsrregister\t\t\t  [REGISTER(hex)]"
 	       "[thread]\t\t\t Read MSR register\n"
 	       "  --readcpuidregister\t\t\t  [FUN(hex)]"
@@ -3090,7 +3163,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setPCIegenratectrl",			required_argument,	0,	'Z'},
 		{"setpwrefficiencymode",		required_argument,	0,	'U'},
 		{"setdfpstaterange",			required_argument,	0,	'V'},
-		{"readregister",			required_argument,	0,	 'e'},
+		{"readregister",			required_argument,	0,	'e'},
 		{"writeregister",			required_argument,	&flag,	 14},
 		{"readmsrregister",			required_argument,	&flag,	 15},
 		{"readcpuidregister",			required_argument,	&flag,	 16},
@@ -3123,6 +3196,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showc0residency",		no_argument,		&flag,  44},
 		{"showdependency",		no_argument,		&flag,  45},
 		{"showrtc",			no_argument,		&flag,  51},
+		{"readtsiregister",		required_argument,	&flag,	46},
+		{"writetsiregister",		required_argument,	&flag,	47},
+		{"readrmiregister",		required_argument,	&flag,	48},
+		{"writermiregister",		required_argument,	&flag,	49},
 		{0,			0,			0,	0},
 	};
 
@@ -3221,9 +3298,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'w' ||
 	    opt == 0 && ((*long_options[long_index].flag) == 18 ||
 			 *(long_options[long_index].flag) == 19 ||
-			 *(long_options[long_index].flag) == 31 ||
-			 *(long_options[long_index].flag) == 34 ||
-			 (*long_options[long_index].flag) == 41)) {
+			 (*long_options[long_index].flag) == 31 ||
+			 (*long_options[long_index].flag) == 34 ||
+			 (*long_options[long_index].flag) == 35 ||
+			 (*long_options[long_index].flag) == 41 ||
+			 (*long_options[long_index].flag) == 46 ||
+			 (*long_options[long_index].flag) == 48)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
 			printf("\nOption '-%c' require an argument"
@@ -3232,7 +3312,14 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			return OOB_SUCCESS;
 		}
 
-		if (opt == 'u' || opt == 'X' || opt == 'w' ||
+		if ((opt == 0 && (*long_options[long_index].flag == 46
+		     || *long_options[long_index].flag == 48))
+		     && validate_number(argv[optind - 1], 16)) {
+			printf("Option  '-%c' requires argument as valid"
+			       " hex value\n\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		} else if (opt == 'u' || opt == 'X' || opt == 'w' ||
 		     opt == 'x') {
 			strtof(argv[optind - 1], &end);
 			if (*end != '\0') {
@@ -3241,10 +3328,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 				show_usage(argv[0]);
 				return OOB_SUCCESS;
 			}
-		}
-		else {
+		} else {
 			if (opt != 'O' && opt != 'E' && opt != 'S'
 			    && opt != 'T' && opt !='P'
+			    && (opt == 0 && (*long_options[long_index].flag) != 46
+			    && (*long_options[long_index].flag) != 48)
 			    && validate_number(argv[optind - 1], 10)) {
 				printf("\nOption '-%c' require argument as valid"
 				       " numeric value\n\n", opt);
@@ -3263,11 +3351,22 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'V' ||
 	    opt == 'e' ||
            (opt == 0 && (*long_options[long_index].flag == 15 ||
-	    *long_options[long_index].flag == 35))) {
+	    *long_options[long_index].flag == 35 ||
+	    *long_options[long_index].flag == 47 ||
+	    *long_options[long_index].flag == 49))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
+		}
+
+	       if (opt == 0 && (*long_options[long_index].flag == 47 ||
+		   *long_options[long_index].flag == 49)
+		   && validate_number(argv[optind - 1], 16)) {
+		       printf("Option  '-%c' requires 1st argument as valid"
+			      " hex value\n\n", opt);
+		       show_usage(argv[0]);
+		       return OOB_SUCCESS;
 		}
 
 	       if (opt == 'V' && validate_number(argv[optind - 1], 10)) {
@@ -3301,13 +3400,21 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-		if (opt == 'N' && validate_number(argv[optind], 10)) {
-			printf("Option '-%c' requires 2nd argument as valid"
-			       " numeric value\n\n", opt);
-			show_usage(argv[0]);
-			return OOB_SUCCESS;
-		}
-		else {
+
+		if (opt == 'N') {
+			if (validate_number(argv[optind - 1], 10)) {
+				printf("Option '-%c' requires 1st argument as valid"
+				       " numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
+			if (validate_number(argv[optind], 10)) {
+				printf("Option '-%c' requires 2nd argument as valid"
+				       " numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
+		} else {
 			if (validate_number(argv[optind], 16)) {
 				printf("Option  '-%c' requires 2nd argument as valid"
 				       " hex value\n\n", opt);
@@ -3615,6 +3722,24 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 51) {
 			/* show RTC data */
 			apml_get_rtc(soc_num);
+		} else if (*(long_options[long_index].flag) == 46) {
+			/* Read TSI register */
+			val1 = strtoul(argv[optind - 1], &end, 16);
+			read_tsi_register(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 47) {
+			/* Write TSI register */
+			val1 = strtoul(argv[optind - 1], &end, 16);
+			val2 = atoi(argv[optind++]);
+			write_tsi_register(soc_num, val1, val2);
+		} else if (*(long_options[long_index].flag) == 48) {
+			/* read rmi register */
+			val1 = strtoul(argv[optind - 1], &end, 16);
+			read_rmi_register(soc_num, val1);
+		} else if (*(long_options[long_index].flag) == 49) {
+			/* Write to sbrmi register */
+			val1 = strtoul(argv[optind - 1], &end, 16);
+			val2 = atoi(argv[optind++]);
+			write_rmi_register(soc_num, val1, val2);
 		}
 		break;
 	case 'Y':
