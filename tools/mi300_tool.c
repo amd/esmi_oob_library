@@ -761,11 +761,11 @@ static void apml_get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type)
 	}
 
 	printf("-----------------------------------------------------"
-	       "--------\n");
-	printf("| Slow Down Temperature ctf type[%u](ºC)\t | %-17u|\n",
-	       ctf_type, temp);
+	       "---------------------------\n");
+	printf("| Slow Down Temperature ctf type[%u]%-8s\t\t | %-17u\t|\n",
+	       ctf_type, "(ºC)", temp);
 	printf("-----------------------------------------------------"
-	       "--------\n");
+	       "---------------------------\n");
 }
 
 static void apml_get_hbm_dev_info(uint8_t soc_num)
