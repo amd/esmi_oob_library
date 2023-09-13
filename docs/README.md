@@ -81,25 +81,27 @@ The apml modules are open-sourced at https://github.com/amd/apml_modules.git
 
 For detailed usage information, use -h or --help flag:
 ```
-bin# ./apml_tool -h
+
+$ ./apml_tool -h
 
 ================================= APML System Management Interface ====================================
-
-Usage: ./apml_tool <soc_num>
-Where:  soc_num : socket number starts from 0
-Usage: ./apml_tool [Option<s> SOURCES] / [--help] /[<module-name>]
-
+Usage: ./apml_tool [soc_num] [Option<s> / [--help] [module-name]
+Where:  soc_num : socket number 0 or 1
 Description:
-./apml_tool -v          	- Displays tool version
-./apml_tool --help <MODULE>     - Displays help on the options for the specified module
-./apml_tool <option/s>		- Runs the specified option/s.
-Usage: ./apml_tool [SOC_NUM] [Option] params
+./apml_tool -v                          - Displays tool version
+./apml_tool [SOC_NUM] --showdependency  - Displays module dependency
+./apml_tool --help <MODULE>             - Displays help on the options for the specified module
+./apml_tool <option/s>                  - Runs the specified option/s.
+Usage: ./apml_tool [soc_num] [Option] params
 
         MODULES:
         1. mailbox
         2. sbrmi
         3. sbtsi
         4. reg-access
+        5. cpuid
+        6. recovery
+
 ========================================== End of APML SMI ============================================
 
 $ ./apml_tool -v
@@ -128,7 +130,7 @@ User can pass arguments either any of the ways "./apml_tool [socket_num] -p" or 
 
 		========================================== End of APML SMI ============================================
 
-	2. bin# ./apml_tool 1 --setpowerlimit 200000
+	2. $ ./apml_tool 1 --setpowerlimit 200000
 
 		================================= APML System Management Interface ====================================
 
@@ -139,40 +141,54 @@ User can pass arguments either any of the ways "./apml_tool [socket_num] -p" or 
 
 	3. $ ./apml_tool 0 --showtsiregisters
 
-
 		================================= APML System Management Interface ====================================
+		----------------------------------------------------------------------------------
 
-		----------------------------------------------------------------
-
-				*** SB-TSI REGISTER SUMMARY ***
-		----------------------------------------------------------------
-		         FUNCTION [register]    |       Value [Units]
-		----------------------------------------------------------------
-		_CPUTEMP                        | 49.750 _C
-		        CPU_INT [0x1]           | 49 _C
-		        CPU_DEC [0x10]          | 0.750 _C
-		_STATUS [0x2]                   | CPU Temp Hi Alert
-		_CONFIG [0x3]                   |
-		        ALERT_L pin             | Enabled
-		        Runstop                 | Comparison Enabled
-		        Atomic Rd order         | Integer latches Decimal
-		        ARA response            | Enabled
-		_TSI_UPDATERATE [0x4]           | 32.000 Hz
-		_HIGH_THRESHOLD_TEMP            | 34.000 _C
-		        HIGH_INT [0x7]          | 34 _C
-		        HIGH_DEC [0x13]         | 0.000 _C
-		_LOW_THRESHOLD_TEMP             | 32.000 _C
-		        LOW_INT [0x8]           | 32 _C
-		        LOW_DEC [0x14]          | 0.000 _C
-		_TEMP_OFFSET                    | 12.000 _C
-		        OFF_INT [0x11]          | 12 _C
-		        OFF_DEC [0x12]          | 0.000 _C
-		_TIMEOUT_CONFIG [0x22]          | Enabled
-		_THRESHOLD_SAMPLE [0x32]        | 1
-		_TSI_ALERT_CONFIG [0xbf]        | Enabled
-		_TSI_MANUFACTURE_ID [0xfe]      | 0
-		_TSI_REVISION [0xff]            | 0x4
-		---------------------------------------------------------------
+		                 *** SB-TSI REGISTER SUMMARY ***
+		-----------------------------------------------------------------------------------
+		 FUNCTION/Reg Name      | Reg offset    | Hexa(0x)      | Value [Units]
+		-------------------------------------------------------------------------------------------
+		_PROCTEMP               |               |               | 55.125 °C
+		        PROC_INT        | 0x1           | 0x37          | 55 °C
+		        PROC_DEC        | 0x10          | 0x1           | 0.125 °C
+		_STATUS                 | 0x2           |               |
+		        PROC Temp Alert |               |               | PROC No Temp Alert
+		        Mem Temp Alert  |               |               | HBM High Temp Alert
+		_CONFIG                 | 0x3           |               |
+		        ALERT_L pin     |               |               | Enabled
+		        Runstop         |               |               | Comparison Enabled
+		        Atomic Rd order |               |               | Integer latches Decimal
+		_TSI_UPDATERATE         | 0x4           |               | 16.000 Hz
+		_HIGH_THRESHOLD_TEMP    |               |               | 70.000 °C
+		        HIGH_INT        | 0x7           | 0x46          | 70 °C
+		        HIGH_DEC        | 0x13          | 0x0           | 0.000 °C
+		_LOW_THRESHOLD_TEMP     |               |               | 0.000 °C
+		        LOW_INT         | 0x8           | 0x0           | 0 °C
+		        LOW_DEC         | 0x14          | 0x0           | 0.000 °C
+		_HBM_HIGH_THRESHOLD_TEMP|               |               | 0.000 °C
+		        HIGH_INT        | 0x40          | 0x0           | 0 °C
+		        HIGH_DEC        | 0x44          | 0x0           | 0.000 °C
+		_HBM_LOW_THRESHOLD_TEMP |               |               | 0.000 °C
+		        LOW_INT         | 0x48          | 0x0           | 0 °C
+		        LOW_DEC         | 0x4c          | 0x0           | 0.000 °C
+		_HBM_MAX_TEMP           |               |               | 49.000 °C
+		        MAX_INT         | 0x50          | 0x31          | 49 °C
+		        MAX_DEC         | 0x54          | 0x0           | 0.000 °C
+		_HBM_TEMP               |               |               | 47.000 °C
+		        HBM_INT         | 0x5c          | 0x2f          | 47 °C
+		        HBM_DEC         | 0x60          | 0x0           | 0.000 °C
+		_TEMP_OFFSET            |               |               | 0.000 °C
+		        OFF_INT         | 0x11          | 0x0           | 0 °C
+		        OFF_DEC         | 0x12          | 0x0           | 0.000 °C
+		_THRESHOLD_SAMPLE       | 0x32          |               |
+		        PROC Alert TH   |               |               | 1
+		        HBM Alert TH    |               |               | 1
+		_TSI_ALERT_CONFIG       | 0xbf          |               |
+		        PROC Alert CFG  |               |               | Enabled
+		        HBM Alert CFG   |               |               | Disabled
+		_TSI_MANUFACTURE_ID     | 0xfe          |               | 0
+		_TSI_REVISION           | 0xff          |               | 0x4
+		-----------------------------------------------------------------------------------
 
 		========================================== End of APML SMI ============================================
 ```
