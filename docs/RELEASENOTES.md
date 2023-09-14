@@ -5,6 +5,31 @@ Thank you for using AMD APML Library.
 
 # Changes Notes
 
+## Highlights of major release v3.1.0
+* Add support for the new APML features on family 19h amd model 90h - 9Fh
+   - New SBRMI mailbox messages including, [80h and later]
+       - GPU Telemetry
+       - HBM Telemetry
+       - BIST result on basis of DIE-IDs
+       - Number of sockets in system/node
+   - New SBTSI Registers
+       - HBM cofiguration
+       - HBM Temperature High and Low Threshold
+   - APML tool, new improved TSI summary
+* Add support for the following mailbox messages
+    - Read microcode revision
+    - Read CCLK Frequency Limit
+    - Read socket C0 residency
+    - Read PPIN fuse
+    - BMC RAS DF Error validity check
+    - BMC RAS DF Error Dump
+    - Using revision instead of cpuid for messages 8h and 9h
+    - Changes as per apml modules change to name misc device on basis
+      of device static address for RMI and TSI(sbrmi0 -> sbrmi-3c)
+    - Update alertmask and alert status to support all the threads
+    - APML socket recovery mechanism
+    - Bug fixes & Cosmetic changes
+
 ## Highlights of minor release v2.1
 
 * Update library/tool based on APML spec from PPR for AMD Family 19h Model 11h B1
