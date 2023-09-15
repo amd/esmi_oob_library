@@ -92,7 +92,16 @@ static int flag;
 static oob_status_t get_platform_info(uint8_t soc_num,
 				      struct processor_info *plat_info)
 {
-	return esmi_get_processor_info(soc_num, plat_info);
+	uint8_t rev = 0;
+	oob_status_t ret = 0;
+
+	ret = read_sbrmi_revision(soc_num, &rev);
+	if (!ret) {
+		if (rev != 0x10)
+			ret = esmi_get_processor_info(soc_num, plat_info);
+	}
+
+	return ret;
 }
 
 static oob_status_t is_mi300A(uint8_t soc_num, bool *status)
