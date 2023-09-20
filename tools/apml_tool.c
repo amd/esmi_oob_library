@@ -3026,7 +3026,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n| Package_Energy_CORES (MJ)\t\t |");
 	ret = read_rapl_pckg_energy_counters(soc_num, &energy);
 	if (ret)
-		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17f", energy);
 
@@ -3065,7 +3065,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n| THREADS_PER_CORE\t\t\t |");
 	ret = esmi_get_threads_per_core(soc_num, &threads_per_core);
 	if (ret)
-		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17d", threads_per_core);
 
@@ -3073,7 +3073,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n| THREADS_PER_SOCKET\t\t\t |");
 	ret = esmi_get_threads_per_socket(soc_num, &threads_per_soc);
 	if (ret)
-		printf(" Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17d", threads_per_soc);
 	printf("\n------------------------------------------------------------"
