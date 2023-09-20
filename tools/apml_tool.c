@@ -2454,7 +2454,7 @@ static void fam_19_common_mailbox_commands(void)
 static void fam_19_mod_00_specific_mailbox_commands(void)
 {
 	printf("  --showvddiomempower\t\t\t  \t\t\t\t\t "
-	       "Show vddiomem power");
+	       "Show vddiomem power\n");
 }
 
 static void fam_19_mod_10_mailbox_commands(void)
