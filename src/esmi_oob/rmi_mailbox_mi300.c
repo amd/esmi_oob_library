@@ -54,11 +54,6 @@
 #define MOD_ID_LINK_CONFG_SIZE	5
 #define LINK_CONFIG_POS		6
 
-const struct apml_encodings mi300A_encodings[] = {{3, "P2"}, {4, "P3"},
-						  {8, "G0"}, {9, "G1"},
-						  {10, "G2"}, {11, "G3"},
-						  {12, "G4"}, {13, "G5"},
-						  {14, "G6"}, {15, "G7"}};
 
 oob_status_t set_gfx_core_clock(uint8_t soc_num, enum range_type freq_type,
 				uint32_t freq)

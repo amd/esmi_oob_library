@@ -62,10 +62,6 @@
 #define D_WORD_BITS		32	//!< Double word bits //
 #define LO_WORD_REG             0	//!< Low word register //
 #define HI_WORD_REG             1	//!< High word register //
-/* Legacy APML encodings count */
-#define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
-/* MI300A APML encoding count */
-#define MI300A_ENCODING_SIZE		10	//!< MI300A encoding size //
 
 /* MASKS */
 #define NIBBLE_MASK		0xF
@@ -120,14 +116,6 @@ struct apml_encodings {
         char    name[3];        //!< Link ID encoding name
 };
 
-/* Apml link ID encodings for legacy platforms */
-extern const struct apml_encodings encodings[LEGACY_ENCODING_SIZE];             //!< Legacy platforms link ID encodings
-/* Apml link ID encodings for MI300A encodings */
-extern const struct apml_encodings mi300A_encodings[MI300A_ENCODING_SIZE];      //!< MI300A platforms link ID encodings
-
-/**
- * @brief common utility functions
- */
 static oob_status_t extract_n_bits(uint32_t num, uint8_t n_bits,
 			    uint8_t pos, uint8_t *buffer)
 {

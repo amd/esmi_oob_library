@@ -78,6 +78,9 @@
 /* Maximum instances of DF - Block-ID */
 #define MAX_DF_BLOCK_INSTS              256	//!< Max DF block instances //
 
+/* Legacy APML encodings count */
+#define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
+
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
  *  All required function, structure, enum, etc. definitions should be defined
@@ -88,6 +91,11 @@
  *  Description of the API, arguments and return values.
  *  The Error codes returned by the API.
  */
+
+/* Apml link ID encodings for legacy platforms */
+static struct apml_encodings encodings[LEGACY_ENCODING_SIZE] = {{1, "P0"}, {2, "P1"}, {4, "P2"},
+								{8, "P3"}, {16, "G0"}, {32, "G1"},
+								{64, "G2"}, {128, "G3"}};	//!< Legacy platforms link ID encodings
 
 /**
  * @brief Mailbox message types defined in the APML library

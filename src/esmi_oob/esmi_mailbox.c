@@ -66,9 +66,6 @@
 float esu_multiplier;
 struct processor_info plat_info[1];
 
-const struct apml_encodings encodings[] = {{1, "P0"}, {2, "P1"}, {4, "P2"},
-					   {8, "P3"}, {16, "G0"}, {32, "G1"},
-					   {64, "G2"}, {128, "G3"}};
 /*
  * Validates max and min values.Max values should always be greater
  * than or equal to the min value.

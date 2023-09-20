@@ -41,7 +41,11 @@
  #ifndef INCLUDE_RMI_MI300_H_
  #define INCLUDE_RMI_MI300_H_
 
+ #include "apml_common.h"
  #include "apml_err.h"
+
+/* MI300A APML encoding count */
+#define MI300A_ENCODING_SIZE		10	//!< MI300A encoding size //
 
 /** \file rmi_mailbox_mi300.h
  * Header file for the MI300 mailbox messages supported by APML library.
@@ -94,6 +98,13 @@ typedef enum {
 	QUERY_STATISTICS,
 	CLEAR_STATISTICS
 } esb_mi300_mailbox_commmands;
+
+/* Apml link ID encodings for MI300A encodings */
+static struct apml_encodings mi300A_encodings[MI300A_ENCODING_SIZE] = {{3, "P2"}, {4, "P3"},
+								       {8, "G0"}, {9, "G1"},
+								       {10, "G2"}, {11, "G3"},
+								       {12, "G4"}, {13, "G5"},
+								       {14, "G6"}, {15, "G7"}};	//!< MI300A platforms link ID encodings
 
 /**
  * @brief APML range type used by GFX core clock frequency.
