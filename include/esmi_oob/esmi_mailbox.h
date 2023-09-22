@@ -1493,6 +1493,9 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
  *  0 indicates High Performance Mode
  *  1 indicates Power Efficiency Mode.
  *  2 indicates I/O Performance Mode.
+ *  3 Balanced Memory Performance Mode.
+ *  4 Balanced Core Performance Mode.
+ *  5 Balanced Core and Memory Performance Mode.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
