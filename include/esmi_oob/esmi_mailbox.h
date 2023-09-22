@@ -337,6 +337,21 @@ struct ras_override_delay {
 };
 
 /**
+ * @brief Get the Error type and request type.
+ * Supported Runtime error type[1:0]:
+ *	- 00 = MCA
+ *	- 01 = DRAM CECC
+ *	- 10 = PCIe
+ * Supported Request type[31]:
+ *	- 0: polling mode
+ *	- 1: interrupt mode
+ */
+struct ras_rt_err_req_type {
+	uint8_t err_type : 2;	//!< Error type, [00, 01, 10]
+	uint8_t req_type : 1;	//!< Request type, [0, 1]
+};
+
+/**
  * @brief Number of valid error instance per category. It consists of
  * number of bytes per each category and number of instances of each
  * category.
@@ -1663,7 +1678,7 @@ oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code
  *
  */
 oob_status_t get_bmc_ras_run_time_err_validity_ck(uint8_t soc_num,
-						  uint32_t err_category,
+						  struct ras_rt_err_req_type err_category,
 						  struct ras_rt_valid_err_inst *inst);
 
 /**

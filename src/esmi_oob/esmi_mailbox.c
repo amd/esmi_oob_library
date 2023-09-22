@@ -1108,17 +1108,20 @@ oob_status_t get_post_code(uint8_t soc_num, uint32_t offset, uint32_t *post_code
 }
 
 oob_status_t get_bmc_ras_run_time_err_validity_ck(uint8_t soc_num,
-						  uint32_t err_category,
+						  struct ras_rt_err_req_type err_category,
 						  struct ras_rt_valid_err_inst *inst)
 {
 	uint32_t d_out = 0;
+	uint32_t d_in = 0;
 	oob_status_t ret;
 
 	if (!inst)
 		return OOB_ARG_PTR_NULL;
 
+	d_in = err_category.err_type | (uint32_t)err_category.req_type << (BIT(5) - 1);
+
 	ret = esmi_oob_read_mailbox(soc_num, GET_BMC_RAS_RUNTIME_ERR_VALIDITY_CHECK,
-				    err_category, &d_out);
+				    d_in, &d_out);
 	if (!ret) {
 		inst->number_of_inst = d_out;
 		inst->number_bytes = (d_out >> WORD_BITS);
