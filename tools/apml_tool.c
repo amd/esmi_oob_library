@@ -2126,7 +2126,7 @@ static void apml_clear_ras_status_register(uint8_t soc_num, uint8_t value)
 }
 
 static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_num,
-						   uint32_t rt_err_category)
+						   struct ras_rt_err_req_type rt_err_category)
 {
 	struct ras_rt_valid_err_inst inst;
 	oob_status_t ret;
@@ -2140,7 +2140,7 @@ static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_num,
 		return;
 	}
 
-	switch (rt_err_category) {
+	switch (rt_err_category.err_type) {
 	case 0:
 		err_catg = "MCA";
 		break;
@@ -2983,6 +2983,7 @@ static void validate_modules(uint8_t soc_num, bool *is_sbrmi,
 static oob_status_t parseesb_args(int argc, char **argv)
 {
 	union ras_df_err_dump df_err = {0};
+	struct ras_rt_err_req_type err_category = {0};
 	struct oob_config_d_in oob_config = {0};
 	struct run_time_threshold th = {0};
 	struct run_time_err_d_in err_d_in = {0};
@@ -3200,7 +3201,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 *(long_options[long_index].flag) == 19 ||
 			 *(long_options[long_index].flag) == 31 ||
 			 *(long_options[long_index].flag) == 34 ||
-			 *(long_options[long_index].flag) == 35 ||
 			 (*long_options[long_index].flag) == 41)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
@@ -3240,7 +3240,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'L' ||
 	    opt == 'V' ||
 	    opt == 'e' ||
-           (opt == 0 && (*long_options[long_index].flag == 15))) {
+           (opt == 0 && (*long_options[long_index].flag == 15 ||
+	    *long_options[long_index].flag == 35))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
 			show_usage(argv[0]);
@@ -3532,8 +3533,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			apml_clear_ras_status_register(soc_num, val1);
 		} else if (*(long_options[long_index].flag) == 35) {
 			/* RAS runtime error validity check */
-			val1 = atoi(argv[optind - 1]);
-			apml_get_bmc_ras_rt_err_validity_check(soc_num, val1);
+			err_category.err_type = atoi(argv[optind - 1]);
+			err_category.req_type = atoi(argv[optind++]);
+			apml_get_bmc_ras_rt_err_validity_check(soc_num, err_category);
 		} else if (*(long_options[long_index].flag) == 36) {
 			/* RAS runtime error info */
 			/* offset */
