@@ -2455,7 +2455,7 @@ static void get_mailbox_commands(char *exe_name)
 	       "Show processor base frequency\n"
 	       "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
 	       "Set PCIe link rate control\n"
-	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "  --setpwrefficiencymode\t\t  [MODE(0 - 5)]\t\t\t\t "
 	       "Set power efficiency profile policy\n"
 	       "  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
 	       "Show runnng average power on specified core\n"
