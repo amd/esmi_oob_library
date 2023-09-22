@@ -2330,6 +2330,26 @@ static oob_status_t apml_get_sockc0_residency(uint8_t soc_num)
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_rtc(uint8_t soc_num)
+{
+	uint64_t rtc_val = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = read_rtc(soc_num, &rtc_val);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get rtc timer, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("------------------------------------------------------------"
+	       "-------\n");
+	printf("| RTC timer (YYYYMMDDhhmmss)  |  %-32llx |\n", rtc_val);
+	printf("------------------------------------------------------------"
+	       "-------\n");
+
+	return OOB_SUCCESS;
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2478,6 +2498,7 @@ static void get_mailbox_commands(char *exe_name)
 	       "Show RAS DF error validity check for a given blockID\n"
 	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
 	       "Show RAS DF error dump\n"
+	       "  --showrtc\t\t\t\t\t\t\t\t	 Show RTC timer value\n"
 	       "  --showrasrterrvalidityck\t\t  [ERR_CATERGORY(0-2)]\t\t\t "
 	       "BMC RAS runtime error validity check\n"
 	       "  --showrasrterrinfo\t\t\t  [OFFSET][CATEGORY][VALID_INST]\t "
@@ -3098,9 +3119,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showppinfuse",		no_argument,		&flag,  40},
 		{"showrasdferrvaliditycheck",	required_argument,	&flag,  41},
 		{"showrasdferrdump",		required_argument,	&flag,  42},
-		{"showdependency",		no_argument,		&flag,  45},
 		{"showcclkfreqlimit",		no_argument,		&flag,  43},
 		{"showc0residency",		no_argument,		&flag,  44},
+		{"showdependency",		no_argument,		&flag,  45},
+		{"showrtc",			no_argument,		&flag,  51},
 		{0,			0,			0,	0},
 	};
 
@@ -3590,6 +3612,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 44) {
 			/* show C0 residency */
 			apml_get_sockc0_residency(soc_num);
+		} else if (*(long_options[long_index].flag) == 51) {
+			/* show RTC data */
+			apml_get_rtc(soc_num);
 		}
 		break;
 	case 'Y':
