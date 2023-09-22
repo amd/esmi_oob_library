@@ -116,6 +116,7 @@ typedef enum {
 	READ_DDR_BANDWIDTH = 0x18,
 	READ_PPIN_FUSE = 0x1F,
 	GET_POST_CODE = 0x20,
+	GET_RTC,
 	WRITE_BMC_REPORT_DIMM_POWER = 0X40,
 	WRITE_BMC_REPORT_DIMM_THERMAL_SENSOR,
 	READ_BMC_RAS_PCIE_CONFIG_ACCESS,
@@ -1780,6 +1781,23 @@ oob_status_t get_bmc_ras_oob_config(uint8_t soc_num, uint32_t *oob_config);
  */
 oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data);
 
+/**
+ *  @brief Read RTC.
+ *  @details Read RTC timer value. RTC time represents the year,
+ *  month, day, hour, minute and seconds value in a 64b encoding.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] rtc [63:0] = RTC value,
+ *	[31:0]=> DataIn==0 & [63:32]=> DataIn==4
+ *	If DataIn==0 RTC=DD_hh_mm_ss
+ *	If DataIn==4 RTC=00_YYYY_MM
+ *	All digits in BCD format.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t read_rtc(uint8_t soc_num, uint64_t *rtc);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

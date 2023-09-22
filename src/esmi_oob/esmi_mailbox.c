@@ -1197,3 +1197,24 @@ oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data)
 	return ret;
 }
 
+oob_status_t read_rtc(uint8_t soc_num, uint64_t *rtc)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = 0;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_RTC,
+				    0, &buffer);
+	if (ret)
+		return ret;
+	*rtc = buffer;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_RTC,
+				    4, &buffer);
+	if (ret) {
+		*rtc = 0;
+		return ret;
+	}
+
+	*rtc |= (uint64_t)buffer << BIT(5);
+	return ret;
+}
