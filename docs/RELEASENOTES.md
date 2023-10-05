@@ -5,6 +5,16 @@ Thank you for using AMD APML Library.
 
 # Changes Notes
 
+## Highlights of major release v3.2.0
+
+* Add support for new APML features on family 1Ah and model 00h - 0Fh
+   - New SBRMI mailbox messages adding support for Runtime errors
+       - Runtime error validity check & Runtime error info
+       - RAS set threshold
+       - RAS set/get OOB config
+       - RTC timer
+    - Bug fixes & Cosmetic changes
+
 ## Highlights of major release v3.1.0
 * Add support for the new APML features on family 19h amd model 90h - 9Fh
    - New SBRMI mailbox messages including, [80h and later]
@@ -70,7 +80,8 @@ APIs to Monitor and control the following feature
 
 # Supported Processors
 * Family 17h model 31h
-* Family 19h model 0h~0Fh & 10h~1Fh
+* Family 19h model 0h~0Fh, 10h~1Fh, 90h - 9Fh
+* Family 1Ah model 0h~0Fh
 
 # Supported BMCs
 Compile this library for any BMC running linux. Please use the [APML Library/tool Support](https://github.com/amd/esmi_oob_library/issues) to provide your feedback.
