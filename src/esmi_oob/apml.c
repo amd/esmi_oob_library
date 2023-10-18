@@ -291,6 +291,46 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
+oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi)
+{
+	char dev_file[DEV_SIZE] = "";
+
+	*is_sbtsi = false;
+	if (soc_num >= ARRAY_SIZE(sbtsi_addr))
+		return OOB_FILE_ERROR;
+
+	/* check if the sbtsi module is present for the given socket */
+	sprintf(dev_file, "%s%s-%x", DEV, SBTSI, sbtsi_addr[soc_num]);
+        if (access(dev_file, F_OK) != 0) {
+                sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
+		if (access(dev_file, F_OK) != 0)
+			return OOB_FILE_ERROR;
+        }
+
+	*is_sbtsi = true;
+	return OOB_SUCCESS;
+}
+
+oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi)
+{
+	char dev_file[DEV_SIZE] = "";
+
+	*is_sbrmi = false;
+	if (soc_num >= ARRAY_SIZE(sbrmi_addr))
+		return OOB_FILE_ERROR;
+
+	/* check if the sbrmi module is present for the given socket*/
+	sprintf(dev_file, "%s%s-%x", DEV, SBRMI, sbrmi_addr[soc_num]);
+	if (access(dev_file, F_OK) != 0) {
+		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
+		if (access(dev_file, F_OK) != 0)
+			return OOB_FILE_ERROR;
+	}
+
+	*is_sbrmi = true;
+	return OOB_SUCCESS;
+}
+
 oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
 				      bool *is_sbtsi)
 {
@@ -298,40 +338,12 @@ oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
 	uint16_t addr = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	*is_sbrmi = true;
-	*is_sbtsi = true;
-	if (soc_num >= ARRAY_SIZE(sbrmi_addr)) {
-		*is_sbrmi = false;
-		ret = OOB_FILE_ERROR;
-	}
+	/* validate sbrmi module */
+	ret = validate_sbrmi_module(soc_num, is_sbrmi);
+	/* validate sbtsi module */
+	ret = validate_sbtsi_module(soc_num, is_sbtsi);
 
-	if (soc_num >= ARRAY_SIZE(sbtsi_addr)) {
-		*is_sbtsi = false;
-		ret = OOB_FILE_ERROR;
-	}
-
-	if (!*is_sbrmi && !*is_sbtsi)
-		return ret;
-
-	/* check if the sbrmi module is present for the given socket*/
-	sprintf(dev_file, "%s%s-%x", DEV, SBRMI, sbrmi_addr[soc_num]);
-	if (access(dev_file, F_OK) != 0) {
-		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
-		if (access(dev_file, F_OK) != 0) {
-			*is_sbrmi = false;
-			ret = OOB_FILE_ERROR;
-		}
-	}
-
-	/*check if the sbtsi module is present for the given socket */
-	sprintf(dev_file, "%s%s-%x", DEV, SBTSI, sbtsi_addr[soc_num]);
-	if (access(dev_file, F_OK) != 0) {
-		sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
-		if (access(dev_file, F_OK) != 0) {
-			*is_sbtsi = false;
-			ret = OOB_FILE_ERROR;
-		}
-	}
-
+	if (!*is_sbrmi || !*is_sbtsi)
+		return OOB_FILE_ERROR;
 	return ret;
 }

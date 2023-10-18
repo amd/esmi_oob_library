@@ -296,6 +296,38 @@ oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
 oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
 
 /**
+ *  @brief Validates sbtsi module is present for the given socket
+ *
+ *  @details This function will validate sbtsi module is present
+ *  for the specified socket.
+ *
+ *  @param[in] soc_num  Socket index.
+ *
+ *  @param[out] is_sbtsi returns true if the sbtsi is present else false
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi);
+
+/**
+ *  @brief Validates sbrmi module is present for the given socket
+ *
+ *  @details This function will validate sbrmi module is present
+ *  for the specified socket.
+ *
+ *  @param[in] soc_num  Socket index.
+ *
+ *  @param[out] is_sbrmi returns true if the sbrmi is present else false
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi);
+
+/**
  *  @brief Validates sbrmi and sbtsi modules are present for the given socket
  *
  *  @details This function will validate sbrmi and sbtsi modules are present
