@@ -228,9 +228,9 @@ oob_status_t read_sbtsi_max_hbm_temp_dec(uint8_t soc_num, float *buffer);
 
 /**
  *  @brief Get hbm integer temperature
- *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @details This function will read hbm integer temperature in °C.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *

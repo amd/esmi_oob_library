@@ -754,6 +754,7 @@ oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in,
 
 /**
  *  @brief Get current xgmi pstate
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -770,6 +771,7 @@ oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
  *
  *  @details This function will get critical temperature fault core
  *  and HBM temperature.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -787,6 +789,7 @@ oob_status_t get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type,
 
 /**
  *  @brief Get slow down temperature
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -807,6 +810,7 @@ oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
  *
  *  @details This function will get hbm device information i.e. device
  *  vendor, part number and total memory size (GBs).
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -829,6 +833,7 @@ oob_status_t get_hbm_dev_info(uint8_t soc_num,
  *  total number of NAKs issued on the PCIe link by the device,
  *  and total number of NAKs issued on the PCIe link by the
  *  receiver.
+ *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
  *  @param[in] soc_num Socket index.
  *

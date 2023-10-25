@@ -91,6 +91,8 @@ extern struct processor_info plat_info[1];
  *  @brief Get the number of logical cores per socket
  *
  *  @details Get the processor vendor
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -105,6 +107,8 @@ oob_status_t esmi_get_vendor_id(uint8_t soc_num, char *vendor_id);
  *  @brief Get the number of logical cores per socket
  *
  *  @details Get the effective family, model and step_id of the processor.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -120,6 +124,8 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
  *  @brief Get the number of logical cores per socket
  *
  *  @details Get the total number of logical cores in a socket.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
@@ -136,6 +142,8 @@ esmi_get_logical_cores_per_socket(uint8_t soc_num,
  *  @brief Get number of threads per core.
  *
  *  @details Get the number of threads per core.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
  *  @param[in] soc_num Socket index.
  *
