@@ -1497,6 +1497,13 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_num,
  *  4 Balanced Core Performance Mode.
  *  5 Balanced Core and Memory Performance Mode.
  *
+ *  Modes supported as per platform,
+ *  0 to 2:
+ *	Fam-19h_Mod-10h-1Fh
+ *	Fam-19h_Mod-90h-9Fh
+ *  0 to 5:
+ *	Fam-1Ah_Mod-00h-0Fh
+ *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
