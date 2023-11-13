@@ -62,7 +62,8 @@ typedef enum {
 	SET_MIN_GFX_CORE_CLOCK,
 	SET_MAX_PSTATE,
 	GET_PSTATES,
-	SET_XGMI_PSTATE = 0x86,
+	GET_CURR_XGMI_PSTATE,
+	SET_XGMI_PSTATE,
 	UNSET_XGMI_PSTATE,
 	GET_XGMI_PSTATES,
 	GET_XCC_IDLE_RESIDENCY,
@@ -77,6 +78,8 @@ typedef enum {
 	GET_ACT_GFX_FREQ_CAP_SELECTED = 0x9c,
 	GET_DIE_HOT_SPOT_INFO = 0xA0,
 	GET_MEM_HOT_SPOT_INFO,
+	GET_MAX_OP_TEMP,
+	GET_SLOW_DOWN_TEMP,
 	GET_STATUS = 0xA4,
 	GET_MAX_MEM_BW_UTILIZATION = 0XB0,
 	GET_HBM_THROTTLE,
@@ -85,6 +88,8 @@ typedef enum {
 	GET_GFX_CLK_FREQ_LIMITS,
 	GET_FCLK_FREQ_LIMITS,
 	GET_SOCKETS_IN_SYSTEM,
+	GET_HBM_DEVICE_INFO,
+	GET_PCIE_STATS = 0xBA,
 	GET_BIST_RESULTS = 0xBC,
 	QUERY_STATISTICS,
 	CLEAR_STATISTICS
@@ -162,6 +167,16 @@ struct statistics {
 struct xgmi_speed_rate_n_width {
 	uint16_t speed_rate;		//!< Speed rate
 	uint8_t link_width : 4;		//!< XGMI link width
+};
+
+/**
+ * @brief struct containing device vendor, part number
+ * and total memory size in GBs.
+ */
+struct hbm_device_info {
+        uint8_t dev_vendor;             //!< device vendor
+        uint8_t part_num;               //!< part number
+        uint16_t total_mem;             //!< total memory size(GBs)
 };
 
 /**
@@ -725,6 +740,95 @@ oob_status_t clear_statistics(uint8_t soc_num);
  */
 oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in,
 			  uint32_t *data_out);
+
+/**
+ *  @brief Get current xgmi pstate
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] xgmi_pstate current xgmi pstate
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
+
+/**
+ *  @brief Get maximum operating temperature
+ *
+ *  @details This function will get critical temperature fault core
+ *  and HBM temperature.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] core_ctf_temp critical temp fault core in °C
+ *
+ *  @param[out] hbm_ctf_temp critical temp fault hbm in °C
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_max_operating_temp(uint8_t soc_num, uint16_t *core_ctf_temp,
+                                    uint16_t *hbm_ctf_temp);
+
+/**
+ *  @brief Get slow down temperature
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] slow_down_temp slow down temperature in °C
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_slow_down_temp(uint8_t soc_num, uint16_t *slow_down_temp);
+
+/**
+ *  @brief Get hbm device information
+ *
+ *  @details This function will get hbm device information i.e. device
+ *  vendor, part number and total memory size (GBs).
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] dev_info struct hbm_device_info contatining device vendor,
+ *  part number and total memory size (GBs).
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_hbm_dev_info(uint8_t soc_num,
+                              struct hbm_device_info *dev_info);
+
+/**
+ *  @brief Get PCIe statistics
+ *
+ *  @details This function will get PCIe statistics
+ *  including total transitions from L0 to recovery
+ *  state, total number of replays issued on the PCIe link,
+ *  total number of NAKs issued on the PCIe link by the device,
+ *  and total number of NAKs issued on the PCIe link by the
+ *  receiver.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] pcie_stat_select PCIe stat selector.
+ *  0 for L0 to recovery count, 1 for replay count,
+ *  2 for NAK sent count and 3 for NAK recieved count.
+ *
+ *  @param[out] pcie_stats pcie statistics
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_pciestats(uint8_t soc_num, uint32_t pcie_stat_select,
+                           uint32_t *pcie_stats);
+
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

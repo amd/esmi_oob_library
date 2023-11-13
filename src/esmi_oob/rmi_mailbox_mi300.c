@@ -459,3 +459,82 @@ oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in, uint32_t *data_out)
 {
 	return esmi_oob_read_mailbox(soc_num, GET_DIE_TYPE, data_in, data_out);
 }
+
+oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!xgmi_pstate)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_CURR_XGMI_PSTATE,
+				    DEFAULT_DATA, &buffer);
+	if (!ret)
+		*xgmi_pstate = buffer;
+
+	return ret;
+}
+
+oob_status_t get_max_operating_temp(uint8_t soc_num, uint16_t *core_ctf_temp,
+				    uint16_t *hbm_ctf_temp)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!core_ctf_temp || !hbm_ctf_temp)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_MAX_OP_TEMP,
+				    DEFAULT_DATA, &buffer);
+	if (!ret) {
+		*core_ctf_temp = buffer;
+		*hbm_ctf_temp = buffer >> WORD_BITS;
+	}
+
+	return ret;
+}
+
+
+oob_status_t get_slow_down_temp(uint8_t soc_num, uint16_t *slow_down_temp)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!slow_down_temp)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_SLOW_DOWN_TEMP,
+				    DEFAULT_DATA, &buffer);
+	if (!ret)
+		*slow_down_temp = buffer;
+
+	return ret;
+}
+
+oob_status_t get_hbm_dev_info(uint8_t soc_num,
+			      struct hbm_device_info *dev_info)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!dev_info)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_HBM_DEVICE_INFO,
+				    DEFAULT_DATA, &buffer);
+	if (!ret) {
+		dev_info->dev_vendor = buffer;
+		dev_info->part_num = extract_val(buffer, BIT(3));
+		dev_info->total_mem = extract_val(buffer, BIT(4));
+	}
+
+	return ret;
+}
+
+oob_status_t get_pciestats(uint8_t soc_num, uint32_t pcie_stat_select,
+                           uint32_t *pcie_stats)
+{
+	return esmi_oob_read_mailbox(soc_num, GET_PCIE_STATS, pcie_stat_select,
+				     pcie_stats);
+}
