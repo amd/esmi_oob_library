@@ -91,6 +91,30 @@ static int flag;
 /* Processor info */
 uint8_t p_type = 0;
 
+static oob_status_t validate_apml_sbtsi_module(uint8_t soc_num)
+{
+	bool is_sbtsi = false;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = validate_sbtsi_module(soc_num, &is_sbtsi);
+	if (ret || !is_sbtsi)
+		printf(RED" SBTSI module not present.Please install "
+		       "the module" RESET"\n");
+	return ret;
+}
+
+static oob_status_t validate_apml_sbrmi_module(uint8_t soc_num)
+{
+	bool is_sbrmi =false;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = validate_sbrmi_module(soc_num, &is_sbrmi);
+	if (ret || !is_sbrmi)
+		printf(RED" SBRMI module not present.Please install "
+		       "the module" RESET"\n");
+	return ret;
+}
+
 static oob_status_t get_platform_info(uint8_t soc_num,
 				      struct processor_info *plat_info,
 				      bool *rev_status)
@@ -466,12 +490,12 @@ static oob_status_t set_alert_config(uint8_t soc_num, int value)
 }
 
 static oob_status_t set_tsi_config(uint8_t soc_num, int value,
-				   const char check)
+				   uint16_t check)
 {
 	oob_status_t ret;
 
 	switch (check) {
-	case 'k':
+	case 1208:
 		ret = sbtsi_set_configwr(soc_num, value,
 					 ALERTMASK_MASK);
 		if (ret != OOB_SUCCESS) {
@@ -482,7 +506,7 @@ static oob_status_t set_tsi_config(uint8_t soc_num, int value,
 		}
 		printf("ALERT_L pin %s\n", value ? "Disabled" : "Enabled");
 		break;
-	case 'm':
+	case 1209:
 		ret = sbtsi_set_configwr(soc_num, value,
 					 RUNSTOP_MASK);
 		if (ret != OOB_SUCCESS) {
@@ -494,7 +518,7 @@ static oob_status_t set_tsi_config(uint8_t soc_num, int value,
 		printf("runstop bit %s\n", value ? "Comparisions Disabled"
 		       : "Comparisions Enabled");
 		break;
-	case 'n':
+	case 1210:
 		ret = sbtsi_set_configwr(soc_num, value,
 					   READORDER_MASK);
 		if (ret != OOB_SUCCESS) {
@@ -506,7 +530,7 @@ static oob_status_t set_tsi_config(uint8_t soc_num, int value,
 		printf("Atomic read bit %s\n", value ? "Decimal Latches "
 			"Integer" : "Integer Latches Decimal");
 		break;
-	case 'o':
+	case 1211:
 		ret = sbtsi_set_configwr(soc_num, value,
 					   ARA_MASK);
 		if (ret != OOB_SUCCESS) {
@@ -527,6 +551,10 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 	uint8_t *buffer;
 	oob_status_t ret;
 	bool is_rsdn = false;
+
+	ret = validate_apml_sbrmi_module(soc_num);
+	if (ret)
+		return ret;
 
 	printf("------------------------------------------------------------"
 		"----\n");
@@ -761,12 +789,19 @@ static oob_status_t get_apml_tsi_register_descriptions(uint8_t soc_num)
 	uint8_t intr;
 	int8_t intr_offset;
 	uint8_t id, buf;
+	bool is_sbtsi = false;
 	bool status = false;
 	oob_status_t ret;
 
-	ret = is_mi300A(soc_num, &status);
+	ret = validate_apml_sbtsi_module(soc_num);
 	if (ret)
 		return ret;
+	intr = 0;
+	ret = read_sbtsi_max_hbm_temp_int(soc_num, &intr);
+	if (ret)
+		return ret;
+	if (intr)
+		status = true;
 	usleep(APML_SLEEP);
 	ret = sbtsi_get_cputemp(soc_num, &temp_value[0]);
 	if (ret)
@@ -2749,19 +2784,19 @@ static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
 static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
-	uint8_t soc_num = 0;
+	uint8_t soc_num = 0, hbm_temp = 0;
 	oob_status_t ret;
 	bool rev_status = false;
 
-	ret = get_proc_type(soc_num, &rev_status);
-	if (ret && !rev_status) {
-		printf(RED"Note: Help section not available as platform "
-		       "identification failed, will not be able to \n"
-		       "run the RMI messages.\n"RESET);
-		return ret;
-	}
-
 	if (!strcmp(command, "mailbox") || !strcmp(command, "1")) {
+		ret = get_proc_type(soc_num, &rev_status);
+		if (ret && !rev_status) {
+			printf(RED"Note: Help section not available as platform "
+			       "identification failed, will not be able to \n"
+			       "run the RMI messages.\n"RESET);
+			return ret;
+		}
+
 		switch(p_type) {
 		case FAM_19_MOD_10:
 			get_common_mailbox_commands(exe_name);
@@ -2790,19 +2825,20 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 		get_rmi_commands(exe_name);
 	} else if (!strcmp(command, "sbtsi") || !strcmp(command, "3")) {
 
-
-		switch(p_type) {
-		case FAM_19_MOD_90:
+		/* Read hbm max temp to verify whether the platform is mi300 or not */
+		ret = read_sbtsi_max_hbm_temp_int(soc_num, &hbm_temp);
+		if (ret) {
+			printf(RED"Note: Help section not available as sbtsi module "
+			       "has failed, will not be able to \n"
+			       "run the TSI messages.\n"RESET);
+			return ret;
+		}
+		if (hbm_temp)
 			/* MI300A TSI commands */
 			get_mi300_tsi_commands(exe_name);
-			break;
-		default:
+		else
 			get_tsi_commands(exe_name);
-			if (ret && rev_status)
-				printf(RED"NOTE: Limited functionality has been displayed as platform "
-				       "identification has failed. Please recover the RMI device."RESET);
-			break;
-		}
+
 	} else if (!strcmp(command, "reg-access") || !strcmp(command, "4")) {
 		get_reg_access_commands(exe_name);
 	} else if (!strcmp(command, "cpuid") || !strcmp(command, "5")) {
@@ -3085,6 +3121,9 @@ static void show_smi_parameters(uint8_t soc_num)
 {
 	oob_status_t ret;
 
+	ret = validate_apml_sbrmi_module(soc_num);
+	if (ret)
+		return;
 	ret = show_apml_mailbox_cmds(soc_num);
 	if (ret)
 		printf("Failed: For RMI Err[%d]: %s\n", ret,
@@ -3204,18 +3243,18 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setapmlsocketboostlimit", required_argument,	0,	'a'},
 		{"set_and_verify_dramthrottle", required_argument, 0,   'l'},
 		{"showrmiregisters", no_argument,	&flag,   1 },
-		{"showtsiregisters", no_argument,	&flag,   2 },
-		{"set_verify_updaterate",   required_argument,	0,	'u'},
-		{"sethightempthreshold", required_argument,	0,	'X'},
-		{"setlowtempthreshold",	required_argument,	0,	'w'},
-		{"settempoffset",	required_argument,	0,	'x'},
-		{"settimeoutconfig",	required_argument,	0,	'y'},
-		{"setalertthreshold",	required_argument,	0,	'g'},
-		{"setalertconfig",	required_argument,	0,	'j'},
-		{"setalertmask",	required_argument,	0,	'k'},
-		{"setrunstop",		required_argument,	0,	'm'},
-		{"setreadorder",	required_argument,	0,	'n'},
-		{"setara",		required_argument,	0,	'o'},
+		{"showtsiregisters", no_argument,	&flag,   1200 },
+		{"set_verify_updaterate",   required_argument,	&flag,	1201},
+		{"sethightempthreshold", required_argument,	&flag,	1202},
+		{"setlowtempthreshold",	required_argument,	&flag,	1203},
+		{"settempoffset",	required_argument,	&flag,	1204},
+		{"settimeoutconfig",	required_argument,	&flag,	1205},
+		{"setalertthreshold",	required_argument,	&flag,	1206},
+		{"setalertconfig",	required_argument,	&flag,	1207},
+		{"setalertmask",	required_argument,	&flag,	1208},
+		{"setrunstop",		required_argument,	&flag,	1209},
+		{"setreadorder",	required_argument,	&flag,	1210},
+		{"setara",		required_argument,	&flag,	1211},
 		{"setdimmpower",			required_argument,	0,	'P'},
 		{"setdimmthermalsensor",		required_argument,	0,	'T'},
 		{"showdimmpower",			required_argument,	0,	'O'},
@@ -3329,11 +3368,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
 	soc_num = atoi(argv[1]);
-	/* Check if  the SBRMI and SBTSI modules are present */
-	/* for the given socket */
-	validate_modules(soc_num, &is_sbrmi, &is_sbtsi);
-	if (!is_sbrmi && !is_sbtsi)
-		return OOB_SUCCESS;
 
 	if (argc == 2) {
 		show_smi_parameters(soc_num);
@@ -3346,21 +3380,33 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	while ((opt = getopt_long(argc, argv, helperstring,
 				  long_options, &long_index)) != -1) {
+		if (opt == 0 && (*long_options[long_index].flag >= 1200
+		    && *long_options[long_index].flag <=1211)) {
+			ret = validate_apml_sbtsi_module(soc_num);
+			if (ret) {
+				show_smi_end_message();
+				return ret;
+			}
+		} else if (opt == 0 && *long_options[long_index].flag == 31) {
+			validate_modules(soc_num, &is_sbrmi, &is_sbtsi);
+			if (!is_sbtsi || !is_sbrmi) {
+				show_smi_end_message();
+				return OOB_SUCCESS;
+			}
+		} else {
+			if (opt != '?') {
+				ret = validate_apml_sbrmi_module(soc_num);
+				if (ret) {
+					show_smi_end_message();
+					return ret;
+				}
+			}
+		}
 	if (opt == 's' ||
 	    opt == 'b' ||
 	    opt == 'a' ||
 	    opt == 'l' ||
 	    opt == 'd' ||
-	    opt == 'y' ||
-	    opt == 'g' ||
-	    opt == 'k' ||
-	    opt == 'm' ||
-	    opt == 'n' ||
-	    opt == 'o' ||
-	    opt == 'j' ||
-	    opt == 'u' ||
-	    opt == 'X' ||
-	    opt == 'x' ||
 	    opt == 'R' ||
 	    opt == 'D' ||
 	    opt == 'F' ||
@@ -3375,7 +3421,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    opt == 'U' ||
 	    opt == 'J' ||
 	    opt == 'W' ||
-	    opt == 'w' ||
 	    opt == 0 && ((*long_options[long_index].flag) == 18 ||
 			 *(long_options[long_index].flag) == 19 ||
 			 (*long_options[long_index].flag) == 31 ||
@@ -3383,7 +3428,18 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 35 ||
 			 (*long_options[long_index].flag) == 41 ||
 			 (*long_options[long_index].flag) == 46 ||
-			 (*long_options[long_index].flag) == 48)) {
+			 (*long_options[long_index].flag) == 48 ||
+			 (*long_options[long_index].flag) == 1201 ||
+			 (*long_options[long_index].flag) == 1202 ||
+			 (*long_options[long_index].flag) == 1203 ||
+			 (*long_options[long_index].flag) == 1204 ||
+			 (*long_options[long_index].flag) == 1205 ||
+			 (*long_options[long_index].flag) == 1206 ||
+			 (*long_options[long_index].flag) == 1207 ||
+			 (*long_options[long_index].flag) == 1208 ||
+			 (*long_options[long_index].flag) == 1209 ||
+			 (*long_options[long_index].flag) == 1210 ||
+			 (*long_options[long_index].flag) == 1211)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
 			printf("\nOption '-%c' require an argument"
@@ -3399,8 +3455,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			       " hex value\n\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
-		} else if (opt == 'u' || opt == 'X' || opt == 'w' ||
-		     opt == 'x') {
+		} else if (opt == 0
+			   && (*long_options[long_index].flag == 1201
+			   || *long_options[long_index].flag == 1202
+			   || *long_options[long_index].flag == 1203
+			   || *long_options[long_index].flag == 1204)) {
 			strtof(argv[optind - 1], &end);
 			if (*end != '\0') {
 				printf("\nOption '-%c' require argument as valid"
@@ -3615,7 +3674,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	case 0:
 		if (*(long_options[long_index].flag) == 1)
 			get_apml_rmi_access(soc_num);
-		else if (*(long_options[long_index].flag) == 2) {
+		else if (*(long_options[long_index].flag) == 1200) {
 			ret = get_apml_tsi_access(soc_num);
 			if (ret)
 				return ret;
@@ -3820,6 +3879,57 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = strtoul(argv[optind - 1], &end, 16);
 			val2 = atoi(argv[optind++]);
 			write_rmi_register(soc_num, val1, val2);
+		} else if (*(long_options[long_index].flag) == 51) {
+			/* show RTC data */
+			apml_get_rtc(soc_num);
+		} else if (*(long_options[long_index].flag) == 1201) {
+			uprate = atof(argv[optind - 1]);
+			set_and_verify_apml_socket_uprate(soc_num, uprate);
+			break;
+		} else if (*(long_options[long_index].flag) == 1202) {
+			temp = atof(argv[optind - 1]);
+			set_high_temp_threshold(soc_num, temp);
+			break;
+		} else if (*(long_options[long_index].flag) == 1203) {
+			temp = atof(argv[optind - 1]);
+			set_low_temp_threshold(soc_num, temp);
+			break;
+		} else if (*(long_options[long_index].flag) == 1204) {
+			temp = atof(argv[optind - 1]);
+			set_temp_offset(soc_num, temp);
+			break;
+		} else if (*(long_options[long_index].flag) == 1205) {
+			value = atoi(argv[optind - 1]);
+			set_timeout_config(soc_num, value);
+			break;
+		} else if (*(long_options[long_index].flag) == 1206) {
+			value = atoi(argv[optind - 1]);
+			set_alert_threshold(soc_num, value);
+			break;
+		} else if (*(long_options[long_index].flag) == 1207) {
+			value = atoi(argv[optind - 1]);
+			set_alert_config(soc_num, value);
+			break;
+		} else if (*(long_options[long_index].flag) == 1208) {
+			value = atoi(argv[optind - 1]);
+			set_tsi_config(soc_num, value,
+				       *long_options[long_index].flag);
+			break;
+		} else if (*(long_options[long_index].flag) == 1209) {
+			value = atoi(argv[optind - 1]);
+			set_tsi_config(soc_num, value,
+				       *long_options[long_index].flag);
+			break;
+		} else if (*(long_options[long_index].flag) == 1210) {
+			value = atoi(argv[optind - 1]);
+			set_tsi_config(soc_num, value,
+				       *long_options[long_index].flag);
+			break;
+		} else if (*(long_options[long_index].flag) == 1211) {
+			value = atoi(argv[optind - 1]);
+			set_tsi_config(soc_num, value,
+				       *long_options[long_index].flag);
+			break;
 		}
 		break;
 	case 'Y':
@@ -3857,50 +3967,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	case 'l':
 		dram_thr = atoi(argv[optind - 1]);
 		set_and_verify_dram_throttle(soc_num, dram_thr);
-		break;
-	case 'u':
-		uprate = atof(argv[optind - 1]);
-		set_and_verify_apml_socket_uprate(soc_num, uprate);
-		break;
-	case 'X':
-		temp = atof(argv[optind - 1]);
-		set_high_temp_threshold(soc_num, temp);
-		break;
-	case 'w':
-		temp = atof(argv[optind - 1]);
-		set_low_temp_threshold(soc_num, temp);
-		break;
-	case 'x':
-		temp = atof(argv[optind - 1]);
-		set_temp_offset(soc_num, temp);
-		break;
-	case 'y':
-		value = atoi(argv[optind - 1]);
-		set_timeout_config(soc_num, value);
-		break;
-	case 'g':
-		value = atoi(argv[optind - 1]);
-		set_alert_threshold(soc_num, value);
-		break;
-	case 'j':
-		value = atoi(argv[optind - 1]);
-		set_alert_config(soc_num, value);
-		break;
-	case 'k':
-		value = atoi(argv[optind - 1]);
-		set_tsi_config(soc_num, value, 'k');
-		break;
-	case 'm':
-		value = atoi(argv[optind - 1]);
-		set_tsi_config(soc_num, value, 'm');
-		break;
-	case 'n':
-		value = atoi(argv[optind - 1]);
-		set_tsi_config(soc_num, value, 'n');
-		break;
-	case 'o':
-		value = atoi(argv[optind - 1]);
-		set_tsi_config(soc_num, value, 'o');
 		break;
 	case 'P':
 		/* Write BMC reported dim power and update rate value to */
