@@ -88,6 +88,8 @@
 /* DRAM CECC leak rate mask */
 #define DRAM_CECC_LEAK_RATE_MASK	0x1F
 static int flag;
+/* Processor info */
+uint8_t p_type = 0;
 
 static oob_status_t get_platform_info(uint8_t soc_num,
 				      struct processor_info *plat_info)
@@ -2438,44 +2440,32 @@ static void show_usage(char *exe_name)
 	printf("\t6. recovery\n");
 }
 
-static void get_mailbox_commands(char *exe_name)
+static void fam_19_common_mailbox_commands(void)
 {
-	printf("Usage: %s  [SOC_NUM] [Option]"
-	       "\nOption:\n"
-	       "\n< MAILBOX COMMANDS [params] >:\n"
-	       "  --showmailboxsummary\t\t\t\t\t\t\t\t "
-	       "Get summary of the mailbox commands\n"
-	       "  -p, (--showpower)\t\t\t\t\t\t\t\t "
-	       "Get Power for a given socket in Watts\n"
-	       "  -t, (--showtdp)\t\t\t\t\t\t\t\t "
-	       "Get TDP for a given socket in Watts\n"
-	       "  -s, (--setpowerlimit)\t\t\t  [POWER]\t\t\t\t "
-	       "Set powerlimit for a given socket in mWatts\n"
-	       "  -b, (--showboostlimit)\t\t  [THREAD]\t\t\t\t "
-	       "Get APML and BIOS boostlimit for a given core index "
-	       "in MHz\n"
-	       "  -d, (--setapmlboostlimit)\t\t  [THREAD]"
-	       "[BOOSTLIMIT]\t\t\t Set APML boostlimit for a given "
-	       "core in MHz\n"
-	       "  -a, (--setapmlsocketboostlimit)\t  [BOOSTLIMIT]"
-	       "\t\t\t\t Set APML boostlimit for all cores in a "
-	       "socket in MHz\n"
-	       "  --showddrbandwidth\t\t\t\t\t\t\t\t Show "
-	       "DDR Bandwidth of a system\n"
-	       "  --set_and_verify_dramthrottle\t\t  [0 to 80%%]"
-	       "\t\t\t\t Set DRAM THROTTLE for a given socket\n"
+	printf("  --shownbioerrorloggingregister\t  "
+	       "[QUADRANT(HEX)][OFFSET(HEX)]\t\t Show nbio error "
+	       "logging register\n");
+}
+
+static void fam_19_mod_00_specific_mailbox_commands(void)
+{
+	printf("  --showvddiomempower\t\t\t  \t\t\t\t\t "
+	       "Show vddiomem power");
+}
+
+static void fam_19_mod_10_mailbox_commands(void)
+{
+	printf("  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
+	       " fuse data\n"
+	       "  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
+	       "/summary)] Get post code for the given offset or"
+	       " recent 8 offsets\n"
 	       "  --setdimmpower\t\t\t  [DIMM_ADDR][POWER(mW)]"
 	       "[UPDATERATE(ms)] Set dimm power reported"
 	       " by bmc\n"
 	       "  --setdimmthermalsensor\t\t  [DIMM_ADDR][TEMP(°C)]"
 	       "[UPDATERATE(ms)]  Set dimm temperature "
 	       "reported by bmc\n"
-	       "  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
-	       "Show per dimm power consumption\n"
-	       "  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
-	       "\t Show per dimm thermal sensor\n"
-	       "  --showdimmtemprangeandrefreshrate\t  [DIMM_ADDR]"
-	       "\t\t\t\t Show per dimm temp range and refresh rate\n"
 	       "  --showPCIeconfigspacedata\t\t  [SEGMENT][OFFSET]\n"
 	       "\t\t\t\t\t  [BUS(HEX)][DEVICE(HEX)][FUNC]\t\t Show "
 	       "32 bit data from extended PCI config space\n"
@@ -2487,6 +2477,12 @@ static void get_mailbox_commands(char *exe_name)
 	       "offset\n"
 	       "  --showfchresetreason\t\t\t  [FCHID(0 or 1)]\t\t"
 	       "\t Show previous reset reason from FCH register\n"
+	       "  --showdimmtemprangeandrefreshrate\t  [DIMM_ADDR]"
+	       "\t\t\t\t Show per dimm temp range and refresh rate\n"
+	       "  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
+	       "Show per dimm power consumption\n"
+	       "  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
+	       "\t Show per dimm thermal sensor\n"
 	       "  --showsktfreqlimit\t\t\t\t\t\t\t\t "
 	       "Show per socket current active freq limit\n"
 	       "  --showcclklimit\t\t\t  [THREAD]\t\t\t\t "
@@ -2526,44 +2522,34 @@ static void get_mailbox_commands(char *exe_name)
 	       "Show runnng average power on specified core\n"
 	       "  --showraplpkg\t\t\t\t  \t\t\t\t\t "
 	       "Show running average power on pkg\n"
+	       "  --showprocbasefreq\t\t\t  \t\t\t\t\t "
+	       "Show processor base frequency\n"
+	       "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "Set PCIe link rate control\n"
+	       "  --setpwrefficiencymode\t\t  [MODE(0,1,2)]\t\t\t\t "
+	       "Set power efficiency profile policy\n"
 	       "  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
 	       "[MIN_PSTATE]\t\t Set data fabric pstate range, valid "
 	       "value 0 - 2. max pstate <= min pstate\n"
-	       "  --showiodbist\t\t\t\t  \t\t\t\t\t "
-	       "Show IOD bist status\n"
-	       "  --showccdbist\t\t\t\t  [CCDINSTANCE]\t\t\t\t "
-	       "Show CCD bist status\n"
-	       "  --showccxbist\t\t\t\t  [CCXINSTANCE]\t\t\t\t "
-	       "Show CCX bist status\n"
-	       "  --shownbioerrorloggingregister\t  "
-	       "[QUADRANT(HEX)][OFFSET(HEX)]\t\t Show nbio error "
-	       "logging register\n"
-	       "  --showdramthrottle\t\t\t  \t\t\t\t\t "
-	       "Show dram throttle\n"
-	       "  --showprochotstatus\t\t\t  \t\t\t\t\t "
-	       "Show prochot status\n"
-	       "  --showprochotresidency\t\t  \t\t\t\t\t "
-	       "Show prochot residency\n"
 	       "  --showlclkdpmlevelrange\t\t  [NBIOID(0~3)]\t\t\t\t "
 	       "Show LCLK DPM level range\n"
 	       "  --showucoderevision\t\t\t  \t\t\t\t\t "
 	       "Show micro code revision number\n"
-	       "  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
-	       "Request warm reset after sync flood\n"
 	       "  --rasoverridedelay\t\t\t"
 	       "  [DELAYVALUE(5 -120 mins)\n\t\t\t\t\t  "
 	       "[DISABLEDELAY(0 - 1)][STOPDELAY(0 -1)] "
 	       "Override delay reset cpu on sync flood\n"
-	       "  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
-	       "/summary)] Get post code for the given offset or"
-	       " recent 8 offsets\n"
-	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
-	       "Show consumed power\n"
+	       "  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
+	       "Request warm reset after sync flood\n"
 	       "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
 	       "Show RAS DF error validity check for a given blockID\n"
 	       "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
-	       "Show RAS DF error dump\n"
-	       "  --showrtc\t\t\t\t\t\t\t\t	 Show RTC timer value\n"
+	       "Show RAS DF error dump\n");
+}
+
+static void fam_1A_mod_00_mailbox_commands(void)
+{
+	printf("  --showrtc\t\t\t\t\t\t\t\t	 Show RTC timer value\n "
 	       "  --showrasrterrvalidityck\t\t  [ERR_CATERGORY(0-2)]\t\t\t "
 	       "BMC RAS runtime error validity check\n"
 	       "  --showrasrterrinfo\t\t\t  [OFFSET][CATEGORY][VALID_INST]\t "
@@ -2577,13 +2563,53 @@ static void get_mailbox_commands(char *exe_name)
 	       "\n\t\t\t\t\t  [CORE_MCA_ERR_RPRT_EN]"
 	       "\t\t Configures OOB state infrastructure in SoC\n"
 	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
-	       "Show BMC ras oob configuration\n"
-	       "  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
-	       " fuse data\n"
+	       "Show BMC ras oob configuration\n");
+}
+
+static void get_common_mailbox_commands(char *exe_name)
+{
+	printf("Usage: %s  [SOC_NUM] [Option]"
+	       "\nOption:\n"
+	       "\n< MAILBOX COMMANDS [params] >:\n"
+	       "  --showmailboxsummary\t\t\t\t\t\t\t\t "
+	       "Get summary of the mailbox commands\n"
+	       "  -p, (--showpower)\t\t\t\t\t\t\t\t "
+	       "Get Power for a given socket in Watts\n"
+	       "  -t, (--showtdp)\t\t\t\t\t\t\t\t "
+	       "Get TDP for a given socket in Watts\n"
+	       "  -s, (--setpowerlimit)\t\t\t  [POWER]\t\t\t\t "
+	       "Set powerlimit for a given socket in mWatts\n"
+	       "  -b, (--showboostlimit)\t\t  [THREAD]\t\t\t\t "
+	       "Get APML and BIOS boostlimit for a given core index "
+	       "in MHz\n"
+	       "  -d, (--setapmlboostlimit)\t\t  [THREAD]"
+	       "[BOOSTLIMIT]\t\t\t Set APML boostlimit for a given "
+	       "core in MHz\n"
+	       "  -a, (--setapmlsocketboostlimit)\t  [BOOSTLIMIT]"
+	       "\t\t\t\t Set APML boostlimit for all cores in a "
+	       "socket in MHz\n"
+	       "  --showdramthrottle\t\t\t  \t\t\t\t\t "
+	       "Show dram throttle\n"
+	       "  --set_and_verify_dramthrottle\t\t  [0 to 80%%]"
+	       "\t\t\t\t Set DRAM THROTTLE for a given socket\n"
+	       "  --showprochotstatus\t\t\t  \t\t\t\t\t "
+	       "Show prochot status\n"
+	       "  --showprochotresidency\t\t  \t\t\t\t\t "
+	       "Show prochot residency\n"
+	       "  --showiodbist\t\t\t\t  \t\t\t\t\t "
+	       "Show IOD bist status\n"
+	       "  --showccdbist\t\t\t\t  [CCDINSTANCE]\t\t\t\t "
+	       "Show CCD bist status\n"
+	       "  --showccxbist\t\t\t\t  [CCXINSTANCE]\t\t\t\t "
+	       "Show CCX bist status\n"
 	       "  --showcclkfreqlimit\t\t\t\t\t\t\t\t Get "
 	       "cclk freqlimit for a given socket in MHz\n"
 	       "  --showc0residency\t\t\t\t\t\t\t\t Show "
-	       "c0_residency for a given socket\n", exe_name);
+	       "c0_residency for a given socket\n"
+	       "  --showddrbandwidth\t\t\t\t\t\t\t\t Show "
+	       "DDR Bandwidth of a system\n"
+	       "  --showpowerconsumed\t\t\t  \t\t\t\t\t "
+	       "Show consumed power\n", exe_name);
 }
 
 static void get_rmi_commands(char *exe_name)
@@ -2678,13 +2704,57 @@ static void get_recovery_commands(char *exe_name)
 	       " SBRMI, 1 -> SBTSI\n", exe_name);
 }
 
+static oob_status_t get_proc_type(uint8_t soc_num)
+{
+	uint8_t rev = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	ret = read_sbrmi_revision(soc_num, &rev);
+	if (ret)
+		return ret;
+	if (rev == 0x10) {
+		p_type = LEGACY_PLATFORMS;
+		return ret;
+	}
+
+	ret = get_platform_info(soc_num, plat_info);
+	if (ret)
+		return ret;
+	/* Family 1A and Model in 00 - 0Fh */
+	if (plat_info->family == 0x1A) {
+		switch (plat_info->model) {
+		case 0x00 ... 0x0F:
+			p_type = FAM_1A_MOD_00;
+			break;
+		default:
+			p_type = LEGACY_PLATFORMS;
+		}
+	} else if (plat_info->family == 0x19) {
+		switch (plat_info->model) {
+		case 0x10 ... 0x1F:
+			p_type = FAM_19_MOD_10;
+			break;
+		case 0x90 ... 0x9F:
+			p_type = FAM_19_MOD_90;
+			break;
+		default:
+			p_type = LEGACY_PLATFORMS;
+			break;
+		}
+	} else {
+		p_type = LEGACY_PLATFORMS;
+	}
+	return ret;
+}
+
 static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
 	uint8_t soc_num = 0;
+	uint8_t rev = 0;
 	oob_status_t ret;
 
-	ret = get_platform_info(soc_num, plat_info);
+	ret = get_proc_type(soc_num);
 	if (ret) {
 		printf("Note: Help section not available as platform "
 		       "identification failed, will not be able to \n"
@@ -2693,35 +2763,40 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 	}
 
 	if (!strcmp(command, "mailbox") || !strcmp(command, "1")) {
-		if (plat_info->family == 0x19) {
-			switch (plat_info->model) {
-			case 0x90 ... 0x9F:
-				/* MI300A mailbox commands */
-				get_mi300_mailbox_commands(exe_name);
-				break;
-			default:
-				get_mailbox_commands(exe_name);
-				break;
-			}
-		} else {
-			get_mailbox_commands(exe_name);
+		switch(p_type) {
+		case FAM_19_MOD_10:
+			get_common_mailbox_commands(exe_name);
+			fam_19_common_mailbox_commands();
+			fam_19_mod_10_mailbox_commands();
+			break;
+		case FAM_19_MOD_90:
+			// MI300A mailbox commands
+			get_mi300_mailbox_commands(exe_name);
+			break;
+		case FAM_1A_MOD_00:
+			get_common_mailbox_commands(exe_name);
+			fam_19_mod_10_mailbox_commands();
+			fam_1A_mod_00_mailbox_commands();
+			break;
+		default:
+			get_common_mailbox_commands(exe_name);
+			fam_19_common_mailbox_commands();
+			fam_19_mod_00_specific_mailbox_commands();
+			break;
 		}
 	} else if (!strcmp(command, "sbrmi") || !strcmp(command, "2")) {
 		get_rmi_commands(exe_name);
 	} else if (!strcmp(command, "sbtsi") || !strcmp(command, "3")) {
 
-		if (plat_info->family == 0x19) {
-			switch (plat_info->model) {
-			case 0x90 ... 0x9F:
-				/* MI300A TSI commands */
-				get_mi300_tsi_commands(exe_name);
-				break;
-			default:
-				get_tsi_commands(exe_name);
-				break;
-			}
-		} else {
+
+		switch(p_type) {
+		case FAM_19_MOD_90:
+			/* MI300A TSI commands */
+			get_mi300_tsi_commands(exe_name);
+			break;
+		default:
 			get_tsi_commands(exe_name);
+			break;
 		}
 	} else if (!strcmp(command, "reg-access") || !strcmp(command, "4")) {
 		get_reg_access_commands(exe_name);
