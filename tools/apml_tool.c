@@ -92,32 +92,36 @@ static int flag;
 uint8_t p_type = 0;
 
 static oob_status_t get_platform_info(uint8_t soc_num,
-				      struct processor_info *plat_info)
+				      struct processor_info *plat_info,
+				      bool *rev_status)
 {
 	uint8_t rev = 0;
-	oob_status_t ret = 0;
+	oob_status_t ret = OOB_SUCCESS;
 
 	ret = read_sbrmi_revision(soc_num, &rev);
 	if (!ret) {
+		*rev_status = true;
 		if (rev != 0x10)
 			ret = esmi_get_processor_info(soc_num, plat_info);
+		return ret;
 	}
-
+	*rev_status = false;
 	return ret;
 }
 
 static oob_status_t is_mi300A(uint8_t soc_num, bool *status)
 {
-	struct processor_info plat_info[1];
+	struct processor_info plat_info = {0};
 	oob_status_t ret;
+	bool rev_status = false;
 
-	ret = get_platform_info(soc_num, plat_info);
-	if (ret) {
+	ret = get_platform_info(soc_num, &plat_info, &rev_status);
+	if (ret && !rev_status) {
 		return ret;
 	}
 
-	if (plat_info->family == 0x19) {
-		switch (plat_info->model) {
+	if (plat_info.family == 0x19) {
+		switch (plat_info.model) {
 		case 0x90 ... 0x9F:
 			/* MI300 A platform */
 			*status = true;
@@ -128,7 +132,7 @@ static oob_status_t is_mi300A(uint8_t soc_num, bool *status)
 		}
 	}
 
-	return ret;
+	return OOB_SUCCESS;
 }
 
 static oob_status_t apml_get_sockpower(uint8_t soc_num)
@@ -2704,22 +2708,17 @@ static void get_recovery_commands(char *exe_name)
 	       " SBRMI, 1 -> SBTSI\n", exe_name);
 }
 
-static oob_status_t get_proc_type(uint8_t soc_num)
+static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
 {
 	uint8_t rev = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = read_sbrmi_revision(soc_num, &rev);
-	if (ret)
-		return ret;
-	if (rev == 0x10) {
-		p_type = LEGACY_PLATFORMS;
+	ret = get_platform_info(soc_num, plat_info, rev_status);
+	if (ret) {
+		if (*rev_status)
+			p_type = LEGACY_PLATFORMS;
 		return ret;
 	}
-
-	ret = get_platform_info(soc_num, plat_info);
-	if (ret)
-		return ret;
 	/* Family 1A and Model in 00 - 0Fh */
 	if (plat_info->family == 0x1A) {
 		switch (plat_info->model) {
@@ -2751,14 +2750,14 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
 	uint8_t soc_num = 0;
-	uint8_t rev = 0;
 	oob_status_t ret;
+	bool rev_status = false;
 
-	ret = get_proc_type(soc_num);
-	if (ret) {
-		printf("Note: Help section not available as platform "
+	ret = get_proc_type(soc_num, &rev_status);
+	if (ret && !rev_status) {
+		printf(RED"Note: Help section not available as platform "
 		       "identification failed, will not be able to \n"
-		       "run the RMI messages.Please recover RMI device.\n");
+		       "run the RMI messages.\n"RESET);
 		return ret;
 	}
 
@@ -2782,6 +2781,9 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			get_common_mailbox_commands(exe_name);
 			fam_19_common_mailbox_commands();
 			fam_19_mod_00_specific_mailbox_commands();
+			if (ret && rev_status)
+				printf(RED"\nNOTE: Limited functionality has been displayed as platform "
+				       "identification has failed. Please recover the RMI device."RESET);
 			break;
 		}
 	} else if (!strcmp(command, "sbrmi") || !strcmp(command, "2")) {
@@ -2796,6 +2798,9 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			break;
 		default:
 			get_tsi_commands(exe_name);
+			if (ret && rev_status)
+				printf(RED"NOTE: Limited functionality has been displayed as platform "
+				       "identification has failed. Please recover the RMI device."RESET);
 			break;
 		}
 	} else if (!strcmp(command, "reg-access") || !strcmp(command, "4")) {
@@ -2856,7 +2861,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	if (ret) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
-		return OOB_SUCCESS;
+		return ret;
 	}
 
 	usleep(APML_SLEEP);
