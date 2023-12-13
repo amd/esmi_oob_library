@@ -129,7 +129,7 @@ extern const uint16_t sbtsi_addr[MAX_DEV_COUNT];	//!< SBTSI addresses //
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint16_t reg_offset,
 				char *file_name, uint8_t *buffer);
 
 /**
@@ -151,7 +151,7 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint16_t reg_offset,
 				 char *file_name, uint8_t value);
 
 /**
@@ -169,7 +169,7 @@ oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint16_t reg_offset,
 				    uint8_t *buffer);
 /**
  *  @brief Reads data for the given TSI register.
@@ -204,7 +204,7 @@ oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint16_t reg_offset,
 				     uint8_t value);
 
 /**

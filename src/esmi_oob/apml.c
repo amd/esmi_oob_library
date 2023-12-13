@@ -133,7 +133,7 @@ oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 	return errno_to_oob_status(ret);
 }
 
-oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint16_t reg_offset,
 				    uint8_t *buffer)
 {
 	struct apml_message msg = {0};
@@ -145,7 +145,7 @@ oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint8_t reg_offset,
 	/* Readi/write register command is 0x1002 */
 	msg.cmd = 0x1002;
 	/* Assign register_offset to msg.data_in[0] */
-	msg.data_in.reg_in[0] = reg_offset;
+	msg.data_in.mb_in[0] = reg_offset;
 	/* Assign 1  to the msg.data_in[7] for the read operation */
 	msg.data_in.reg_in[7] = 1;
 
@@ -179,7 +179,7 @@ oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
 	return ret;
 }
 
-oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint16_t reg_offset,
 				     uint8_t value)
 {
 	struct apml_message msg = {0};
@@ -187,7 +187,7 @@ oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint8_t reg_offset,
 	/* Read/Write register command is 0x1002 */
 	msg.cmd = 0x1002;
 	/* Assign register_offset to msg.data_in[0] */
-	msg.data_in.reg_in[0] = reg_offset;
+	msg.data_in.mb_in[0] = reg_offset;
 
 	/* Assign value to write to the data_in[4] */
 	msg.data_in.reg_in[4] = value;
@@ -216,7 +216,7 @@ oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
 }
 
 oob_status_t esmi_oob_read_byte(uint8_t soc_num,
-				uint8_t reg_offset,
+				uint16_t reg_offset,
 				char *file_name,
 				uint8_t *buffer)
 {
@@ -233,7 +233,7 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num,
 }
 
 oob_status_t esmi_oob_write_byte(uint8_t soc_num,
-				 uint8_t reg_offset,
+				 uint16_t reg_offset,
 				 char *file_name,
 				 uint8_t value)
 {
