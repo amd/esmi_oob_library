@@ -100,6 +100,7 @@ typedef enum {
 	FAM_19_MOD_10,
 	FAM_19_MOD_90,
 	FAM_1A_MOD_00,
+	FAM_1A_MOD_10,
 } PROC_DETAILS;
 
 #define SBRMI		"sbrmi"		//!< SBRMI module //
