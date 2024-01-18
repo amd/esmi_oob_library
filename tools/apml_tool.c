@@ -2761,6 +2761,9 @@ static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
 		case 0x00 ... 0x0F:
 			p_type = FAM_1A_MOD_00;
 			break;
+		case 0x10 ... 0x1F:
+			p_type = FAM_1A_MOD_10;
+			break;
 		default:
 			p_type = LEGACY_PLATFORMS;
 		}
@@ -2809,6 +2812,7 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			get_mi300_mailbox_commands(exe_name);
 			break;
 		case FAM_1A_MOD_00:
+		case FAM_1A_MOD_10:
 			get_common_mailbox_commands(exe_name);
 			fam_19_mod_10_mailbox_commands();
 			fam_1A_mod_00_mailbox_commands();
