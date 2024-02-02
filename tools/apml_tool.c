@@ -2456,6 +2456,44 @@ static oob_status_t apml_get_rtc(uint8_t soc_num)
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_dimm_serial_num(uint8_t soc_num, uint8_t dimm_addr)
+{
+	oob_status_t ret = OOB_SUCCESS;
+	uint32_t serial_num = 0x0;
+
+	ret = get_dimm_serial_num(soc_num, dimm_addr, &serial_num);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get dimm addr, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("-----------------------------------\n");
+	printf("| DIMM addr | DIMM serial number  |\n");
+	printf("|---------------------------------|\n");
+	printf("| 0x%x      |  0x%-16x |\n", dimm_addr, serial_num);
+	printf("-----------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
+static oob_status_t apml_get_spd_sb_data(uint8_t soc_num, struct dimm_spd_d_in spd_d_in)
+{
+	oob_status_t ret = OOB_SUCCESS;
+	uint32_t spd_data = 0x0;
+
+	ret = read_dimm_spd_register(soc_num, spd_d_in, &spd_data);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get spd data, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("------------------------------\n");
+	printf("| DIMM spd data | 0x%-8x |\n", spd_data);
+	printf("------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2603,7 +2641,12 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\n\t\t\t\t\t  [CORE_MCA_ERR_RPRT_EN]"
 	       "\t\t Configures OOB state infrastructure in SoC\n"
 	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
-	       "Show BMC ras oob configuration\n");
+	       "Show BMC ras oob configuration\n"
+	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR]\t\t\t\t"
+	       " Show DIMM serial number\n"
+	       "  --getspddata\t\t\t\t  [DIMM_ADDR][LID]"
+	       "\n\t\t\t\t\t  [REG_OFFSET][REG_SPACE] \t\t"
+	       " Show SPD SB data\n");
 }
 
 static void get_common_mailbox_commands(char *exe_name)
@@ -3211,6 +3254,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct pci_address pci_addr;
 	struct dimm_power dp_soc_num;
 	struct dimm_thermal dt_soc_num;
+	struct dimm_spd_d_in spd_in;
 	uint8_t soc_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -3319,11 +3363,13 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showcclkfreqlimit",		no_argument,		&flag,  43},
 		{"showc0residency",		no_argument,		&flag,  44},
 		{"showdependency",		no_argument,		&flag,  45},
-		{"showrtc",			no_argument,		&flag,  51},
 		{"readtsiregister",		required_argument,	&flag,	46},
 		{"writetsiregister",		required_argument,	&flag,	47},
 		{"readrmiregister",		required_argument,	&flag,	48},
 		{"writermiregister",		required_argument,	&flag,	49},
+		{"showrtc",			no_argument,		&flag,  51},
+		{"getdimmserialnum",		required_argument,	&flag,	53},
+		{"getspddata",			required_argument,	&flag,	54},
 		{0,			0,			0,	0},
 	};
 
@@ -3434,6 +3480,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 41 ||
 			 (*long_options[long_index].flag) == 46 ||
 			 (*long_options[long_index].flag) == 48 ||
+			 (*long_options[long_index].flag) == 53 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -3454,7 +3501,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 
 		if ((opt == 0 && (*long_options[long_index].flag == 46
-		     || *long_options[long_index].flag == 48))
+		     || *long_options[long_index].flag == 48
+		     ||	*long_options[long_index].flag == 53))
 		     && validate_number(argv[optind - 1], 16)) {
 			printf("Option  '-%c' requires argument as valid"
 			       " hex value\n\n", opt);
@@ -3476,7 +3524,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			if (opt != 'O' && opt != 'E' && opt != 'S'
 			    && opt != 'T' && opt !='P'
 			    && (opt == 0 && (*long_options[long_index].flag) != 46
-			    && (*long_options[long_index].flag) != 48)
+			    && (*long_options[long_index].flag) != 48
+			    && (*long_options[long_index].flag) != 53)
 			    && validate_number(argv[optind - 1], 10)) {
 				printf("\nOption '-%c' require argument as valid"
 				       " numeric value\n\n", opt);
@@ -3637,6 +3686,24 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
+	}
+
+	if (opt == 0 && *long_options[long_index].flag == 54) {
+		if ((optind + 2) >= argc || *argv[optind] == '-'
+		     || *argv[optind + 1] == '-' || *argv[optind + 2] == '-') {
+			printf("\nOption '-%c' requires 4 arguments\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+		if (validate_number(argv[optind - 1], 16) ||
+		    validate_number(argv[optind], 16) ||
+		    validate_number(argv[optind + 1], 16) ||
+		    validate_number(argv[optind + 2], 16)) {
+			printf("\nOption '%c' requires all arguments as "
+			       "valid numeric value\n", opt);
+			return OOB_SUCCESS;
+		}
+
 	}
 
 	if (opt == 'R') {
@@ -3863,9 +3930,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 44) {
 			/* show C0 residency */
 			apml_get_sockc0_residency(soc_num);
-		} else if (*(long_options[long_index].flag) == 51) {
-			/* show RTC data */
-			apml_get_rtc(soc_num);
 		} else if (*(long_options[long_index].flag) == 46) {
 			/* Read TSI register */
 			val1 = strtoul(argv[optind - 1], &end, 16);
@@ -3887,6 +3951,17 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 51) {
 			/* show RTC data */
 			apml_get_rtc(soc_num);
+		} else if (*(long_options[long_index].flag) == 53) {
+			/* Get DIMM Address */
+			dimm_addr = strtoul(argv[optind - 1], &end, 16);
+			apml_get_dimm_serial_num(soc_num, dimm_addr);
+		} else if (*(long_options[long_index].flag) == 54) {
+			/* Get DIMM Address */
+			spd_in.dimm_addr = strtoul(argv[optind - 1], &end, 16);
+			spd_in.lid = strtoul(argv[optind++], &end, 16);
+			spd_in.reg_offset = strtoul(argv[optind++], &end, 16);
+			spd_in.reg_space = strtoul(argv[optind++], &end, 16);
+			apml_get_spd_sb_data(soc_num, spd_in);
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_num, uprate);
