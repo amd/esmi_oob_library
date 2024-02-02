@@ -62,6 +62,12 @@
 #define MAX_XGMI_LINK		2
 /* Maximum value for df p-state limit */
 #define MAX_DF_PSTATE_LIMIT	2
+/* LID to get DIMM serial Number */
+#define DIMM_SERIAL_NUM_LID	0xA
+/* Register offset to get DIMM serial Number */
+#define DIMM_SERIAL_NUM_REG_OFF	0x205
+/* Register space to get DIMM serial Number */
+#define DIMM_SERIAL_NUM_REG_SPACE 0x1
 
 float esu_multiplier;
 struct processor_info plat_info[1];
@@ -1214,4 +1220,31 @@ oob_status_t read_rtc(uint8_t soc_num, uint64_t *rtc)
 
 	*rtc |= (uint64_t)buffer << BIT(5);
 	return ret;
+}
+
+oob_status_t read_dimm_spd_register(uint8_t soc_num, struct dimm_spd_d_in spd_d_in, uint32_t *spd_data)
+{
+	uint32_t input = 0;
+
+	if (!spd_data)
+		return OOB_ARG_PTR_NULL;
+
+	input = (uint32_t)spd_d_in.dimm_addr | (uint32_t)spd_d_in.lid << 8
+		| (uint32_t)spd_d_in.reg_offset << 12 | (uint32_t)spd_d_in.reg_space << 23;
+
+	return esmi_oob_read_mailbox(soc_num, GET_DIMM_SPD, input, spd_data);
+}
+
+oob_status_t get_dimm_serial_num(uint8_t soc_num,
+				 uint8_t dimm_addr,
+				 uint32_t *serial_num)
+{
+	struct dimm_spd_d_in spd_in = {0};
+
+	spd_in.dimm_addr = dimm_addr;
+	spd_in.lid = DIMM_SERIAL_NUM_LID;
+	spd_in.reg_offset = DIMM_SERIAL_NUM_REG_OFF;
+	spd_in.reg_space = DIMM_SERIAL_NUM_REG_SPACE;
+
+	return read_dimm_spd_register(soc_num, spd_in, serial_num);
 }

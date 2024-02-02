@@ -165,7 +165,8 @@ typedef enum {
 	SET_BM_RAS_OOB_CONFIG,
 	GET_BMC_RAS_OOB_CONFIG,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
-	READ_BMC_RAS_RESET_ON_SYNC_FLOOD
+	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
+	GET_DIMM_SPD	= 0x70
 } esb_mailbox_commmands;
 
 /**
@@ -414,6 +415,19 @@ struct oob_config_d_in {
 						//!< 0 disable and 1 for enable
 	uint8_t	core_mca_err_reporting_en : 1;	//!< Core MCA OOB error reporting enable
 						//!< 0 disable and 1 for enable
+};
+
+/**
+ * @brief dimm_spd_d_in:
+ * strucutre contains following memebers to be passed as
+ * input, to get 4 byte DIMM spd register data
+ */
+struct dimm_spd_d_in {
+	uint8_t dimm_addr;		//!< DIMM address
+	uint8_t lid : 4;		//!< local identifier of device
+	uint16_t reg_offset : 11;	//!< Register offset in given register space
+	uint8_t reg_space : 1;		//!< Register space, Volatile:0, NVM:1
+	uint8_t rsvd;			//!< reserved
 };
 
 /**
@@ -1961,6 +1975,37 @@ oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data);
  *  @retval Non-zero is returned upon failure.
  */
 oob_status_t read_rtc(uint8_t soc_num, uint64_t *rtc);
+
+/**
+ *  @brief Get SPD SB data
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] spd_d_in struct dimm_spd_d_in containing
+ *  DIMM address, LID, register offset, register space.
+ *
+ *  @param[out] spd_data containing spd data as per input
+ */
+oob_status_t read_dimm_spd_register(uint8_t soc_num,
+				    struct dimm_spd_d_in spd_d_in,
+				    uint32_t *spd_data);
+
+/**
+ *  @brief Get DIMM serial number
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] dimm_addr DIMM address
+ *
+ *  @param[out] serial_num containing DIMM serial number
+ */
+oob_status_t get_dimm_serial_num(uint8_t soc_num,
+				 uint8_t dimm_addr,
+				 uint32_t *serial_num);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
