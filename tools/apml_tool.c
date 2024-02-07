@@ -2642,11 +2642,11 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\t\t Configures OOB state infrastructure in SoC\n"
 	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
 	       "Show BMC ras oob configuration\n"
-	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR]\t\t\t\t"
+	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR(HEX)]\t\t\t"
 	       " Show DIMM serial number\n"
-	       "  --getspddata\t\t\t\t  [DIMM_ADDR][LID]"
-	       "\n\t\t\t\t\t  [REG_OFFSET][REG_SPACE] \t\t"
-	       " Show SPD SB data\n");
+	       "  --getspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
+	       "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE] \t\t"
+	       " Show DIMM SPD register data\n");
 }
 
 static void get_common_mailbox_commands(char *exe_name)
