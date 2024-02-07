@@ -1648,7 +1648,7 @@ static void read_register(uint8_t soc_num, uint32_t reg, char *file_name)
 	printf("---------------------------------");
 	printf("\n| Register \t| Value \t|");
 	printf("\n---------------------------------");
-	printf("\n| 0x%x \t\t| 0x%x \t\t|", reg, buffer);
+	printf("\n| 0x%-8x \t| 0x%x \t\t|", reg, buffer);
 	printf("\n---------------------------------\n");
 }
 
@@ -1699,7 +1699,7 @@ static void read_tsi_register(uint8_t soc_num, uint32_t reg)
 	printf("---------------------------------");
 	printf("\n| Register \t| Value \t|");
 	printf("\n---------------------------------");
-	printf("\n| 0x%x \t\t| 0x%x \t\t|", reg, buffer);
+	printf("\n| 0x%-8x \t| 0x%x \t\t|", reg, buffer);
 	printf("\n---------------------------------\n");
 }
 
