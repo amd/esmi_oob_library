@@ -81,7 +81,7 @@ oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 	else
 		soc_addr = sbrmi_addr[soc_num];
 
-	sprintf(dev_file, "%s%s-%x", DEV, SBRMI, soc_addr);
+	sprintf(dev_file, "%s%s-%hx", DEV, SBRMI, soc_addr);
 	fd = open(dev_file, O_RDWR);
 	if (fd < 0) {
 		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
@@ -116,7 +116,7 @@ oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 	else
 		soc_addr = sbtsi_addr[soc_num];
 
-	sprintf(dev_file, "%s%s-%x", DEV, SBTSI, soc_addr);
+	sprintf(dev_file, "%s%s-%hx", DEV, SBTSI, soc_addr);
 	fd = open(dev_file, O_RDWR);
 	if (fd < 0) {
 		sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
@@ -300,7 +300,7 @@ oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi)
 		return OOB_FILE_ERROR;
 
 	/* check if the sbtsi module is present for the given socket */
-	sprintf(dev_file, "%s%s-%x", DEV, SBTSI, sbtsi_addr[soc_num]);
+	sprintf(dev_file, "%s%s-%hx", DEV, SBTSI, sbtsi_addr[soc_num]);
         if (access(dev_file, F_OK) != 0) {
                 sprintf(dev_file, "%s%s%d", DEV, SBTSI, soc_num);
 		if (access(dev_file, F_OK) != 0)
@@ -320,7 +320,7 @@ oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi)
 		return OOB_FILE_ERROR;
 
 	/* check if the sbrmi module is present for the given socket*/
-	sprintf(dev_file, "%s%s-%x", DEV, SBRMI, sbrmi_addr[soc_num]);
+	sprintf(dev_file, "%s%s-%hx", DEV, SBRMI, sbrmi_addr[soc_num]);
 	if (access(dev_file, F_OK) != 0) {
 		sprintf(dev_file, "%s%s%d", DEV, SBRMI, soc_num);
 		if (access(dev_file, F_OK) != 0)
