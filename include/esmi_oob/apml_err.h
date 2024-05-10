@@ -111,6 +111,8 @@ typedef enum {
 		OOB_MAILBOX_ERR_BASE + 0x9,	//!< Invalid Input Arguments
 	OOB_MAILBOX_INVALID_OOBRAS_CONFIG =
 		OOB_MAILBOX_ERR_BASE +0xA,	//!< Invalid OOB RAS config
+	OOB_MAILBOX_NOT_READY =
+		OOB_MAILBOX_ERR_BASE + 0xB,	//!< Data not ready
 	OOB_MAILBOX_ERR_END =
 		OOB_MAILBOX_ERR_BASE + 0xFF,
 } oob_status_t;

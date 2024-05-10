@@ -115,6 +115,8 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 		case OOB_MAILBOX_INVALID_OOBRAS_CONFIG:
 			return "Mailbox message command failed due to improper or invalid settings"
 			       " of OOB Ras Config fields";
+		case OOB_MAILBOX_NOT_READY:
+			return "Data not ready";
 		default:
 			return "Unknown error in status";
 		}
