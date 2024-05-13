@@ -2372,8 +2372,8 @@ static void apml_get_ras_oob_config(uint8_t soc_num)
 	       (d_out >> DRAM_CECC_MAX_INTR_RATE & NIBBLE_MASK));
 	printf("| PCIe Max Interrupt Rate  \t\t\t | 0x%-6x |\n",
 	       (d_out >> PCIE_MAX_INTR_RATE & NIBBLE_MASK));
-	printf("| Core MCA OOB Error Reporting Enable\t\t | %-8s |\n",
-	       (d_out >> CORE_MCA_ERR_REPORT_EN & BIT_MASK)
+	printf("| MCA OOB Error Reporting Enable\t\t | %-8s |\n",
+	       (d_out >> MCA_ERR_REPORT_EN & BIT_MASK)
 	       ? "Enabled" : "Disabled");
 	printf("------------------------------------------------------"
 	       "-------\n");
@@ -2638,7 +2638,7 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\n\t\t\t\t\t  [DRAM_ERR_CNTR_MD(0 - 2)]"
 	       "\n\t\t\t\t\t  [DRAM_LEAK_RATE(0 - 31)]"
 	       "\n\t\t\t\t\t  [PCIE_ERR_RPRT_EN(0,1)]"
-	       "\n\t\t\t\t\t  [CORE_MCA_ERR_RPRT_EN]"
+	       "\n\t\t\t\t\t  [MCA_ERR_RPRT_EN]"
 	       "\t\t Configures OOB state infrastructure in SoC\n"
 	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
 	       "Show BMC ras oob configuration\n"
@@ -3904,7 +3904,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			oob_config.dram_cecc_leak_rate = atoi(argv[optind++]);
 			/* PCIe OOB Error Reporting Enable */
 			oob_config.pcie_err_reporting_en = atoi(argv[optind++]);
-			/* Core MCA OOB Error Reporting Enable */
+			/* MCA OOB Error Reporting Enable */
 			oob_config.core_mca_err_reporting_en = atoi(argv[optind++]);
 			apml_set_ras_oob_config(soc_num, oob_config);
 		} else if (*(long_options[long_index].flag) == 39) {
