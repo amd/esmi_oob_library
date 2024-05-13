@@ -310,7 +310,7 @@ static void apml_get_max_min_gfx_freq(uint8_t soc_num)
 
 	ret = get_max_min_gfx_freq(soc_num, &max_freq, &min_freq);
 	if (ret) {
-		printf("Failed to read absoulte max, min freq, Err[0x%x]:"
+		printf("Failed to read absolute max, min freq, Err[0x%x]:"
 		       "%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
@@ -522,9 +522,9 @@ static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
 	}
 	printf("-----------------------------------------------"
 	"--------------\n");
-	printf("| Energy Acuumulator (MJ) | %-32.6f |\n",
+	printf("| Energy Accumulator (MJ) | %-32.6f |\n",
 	       (double)energy_acc / 1000000);
-	printf("| %-23s | %-32.6f |\n", "Time stamp (s) ",
+	printf("| %-23s | %-32.6f |\n", "Timestamp (s) ",
 	       (double)time_stamp / 1000000000);
 	printf("-----------------------------------------------"
 	"--------------\n");
