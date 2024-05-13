@@ -113,7 +113,7 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 		case OOB_MAILBOX_INVALID_INPUT_ARGS:
 			return "Mailbox message command failed due to invalid input arguments";
 		case OOB_MAILBOX_INVALID_OOBRAS_CONFIG:
-			return "Mailbox message command failed due to improver or invalid settings"
+			return "Mailbox message command failed due to improper or invalid settings"
 			       " of OOB Ras Config fields";
 		default:
 			return "Unknown error in status";
