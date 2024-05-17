@@ -316,10 +316,45 @@ static oob_status_t get_boostlimit(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
+
+static oob_status_t validate_bootlimit_input(uint8_t soc_num, uint32_t *boostlimit)
+{
+	uint16_t fmax, fmin;
+	oob_status_t ret = 0;
+
+	/*if (*boostlimit > UINT16_MAX)
+                return OOB_INVALID_INPUT; */
+
+	ret = read_socket_freq_range(soc_num, &fmax, &fmin);
+        if (ret != OOB_SUCCESS) {
+		printf("Failed to get Fmax and Fmin, Err[%d]:%s\n",
+			ret, esmi_get_err_msg(ret));
+		return ret;
+         }
+
+	if (*boostlimit > fmax) {
+		printf("Input > max boostlimit, Configuring max boostlimit \n");
+		*boostlimit = fmax;
+        }
+        if(*boostlimit < fmin) {
+		printf("Input < min boostlimit, Configuring min boostlimit\n");
+		*boostlimit = fmin;
+        }
+
+	return OOB_SUCCESS;
+
+}
+
 static oob_status_t set_apml_boostlimit(uint8_t soc_num, uint32_t core_id,
 					uint32_t boostlimit)
 {
 	oob_status_t ret;
+
+	ret = validate_bootlimit_input(soc_num, &boostlimit);
+	if(ret != OOB_SUCCESS) {
+		printf("Input validation failed \n");
+		return ret;
+	}
 
 	ret = write_esb_boost_limit(soc_num, core_id, boostlimit);
 	if (ret != OOB_SUCCESS) {
@@ -329,7 +364,7 @@ static oob_status_t set_apml_boostlimit(uint8_t soc_num, uint32_t core_id,
 		return ret;
 	}
 
-	printf("core[%d] apml_boostlimit set successfully\n", core_id);
+	printf("core[%d] apml_boostlimit %u MHz set successfully\n", core_id, boostlimit);
 	return OOB_SUCCESS;
 }
 
@@ -337,6 +372,12 @@ static oob_status_t set_apml_socket_boostlimit(uint8_t soc_num,
 					       uint32_t boostlimit)
 {
 	oob_status_t ret;
+
+	ret = validate_bootlimit_input(soc_num, &boostlimit);
+	if(ret != OOB_SUCCESS) {
+                printf("Input validation failed, try again with valid input range \n");
+                return ret;
+        }
 
 	ret = write_esb_boost_limit_allcores(soc_num, boostlimit);
 	if (ret != OOB_SUCCESS) {
