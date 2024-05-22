@@ -1161,7 +1161,7 @@ oob_status_t set_bmc_ras_oob_config(uint8_t soc_num, struct oob_config_d_in d_in
 {
 	uint32_t input = 0;
 
-	input = (uint32_t)d_in.core_mca_err_reporting_en << CORE_MCA_ERR_REPORT_EN
+	input = (uint32_t)d_in.core_mca_err_reporting_en << MCA_ERR_REPORT_EN
 		| (uint32_t)d_in.pcie_err_reporting_en << PCIE_ERR_REPORT_EN
 		| (uint32_t)d_in.dram_cecc_leak_rate << DRAM_CECC_LEAK_RATE
 		| (uint32_t)d_in.dram_cecc_oob_ec_mode << DRAM_CECC_OOB_EC_MODE

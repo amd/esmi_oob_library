@@ -69,8 +69,7 @@
 /* PCIE Max Interrrupt rate */
 #define PCIE_MAX_INTR_RATE	23     //!< PCIE Max interrupt rate //
 /* core mca error reporting enable*/
-#define MCA_ERR_REPORT_EN	31	//!< CORE MCA error report enable //
-#define CORE_MCA_ERR_REPORT_EN  31	//!< CORE MCA error report enable //
+#define MCA_ERR_REPORT_EN  31		//!< MCA error report enable //
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
 /* Maximum DF block-ID's */
@@ -400,7 +399,7 @@ struct run_time_threshold {
 /**
  * @brief Configure oob state infrastructure in SoC.
  * structure consists of mca_oob_misc0_ec_enable, dram_cecc_oob_ec_mode,
- * dram_cecc_leak_rate, pcie_err_reporting_en and core_mca_err_reporting_en.
+ * dram_cecc_leak_rate, pcie_err_reporting_en and mca_err_reporting_en.
  */
 struct oob_config_d_in {
 	uint8_t mca_oob_misc0_ec_enable : 1;	//!< MCA OOB MISC0 Error Counter
@@ -413,7 +412,7 @@ struct oob_config_d_in {
 						//!< Valid values are 00 - 1Fh
 	uint8_t pcie_err_reporting_en : 1;	//!< PCIe OOB error reporting enable
 						//!< 0 disable and 1 for enable
-	uint8_t	core_mca_err_reporting_en : 1;	//!< Core MCA OOB error reporting enable
+	uint8_t	core_mca_err_reporting_en : 1;	//!< MCA OOB error reporting enable
 						//!< 0 disable and 1 for enable
 };
 
@@ -1911,9 +1910,12 @@ oob_status_t set_bmc_ras_err_threshold(uint8_t soc_num,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[in] d_in struct oob_config_d_in containing mca_oob_misc0_ec_enable,
- *  dram_cecc_oob_ec_mode, dram_cecc_leak_rate, pcie_err_reporting_en,
- *  pcie_ue_oob_counter_en and core_mca_err_reporting_en.
+ *  @param[in] d_in struct oob_config_d_in containing
+ *  [0]   mca_oob_misc0_ec_enable,
+ *  [2:1] dram_cecc_oob_ec_mode,
+ *  [7:3] dram_cecc_leak_rate,
+ *  [8]   pcie_err_reporting_en,
+ *  [31]  mca_err_reporting_en.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
@@ -1931,10 +1933,18 @@ oob_status_t set_bmc_ras_oob_config(uint8_t soc_num,
  *
  *  @param[in] soc_num Socket index.
  *
- *  @param[out] oob_config oob configuration data containing
- *  mca_oob_misc0_ec_enable, dram_cecc_oob_ec_mode,
- *  dram_cecc_leak_rate, pcie_err_reporting_en,
- *  pcie_ue_oob_counter_en and core_mca_err_reporting_en.
+ *  @param[out] oob_config containing
+ *  [0]     mca_oob_misc0_ec_enable,
+ *  [2:1]   dram_cecc_oob_ec_mode,
+ *  [7:3]   dram_cecc_leak_rate,
+ *  [8]     pcie_err_reporting_en,
+ *  [11]    MCA Thresholding Interrupt Enable value
+ *  [12]    DRAM CECC Thresholding Interrupt Enable value
+ *  [13]    PCIe error Thresholding Interrupt Enable value
+ *  [18:15] MCA MaxIntRate value
+ *  [22:19] DRAM CECC MaxIntRate1 value
+ *  [26:23] PCIe error MaxIntRate1 value
+ *  [31]    mca_err_reporting_en
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
