@@ -374,10 +374,31 @@ static void apml_get_hbm_stack_temp(uint8_t soc_num, uint32_t stack_index)
 	printf("-------------------------------\n");
 }
 
+static void get_xgmi_link_width(uint8_t xgmi_ln_width, uint8_t *width)
+{
+	/* Get XGMI link width string */
+	switch (xgmi_ln_width) {
+	case 1:
+	        *width = 2;
+	        break;
+	case 2:
+	        *width = 4;
+	        break;
+	case 4:
+	        *width = 8;
+	        break;
+	case 8:
+	        *width = 16;
+	        break;
+	default:
+		*width = 0;
+	}
+}
+
 static void apml_get_xgmi_pstates(uint8_t soc_num, uint32_t pstate_ind)
 {
 	struct xgmi_speed_rate_n_width xgmi_pstate;
-	char *ln_width;
+	uint8_t ln_width = 0;
 	oob_status_t ret;
 
 
@@ -388,29 +409,14 @@ static void apml_get_xgmi_pstates(uint8_t soc_num, uint32_t pstate_ind)
 		return;
 	}
 
-	/* Get XGMI link width string */
-	switch (xgmi_pstate.link_width) {
-	case 1:
-		ln_width = "XGMI Link width X2 is supported";
-		break;
-	case 2:
-		ln_width = "XGMI Link width X4 is supported";
-		break;
-	case 4:
-		ln_width = "XGMI Link width X8 is supported";
-		break;
-	case 8:
-		ln_width = "XGMI Link width X16 is supported";
-		break;
-	default:
-		ln_width = "Invalid Link width returned";
-	}
+	get_xgmi_link_width(xgmi_pstate.link_width, &ln_width);
+
 	printf("-----------------------------------------------"
-	       "--------\n");
-	printf("| XGMI speed rate  | %-32u |\n", xgmi_pstate.speed_rate);
-	printf("| XGMI Link Width  | %-32s |\n", ln_width);
+	       "-------------\n");
+	printf("| XGMI speed rate (GHz) | %-32u |\n", xgmi_pstate.speed_rate);
+	printf("| XGMI Link Width  	| x%-31u |\n", ln_width);
 	printf("-----------------------------------------------"
-	       "--------\n");
+	       "-------------\n");
 }
 
 static void apml_set_xgmi_pstate(uint8_t soc_num, uint32_t pstate)
@@ -839,7 +845,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	uint32_t d_out = 0;
 	uint16_t max_freq = 0, min_freq = 0, freq = 0, temp = 0;
 	uint8_t pstate_index = 0, die_id = 0, link_config = 0, module_id = 0;
-	uint8_t hbm_id = 0;
+	uint8_t hbm_id = 0, ln_width = 0;
 	oob_status_t ret;
 	struct host_status h_status = {0};
 
@@ -857,12 +863,13 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
-		printf("\n| \tXGMI speed rate (MHz) \t\t | %-16u",
-		       xgmi_pstate.speed_rate);
-		printf("\n| \tXGMI link width\t\t\t | %-16u",
-		       xgmi_pstate.link_width);
-	}
+		get_xgmi_link_width(xgmi_pstate.link_width, &ln_width);
 
+		printf("\n| \tXGMI speed rate (GHz) \t\t | %-16u",
+		       xgmi_pstate.speed_rate);
+		printf("\n| \tXGMI link width\t\t\t | x%-16u",
+		       ln_width);
+	}
 	printf("\n| XCC IDLE RESIDENCY (%%)\t\t |");
 	ret = get_xcc_idle_residency(soc_num, &d_out);
 	if (ret)
