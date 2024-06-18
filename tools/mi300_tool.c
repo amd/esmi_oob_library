@@ -51,6 +51,7 @@
 
 #include <esmi_oob/apml.h>
 #include <esmi_oob/apml_common.h>
+#include <esmi_oob/esmi_cpuid_msr.h>
 #include <esmi_oob/esmi_tsi.h>
 #include <esmi_oob/rmi_mailbox_mi300.h>
 #include <esmi_oob/esmi_mailbox.h>
@@ -841,6 +842,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	struct xgmi_speed_rate_n_width xgmi_pstate = {0};
 	struct max_mem_bw bw = {0};
 	struct freq_limits limit = {0};
+	struct processor_info plat_info = {0};
 	uint64_t energy_acc = 0, time_stamp = 0, psn = 0;
 	uint32_t d_out = 0;
 	uint16_t max_freq = 0, min_freq = 0, freq = 0, temp = 0;
@@ -848,6 +850,8 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	uint8_t hbm_id = 0, ln_width = 0;
 	oob_status_t ret;
 	struct host_status h_status = {0};
+
+	ret = esmi_get_processor_info(soc_num, &plat_info);
 
 	printf("\n| MemClk/FClk_Pstate [0x%x] \t\t |", pstate_index);
 	ret = get_mclk_fclk_pstates(soc_num, pstate_index, &pstate);
@@ -870,12 +874,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tXGMI link width\t\t\t | x%-16u",
 		       ln_width);
 	}
-	printf("\n| XCC IDLE RESIDENCY (%%)\t\t |");
-	ret = get_xcc_idle_residency(soc_num, &d_out);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-17u", d_out);
 	printf("\n| Energy Accumulator \t\t\t |");
 	ret = get_energy_accum_with_timestamp(soc_num, &energy_acc,
 					      &time_stamp);
@@ -910,24 +908,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tModule ID\t\t\t | %-16u", module_id);
 	}
 
-	printf("\n| Abs Gfx Freq (MHz) \t\t\t |");
-	ret = get_max_min_gfx_freq(soc_num, &max_freq, &min_freq);
-	if (ret) {
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	} else {
-		printf("\n| \tMax Freq \t\t\t |");
-		printf(" %-16u", max_freq);
-		printf("\n| \tMin Freq \t\t\t |");
-		printf(" %-16u", min_freq);
-	}
-
-	printf("\n| Act Max Gfx Freq (MHz) \t\t |");
-	ret = get_act_gfx_freq_cap(soc_num, &freq);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-16u", freq);
-
 	printf("\n| Die Hot Spot Info \t\t\t |");
 	ret = get_die_hotspot_info(soc_num, &die_id, &temp);
 	if (ret) {
@@ -957,16 +937,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		       h_status.driver_status ? "Running" : "Not Running");
 	}
 
-
-	printf("\n| Max Mem BW and utilization \t\t |");
-	ret = get_max_mem_bw_util(soc_num, &bw);
-	if (ret) {
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	} else {
-		printf("\n| \tHBM Max BW (GB/s)\t\t | %-17u", bw.max_bw);
-		printf("\n| \tHBM Utilized BW (GB/s)\t\t | %-17u",
-		       bw.utilized_bw);
-	}
 	printf("\n| HBM Throttle (%%)\t\t\t |");
 	ret = get_hbm_throttle(soc_num, &d_out);
 	if (ret)
@@ -979,14 +949,6 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-16u", temp);
-	printf("\n| GFX CLK Freq Limit (MHz) \t\t |");
-	ret = get_clk_freq_limits(soc_num, GFX_CLK, &limit);
-	if (ret) {
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	} else {
-		printf("\n| \tMax Freq\t\t\t | %-16u", limit.max);
-		printf("\n| \tMin Freq\t\t\t | %-16u", limit.min);
-	}
 	printf("\n| F_CLK Freq Limit (MHz) \t\t |");
 	ret = get_clk_freq_limits(soc_num, F_CLK, &limit);
 	if (ret) {
@@ -1050,8 +1012,6 @@ void get_mi300_mailbox_commands(char *exe_name)
 	       "  --showxGMIbandwidth\t\t\t  [LINKID(P2-P3,G0-G7)]\n"
 	       "\t\t\t\t          [BW(AGG_BW,RD_BW,WR_BW)]"
 	       "\t\t Show current xGMI bandwidth\n"
-	       "  --showxGMIbandwidth\t\t\t  [LINKID(P2-P3,G0-G7)]"
-	       "[BW(AGG_BW,RD_BW,WR_BW)]\t Show current xGMI bandwidth\n"
 	       "  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
 	       "Show df clock, memory clock and umc clock frequencies\n"
 	       "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"

@@ -133,30 +133,45 @@ static oob_status_t get_platform_info(uint8_t soc_num,
 	return ret;
 }
 
-static oob_status_t is_mi300A(uint8_t soc_num, bool *status)
+static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
 {
-	struct processor_info plat_info = {0};
-	oob_status_t ret;
-	bool rev_status = false;
+	uint8_t rev = 0;
+	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_platform_info(soc_num, &plat_info, &rev_status);
-	if (ret && !rev_status) {
+	ret = get_platform_info(soc_num, plat_info, rev_status);
+	if (ret) {
+		if (*rev_status)
+			p_type = LEGACY_PLATFORMS;
 		return ret;
 	}
-
-	if (plat_info.family == 0x19) {
-		switch (plat_info.model) {
-		case 0x90 ... 0x9F:
-			/* MI300 A platform */
-			*status = true;
+	/* Family 1A and Model in 00 - 0Fh */
+	if (plat_info->family == 0x1A) {
+		switch (plat_info->model) {
+		case 0x00 ... 0x0F:
+			p_type = FAM_1A_MOD_00;
+			break;
+		case 0x10 ... 0x1F:
+			p_type = FAM_1A_MOD_10;
 			break;
 		default:
-			*status = false;
+			p_type = LEGACY_PLATFORMS;
+		}
+	} else if (plat_info->family == 0x19) {
+		switch (plat_info->model) {
+		case 0x10 ... 0x1F:
+			p_type = FAM_19_MOD_10;
+			break;
+		case 0x90 ... 0x9F:
+			p_type = FAM_19_MOD_90;
+			break;
+		default:
+			p_type = LEGACY_PLATFORMS;
 			break;
 		}
+	} else {
+		p_type = LEGACY_PLATFORMS;
 	}
-
-	return OOB_SUCCESS;
+	return ret;
 }
 
 static oob_status_t apml_get_sockpower(uint8_t soc_num)
@@ -1385,11 +1400,15 @@ static oob_status_t validate_bw_link_id(uint8_t soc_num, char *link_id,
 	const char *io_bw_type = "AGG_BW";
 	uint8_t index, arr_size;
 	oob_status_t ret;
-	bool status = 0;
+	bool status = false;
+	bool is_mi300 = false;
 
-	ret = is_mi300A(soc_num, &status);
-	if (ret)
+	ret = get_proc_type(soc_num, &status);
+	if (ret && !status)
 		return ret;
+
+	if (p_type == FAM_19_MOD_90)
+		is_mi300 = true;
 
 	link->bw_type = 0;
 	link->link_id = 0;
@@ -1413,7 +1432,7 @@ static oob_status_t validate_bw_link_id(uint8_t soc_num, char *link_id,
 		}
 	}
 
-	if (status) {
+	if (is_mi300) {
 		arr_size = ARRAY_SIZE(mi300A_encodings);
 		return validate_mi300A_link_id(arr_size, link_id, link);
 	} else {
@@ -2850,47 +2869,6 @@ static void get_recovery_commands(char *exe_name)
 	       " SBRMI, 1 -> SBTSI\n", exe_name);
 }
 
-static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
-{
-	uint8_t rev = 0;
-	oob_status_t ret = OOB_SUCCESS;
-
-	ret = get_platform_info(soc_num, plat_info, rev_status);
-	if (ret) {
-		if (*rev_status)
-			p_type = LEGACY_PLATFORMS;
-		return ret;
-	}
-	/* Family 1A and Model in 00 - 0Fh */
-	if (plat_info->family == 0x1A) {
-		switch (plat_info->model) {
-		case 0x00 ... 0x0F:
-			p_type = FAM_1A_MOD_00;
-			break;
-		case 0x10 ... 0x1F:
-			p_type = FAM_1A_MOD_10;
-			break;
-		default:
-			p_type = LEGACY_PLATFORMS;
-		}
-	} else if (plat_info->family == 0x19) {
-		switch (plat_info->model) {
-		case 0x10 ... 0x1F:
-			p_type = FAM_19_MOD_10;
-			break;
-		case 0x90 ... 0x9F:
-			p_type = FAM_19_MOD_90;
-			break;
-		default:
-			p_type = LEGACY_PLATFORMS;
-			break;
-		}
-	} else {
-		p_type = LEGACY_PLATFORMS;
-	}
-	return ret;
-}
-
 static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
@@ -2992,6 +2970,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint8_t uclk, index, rev;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
 	bool status = false;
+	bool is_mi300 = false;
 	oob_status_t ret;
 
 	nbio.quadrant = 0x03;
@@ -3004,13 +2983,14 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 
-	ret = is_mi300A(soc_num, &status);
-	if (ret) {
+	ret = get_proc_type(soc_num, &status);
+	if (ret && !status) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
 		return ret;
 	}
-
+	if (p_type == FAM_19_MOD_90)
+		is_mi300 = true;
 	usleep(APML_SLEEP);
 	printf("| Power (Watts)\t\t\t\t |");
 	ret = read_socket_power(soc_num, &power_avg);
@@ -3060,7 +3040,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17.3f", (double)tdp_max/1000);
 
 	usleep(APML_SLEEP);
-	if (!status) {
+	if (!is_mi300) {
 		printf("\n| DDR BANDWIDTH \t\t\t |");
 		ret = read_ddr_bandwidth(soc_num, &max_ddr);
 		if (ret) {
@@ -3092,7 +3072,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		printf(" %-17u", esb_boost);
 
 	usleep(APML_SLEEP);
-	if (!status) {
+	if (!is_mi300) {
 		printf("\n| DRAM_Throttle  (%%)\t\t\t |");
 		ret = read_dram_throttle(soc_num, &dram_thr);
 		if (ret)
@@ -3206,7 +3186,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 		       : df_pstate.mem_clk);
 	}
 
-	if (status)
+	if (is_mi300)
 		get_mi_300_mailbox_cmds_summary(soc_num);
 	usleep(APML_SLEEP);
 	printf("\n| THREADS_PER_CORE\t\t\t |");
