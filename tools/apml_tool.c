@@ -2137,15 +2137,20 @@ static void apml_get_ras_df_validity_chk(uint8_t soc_num, uint8_t blk_id) {
 	oob_status_t ret;
 
 	ret = read_ras_df_err_validity_check(soc_num, blk_id, &err_chk);
-	if (ret) {
+	if (ret && ret != OOB_MAILBOX_ADD_ERR_DATA) {
 		printf("Failed to read RAS DF validity check, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
 		return;
 	}
 
 	printf("----------------------------------------------------\n");
-	printf("| Err log length\t\t| %-17u|\n", err_chk.err_log_len);
-	printf("| DF Block instances\t\t| %-17u|\n", err_chk.df_block_instances);
+	if (ret == OOB_MAILBOX_ADD_ERR_DATA) {
+		printf("| MB error:0x%x additional error data | 0x%x|\n",
+		       ret, err_chk.add_err_data);
+	} else {
+		printf("| Err log length\t\t| %-17u|\n", err_chk.err_log_len);
+		printf("| DF Block instances\t\t| %-17u|\n", err_chk.df_block_instances);
+	}
 	printf("----------------------------------------------------\n");
 }
 
