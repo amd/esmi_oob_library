@@ -2535,6 +2535,21 @@ static oob_status_t apml_get_spd_sb_data(uint8_t soc_num, struct dimm_spd_d_in s
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_smu_fw_version(uint8_t soc_num)
+{
+	uint32_t fw_ver = 0;
+	oob_status_t ret = OOB_SUCCESS;
+	ret = read_smu_fw_ver(soc_num, &fw_ver);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get smu fw version, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("-----------------------------------------------\n");
+	printf("| SMU FW VERSION\t | 0x%-16x |\n", fw_ver);
+	printf("-----------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2687,7 +2702,9 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       " Show DIMM serial number\n"
 	       "  --getspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
 	       "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE] \t\t"
-	       " Show DIMM SPD register data\n");
+	       " Show DIMM SPD register data\n"
+	       "  --getsmufwversion\t\t\t  \t\t\t\t\t "
+	       "Show SMC FW version\n");
 }
 
 static void get_common_mailbox_commands(char *exe_name)
@@ -3411,6 +3428,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showrtc",			no_argument,		&flag,  51},
 		{"getdimmserialnum",		required_argument,	&flag,	53},
 		{"getspddata",			required_argument,	&flag,	54},
+		{"getsmufwversion",		no_argument,		&flag,	56},
 		{0,			0,			0,	0},
 	};
 
@@ -4003,6 +4021,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			spd_in.reg_offset = strtoul(argv[optind++], &end, 16);
 			spd_in.reg_space = strtoul(argv[optind++], &end, 16);
 			apml_get_spd_sb_data(soc_num, spd_in);
+		} else if (*(long_options[long_index].flag) == 56) {
+			apml_get_smu_fw_version(soc_num);
+			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_num, uprate);
