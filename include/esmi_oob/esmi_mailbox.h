@@ -122,6 +122,7 @@ typedef enum {
 	READ_PACKAGE_CCLK_FREQ_LIMIT,
 	READ_PACKAGE_C0_RESIDENCY,
 	READ_DDR_BANDWIDTH = 0x18,
+	READ_SMU_FW_VER = 0x1C,
 	READ_PPIN_FUSE = 0x1F,
 	GET_POST_CODE = 0x20,
 	GET_RTC,
@@ -2016,6 +2017,18 @@ oob_status_t read_dimm_spd_register(uint8_t soc_num,
 oob_status_t get_dimm_serial_num(uint8_t soc_num,
 				 uint8_t dimm_addr,
 				 uint32_t *serial_num);
+
+/**
+ *  @brief Get SMU FW version
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *
+ *  @param[out] smu_fw_ver SMU firmware version
+ */
+oob_status_t read_smu_fw_ver(uint8_t soc_num, uint32_t *smu_fw_ver);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

@@ -1248,3 +1248,9 @@ oob_status_t get_dimm_serial_num(uint8_t soc_num,
 
 	return read_dimm_spd_register(soc_num, spd_in, serial_num);
 }
+
+oob_status_t read_smu_fw_ver(uint8_t soc_num, uint32_t *smu_fw_ver)
+{
+	return esmi_oob_read_mailbox(soc_num, READ_SMU_FW_VER,
+				     0, smu_fw_ver);
+}
