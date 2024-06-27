@@ -312,8 +312,9 @@ struct pstate_freq {
  * err_log_len length of error log in bytes per instance (0 - 256).
  */
 struct ras_df_err_chk {
-	uint16_t df_block_instances : 9;  //!<  Number of DF block instances
-	uint16_t err_log_len : 9;        //!< len of er log in bytes per inst.
+	uint32_t add_err_data;			//!< field is updated when additional error data is available
+	uint16_t df_block_instances : 9;	//!< Number of DF block instances
+	uint16_t err_log_len : 9;		//!< len of er log in bytes per inst.
 };
 
 /**

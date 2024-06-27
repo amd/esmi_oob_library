@@ -1053,6 +1053,9 @@ oob_status_t read_ras_df_err_validity_check(uint8_t soc_num,
 		/* bits 16 - 24 of buffer will length of error log */
 		/* in bytes per instance  */
 		err_chk->err_log_len = buffer >> 16;
+	} else if (ret == OOB_MAILBOX_ADD_ERR_DATA) {
+		/* Additional error data */
+		err_chk->add_err_data = buffer;
 	}
 
 	return ret;
