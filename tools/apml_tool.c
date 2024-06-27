@@ -90,7 +90,6 @@
 static int flag;
 /* Processor info */
 uint8_t p_type = 0;
-
 static oob_status_t validate_apml_sbtsi_module(uint8_t soc_num)
 {
 	bool is_sbtsi = false;
@@ -1909,7 +1908,8 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 {
 	uint32_t bist_res;
 	uint16_t max_cores_per_ccx, ccx_instances;
-	uint8_t index = 0, rev = 0;
+	uint8_t index = 0;
+	bool rev_status = false, status = false;
 	oob_status_t ret;
 
 	ret = read_ccx_bist_result(soc_num, instance, &bist_res);
@@ -1919,16 +1919,24 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 		return;
 	}
 
-	ret = read_sbrmi_revision(soc_num, &rev);
-	if (ret) {
-		printf("Failed to get the ccx bist status, Err[%d]:%s\n",
-		       ret, esmi_get_err_msg(ret));
+	ret = get_proc_type(soc_num, &rev_status);
+	if (ret && !rev_status) {
+		printf("Platform identification failed\n");
 		return;
 	}
+
 	printf("---------------------------------\n");
-	if (rev == 0x10)
+	switch(p_type) {
+	case LEGACY_PLATFORMS:
 		printf("| CCX BIST RESULT | \t0x%-8x|\n", bist_res);
-	else {
+		break;
+	case FAM_1A_MOD_00:
+	case FAM_1A_MOD_10:
+	case FAM_19_MOD_10:
+	case FAM_19_MOD_90:
+		if(p_type == FAM_19_MOD_90 )
+			status = true;
+
 		ret = read_ccx_info(soc_num, &max_cores_per_ccx,
 				    &ccx_instances);
 		if (ret) {
@@ -1938,13 +1946,16 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 		}
 		printf("| L3 BIST \t| %s\t|\n",
 		       bist_res & 1 ? "Bist pass": "Bist fail");
-		printf("| L3 X3D  \t| %s\t|\n",
-		       extract_val(bist_res, BIT(0)) & MASK(1)
-		       ? "Bist pass": "Bist fail");
+		printf(status ? "" : "| L3 X3D  \t| %s\t|\n",
+		       (status ? "" : (extract_val(bist_res, BIT(0)) & MASK(1)
+		       ? "Bist pass": "Bist fail")));
 		for (index = 0; index < max_cores_per_ccx; index++)
 			printf("| CORE[%d] \t| %s\t|\n", index,
 			       ((bist_res >> (index + 16)) & 1)
 			       ? "Bist pass": "Bist fail");
+		break;
+	default:
+		break;
 	}
 	printf("---------------------------------\n");
 }
