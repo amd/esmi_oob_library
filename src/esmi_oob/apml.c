@@ -284,11 +284,11 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 
 	msg.data_in.mb_in[1] = (uint32_t)READ_MODE << 24;
 	ret = sbrmi_xfer_msg(soc_num, &msg);
-	if (ret)
+	if (ret && ret != OOB_MAILBOX_ADD_ERR_DATA)
 		return ret;
 
 	*buffer = msg.data_out.mb_out[0];
-	return OOB_SUCCESS;
+	return ret;
 }
 
 oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi)

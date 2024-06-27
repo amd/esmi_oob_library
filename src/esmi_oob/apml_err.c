@@ -110,6 +110,8 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 			return "Unknown mailbox message";
 		case OOB_MAILBOX_CMD_INVAL_CORE:
 			return "Invalid core.";
+		case OOB_MAILBOX_ADD_ERR_DATA:
+			return "Additional error data.";
 		case OOB_MAILBOX_INVALID_INPUT_ARGS:
 			return "Mailbox message command failed due to invalid input arguments";
 		case OOB_MAILBOX_INVALID_OOBRAS_CONFIG:
