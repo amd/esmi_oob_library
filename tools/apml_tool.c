@@ -1125,6 +1125,24 @@ static void apml_get_ras_pcie_config_data(uint8_t soc_num,
 	printf("-----------------------------------\n");
 }
 
+static void apml_set_bmc_pcie_config(uint8_t soc_num,
+				     struct pci_address pci_addr,
+				     uint32_t pcie_data)
+{
+	uint32_t response = 0;
+	oob_status_t ret;
+
+	ret = write_bmc_pcie_config(soc_num, pci_addr, pcie_data, &response);
+	if (ret) {
+		printf("Failed to write data to config space,Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	if (!response)
+		printf("Data to PCIE config space set successfully\n");
+}
+
 static void apml_get_ras_valid_mca_banks(uint8_t soc_num)
 {
 	uint16_t bytespermca;
@@ -2637,6 +2655,9 @@ static void fam_19_mod_10_mailbox_commands(void)
 	       "  --showPCIeconfigspacedata\t\t  [SEGMENT][OFFSET]\n"
 	       "\t\t\t\t\t  [BUS(HEX)][DEVICE(HEX)][FUNC]\t\t Show "
 	       "32 bit data from extended PCI config space\n"
+	       "  --setpcieconfig\t\t\t  [SEGMENT][OFFSET][BUS(HEX)]\n"
+	       "\t\t\t\t\t  [DEVICE(HEX)][FUNC(HEX)][WR_DATA(HEX)] "
+	       "Set 32 bit data to extended PCI config space\n"
 	       "  --showvalidmcabanks\t\t\t\t\t\t\t\t "
 	       "Show number of MCA banks & bytes/bank with valid "
 	       "status after a fatal error\n"
@@ -3425,6 +3446,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getdimmserialnum",		required_argument,	&flag,	53},
 		{"getspddata",			required_argument,	&flag,	54},
 		{"getsmufwversion",		no_argument,		&flag,	56},
+		{"setpcieconfig",		required_argument,	&flag,	57},
 		{0,			0,			0,	0},
 	};
 
@@ -3536,6 +3558,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 46 ||
 			 (*long_options[long_index].flag) == 48 ||
 			 (*long_options[long_index].flag) == 53 ||
+			 (*long_options[long_index].flag) == 57 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -3773,6 +3796,31 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		    || validate_number(argv[optind + 3], 10)) {
 			printf("Option '-%c' requires 2nd 5th argument"
 				" as valid numeric value\n\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+	}
+
+	if (opt == 0 && *long_options[long_index].flag == 57) {
+		if ((optind + 4) >= argc || *argv[optind] == '-'
+		     || *argv[optind + 1] == '-' || *argv[optind + 2] == '-'
+		     || *argv[optind + 3] == '-' || *argv[optind + 4] == '-') {
+			printf("\nOption '-%c' requires 6 arguments\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+		if (validate_number(argv[optind], 10)) {
+			printf("Option '-%c' requires 2nd argument  "
+				" as valid numeric value\n\n", opt);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
+		if (validate_number(argv[optind + 1], 16)
+		    || validate_number(argv[optind + 2], 16)
+		    || validate_number(argv[optind + 3], 16)
+		    || validate_number(argv[optind + 4], 16)) {
+			printf("Option '-%c' requires 3rd,4th, 5th and 6th "
+				"arguments as valid hexa value\n", opt);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
@@ -4019,6 +4067,16 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			apml_get_spd_sb_data(soc_num, spd_in);
 		} else if (*(long_options[long_index].flag) == 56) {
 			apml_get_smu_fw_version(soc_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 57) {
+			/* Write data to PCIE config space */
+			pci_addr.segment = atoi(argv[optind - 1]);
+			pci_addr.offset = atoi(argv[optind++]);
+			pci_addr.bus = strtoul(argv[optind++], &end, 16);
+			pci_addr.device = strtoul(argv[optind++], &end, 16);
+			pci_addr.func = strtoul(argv[optind++], &end, 16);
+			value = strtoul(argv[optind++], &end, 16);
+			apml_set_bmc_pcie_config(soc_num, pci_addr, value);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
