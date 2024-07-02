@@ -164,6 +164,7 @@ typedef enum {
 	SET_BMC_RAS_ERR_THRESHOLD,
 	SET_BM_RAS_OOB_CONFIG,
 	GET_BMC_RAS_OOB_CONFIG,
+	SET_BMC_PCIE_CONFIG = 0x68,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
 	GET_DIMM_SPD	= 0x70
@@ -2030,6 +2031,31 @@ oob_status_t get_dimm_serial_num(uint8_t soc_num,
  *  @param[out] smu_fw_ver SMU firmware version
  */
 oob_status_t read_smu_fw_ver(uint8_t soc_num, uint32_t *smu_fw_ver);
+
+/**
+ *  @brief Write to BMC PCIE config.
+ *
+ *  @details This function will write 32 bit data_in to extended PCI config space
+ *  of target specified in previous READ_BMC_RAS_PCIE_CONFIG_ACCESS (cmd ID 0x42h).
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] pci_addr pci_address structure with fucntion(3 bit),
+ *  device(4 bit) bus(8 bit), offset(12 bit), segment(4 bit).
+ *  SEGMENT:0 BUS 0:DEVICE 18 and
+ *  SEGMENT:0 BUS 0:DEVICE 19 are inaccessable.
+ *
+ *  @param[in] pcie_data data_in to extended PCI config space of target.
+ *
+ *  @param[out] r_code return code.Response is 0 if operation is successful.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t write_bmc_pcie_config(uint8_t soc_num, struct pci_address pci_addr,
+				   uint32_t pcie_data, uint32_t *r_code);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

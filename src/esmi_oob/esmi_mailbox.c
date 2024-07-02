@@ -1257,3 +1257,17 @@ oob_status_t read_smu_fw_ver(uint8_t soc_num, uint32_t *smu_fw_ver)
 	return esmi_oob_read_mailbox(soc_num, READ_SMU_FW_VER,
 				     0, smu_fw_ver);
 }
+
+oob_status_t write_bmc_pcie_config(uint8_t soc_num, struct pci_address pci_addr,
+				   uint32_t pcie_data, uint32_t *r_code)
+{
+	uint32_t response = 0;
+	oob_status_t ret;
+
+	ret = read_bmc_ras_pcie_config_access(soc_num, pci_addr, &response);
+	if (!ret)
+		ret = esmi_oob_read_mailbox(soc_num, SET_BMC_PCIE_CONFIG,
+					    pcie_data, r_code);
+
+	return ret;
+}
