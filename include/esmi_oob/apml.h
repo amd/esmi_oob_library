@@ -102,6 +102,7 @@ typedef enum {
  * FAM_1A_MOD_10:    Family:0x1A, MOdel: 10h~1Fh (Turin-D)
  */
 typedef enum {
+	NOT_SUPPORTED,
 	LEGACY_PLATFORMS,
 	FAM_19_MOD_10,
 	FAM_19_MOD_90,
