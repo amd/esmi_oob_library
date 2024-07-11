@@ -88,8 +88,7 @@
 /* DRAM CECC leak rate mask */
 #define DRAM_CECC_LEAK_RATE_MASK	0x1F
 static int flag;
-/* Processor info */
-uint8_t p_type = 0;
+
 static oob_status_t validate_apml_sbtsi_module(uint8_t soc_num)
 {
 	bool is_sbtsi = false;
@@ -132,43 +131,45 @@ static oob_status_t get_platform_info(uint8_t soc_num,
 	return ret;
 }
 
-static oob_status_t get_proc_type(uint8_t soc_num, bool *rev_status)
+static oob_status_t get_proc_type(uint8_t soc_num,  uint8_t *p_type)
 {
 	uint8_t rev = 0;
 	oob_status_t ret = OOB_SUCCESS;
+	bool rev_status = false;
 
-	ret = get_platform_info(soc_num, plat_info, rev_status);
+	ret = get_platform_info(soc_num, plat_info, &rev_status);
 	if (ret) {
-		if (*rev_status)
-			p_type = LEGACY_PLATFORMS;
-		return ret;
+		if (!rev_status) {
+			*p_type = NOT_SUPPORTED;
+			return ret;
+		}
 	}
 	/* Family 1A and Model in 00 - 0Fh */
 	if (plat_info->family == 0x1A) {
-		switch (plat_info->model) {
-		case 0x00 ... 0x0F:
-			p_type = FAM_1A_MOD_00;
-			break;
-		case 0x10 ... 0x1F:
-			p_type = FAM_1A_MOD_10;
-			break;
-		default:
-			p_type = LEGACY_PLATFORMS;
-		}
+	switch (plat_info->model) {
+	case 0x00 ... 0x0F:
+		*p_type = FAM_1A_MOD_00;
+		break;
+	case 0x10 ... 0x1F:
+		*p_type = FAM_1A_MOD_10;
+		break;
+	default:
+		*p_type = LEGACY_PLATFORMS;
+	}
 	} else if (plat_info->family == 0x19) {
-		switch (plat_info->model) {
-		case 0x10 ... 0x1F:
-			p_type = FAM_19_MOD_10;
-			break;
-		case 0x90 ... 0x9F:
-			p_type = FAM_19_MOD_90;
-			break;
-		default:
-			p_type = LEGACY_PLATFORMS;
-			break;
-		}
+	switch (plat_info->model) {
+	case 0x10 ... 0x1F:
+		*p_type = FAM_19_MOD_10;
+		break;
+	case 0x90 ... 0x9F:
+		*p_type = FAM_19_MOD_90;
+		break;
+	default:
+		*p_type = LEGACY_PLATFORMS;
+		break;
+	}
 	} else {
-		p_type = LEGACY_PLATFORMS;
+	*p_type = LEGACY_PLATFORMS;
 	}
 	return ret;
 }
@@ -1415,13 +1416,12 @@ static oob_status_t validate_bw_link_id(uint8_t soc_num, char *link_id,
 {
 	const char *bw_type_list[3] = {"AGG_BW", "RD_BW", "WR_BW"};
 	const char *io_bw_type = "AGG_BW";
-	uint8_t index, arr_size;
+	uint8_t index, arr_size, p_type = 0;
 	oob_status_t ret;
-	bool status = false;
 	bool is_mi300 = false;
 
-	ret = get_proc_type(soc_num, &status);
-	if (ret && !status)
+	ret = get_proc_type(soc_num, &p_type);
+	if (p_type == NOT_SUPPORTED)
 		return ret;
 
 	if (p_type == FAM_19_MOD_90)
@@ -1926,8 +1926,8 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 {
 	uint32_t bist_res;
 	uint16_t max_cores_per_ccx, ccx_instances;
-	uint8_t index = 0;
-	bool rev_status = false, status = false;
+	uint8_t index = 0, p_type = 0;
+	bool status = false;
 	oob_status_t ret;
 
 	ret = read_ccx_bist_result(soc_num, instance, &bist_res);
@@ -1937,14 +1937,13 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 		return;
 	}
 
-	ret = get_proc_type(soc_num, &rev_status);
-	if (ret && !rev_status) {
-		printf("Platform identification failed\n");
-		return;
-	}
+	ret = get_proc_type(soc_num, &p_type);
 
 	printf("---------------------------------\n");
 	switch(p_type) {
+	case NOT_SUPPORTED:
+		printf("Platform identification failed\n");
+		break;
 	case LEGACY_PLATFORMS:
 		printf("| CCX BIST RESULT | \t0x%-8x|\n", bist_res);
 		break;
@@ -2997,20 +2996,18 @@ static void get_recovery_commands(char *exe_name)
 static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
-	uint8_t soc_num = 0, hbm_temp = 0;
-	oob_status_t ret;
-	bool rev_status = false;
+	uint8_t soc_num = 0, hbm_temp = 0, p_type = 0;
+	oob_status_t ret = OOB_SUCCESS;
 
 	if (!strcmp(command, "mailbox") || !strcmp(command, "1")) {
-		ret = get_proc_type(soc_num, &rev_status);
-		if (ret && !rev_status) {
+		ret = get_proc_type(soc_num, &p_type);
+
+		switch(p_type) {
+		case NOT_SUPPORTED:
 			printf(RED"Note: Help section not available as platform "
 			       "identification failed, will not be able to \n"
 			       "run the RMI messages.\n"RESET);
 			return ret;
-		}
-
-		switch(p_type) {
 		case FAM_19_MOD_10:
 			get_common_mailbox_commands(exe_name);
 			fam_19_common_mailbox_commands();
@@ -3030,7 +3027,7 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			get_common_mailbox_commands(exe_name);
 			fam_19_common_mailbox_commands();
 			fam_19_mod_00_specific_mailbox_commands();
-			if (ret && rev_status)
+			if (ret)
 				printf(RED"\nNOTE: Limited functionality has been displayed as platform "
 				       "identification has failed. Please recover the RMI device."RESET);
 			break;
@@ -3092,9 +3089,8 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	uint16_t fmin;
 	uint16_t fclk;
 	uint16_t mclk;
-	uint8_t uclk, index, rev;
+	uint8_t uclk, index, rev, p_type = 0;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
-	bool status = false;
 	bool is_mi300 = false;
 	oob_status_t ret;
 
@@ -3108,8 +3104,8 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_num)
 	printf("\n------------------------------------------------------------"
 	       "----\n");
 
-	ret = get_proc_type(soc_num, &status);
-	if (ret && !status) {
+	ret = get_proc_type(soc_num, &p_type);
+	if (p_type == NOT_SUPPORTED) {
 		printf("Failed to get platform info  Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
 		return ret;
