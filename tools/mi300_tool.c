@@ -578,6 +578,7 @@ static void apml_get_number_of_soc(uint8_t soc_num)
 static void apml_query_statistics(uint8_t soc_num, struct statistics stat)
 {
 	uint32_t param_value;
+	char unit[BYTE_BITS] = "";
 	oob_status_t ret;
 
 	ret = get_statistics(soc_num, stat, &param_value);
@@ -586,12 +587,55 @@ static void apml_query_statistics(uint8_t soc_num, struct statistics stat)
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
-
+	if(!stat.output_control)  {
+		switch (stat.stat_param) {
+		case 0:
+			printf("Stop data Collection\n");
+			return;
+		case 1:
+			strncpy(unit, "mW", NIBBLE_BITS);
+			break;
+		case 2:
+			strncpy(unit,"Celsius", BYTE_BITS);
+			break;
+		case 4:
+		case 6:
+			strncpy(unit,"mA", NIBBLE_BITS);
+			break;
+		case 3:
+		case 5:
+		case 7:
+		case 8:
+			printf("Operation not supported\n");
+			return;
+		default:
+			break;
+		}
+	}
+	else {
+		switch(stat.stat_param) {
+		case 0:
+		case 1:
+		case 2:
+		case 4:
+		case 6:
+			strncpy(unit, "ms", NIBBLE_BITS);
+			break;
+		case 3:
+		case 5:
+		case 7:
+		case 8:
+			printf("Operation not supported\n");
+			return;
+		default:
+			break;
+		}
+	}
 	printf("-----------------------------------------------"
-	       "----------\n");
-	printf("| Parameter's Value  | %32u |\n", param_value);
+	       "----------------\n");
+	printf("| Parameter's Value  | %32u %-7s|\n", param_value, unit);
 	printf("-----------------------------------------------"
-	       "----------\n");
+	       "----------------\n");
 }
 
 static void apml_clear_statistics(uint8_t soc_num)
