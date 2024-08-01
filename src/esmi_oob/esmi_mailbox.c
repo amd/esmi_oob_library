@@ -53,6 +53,8 @@
 /* CONSTANTS OR MAGIC NUMBERS */
 
 /* Max limit for DPM level */
+/* Maximum XGMI Pstate limit */
+#define MAX_XGMI_PSTATE		1
 #define MAX_DPM_LIMIT		3
 /* Maximum link width */
 #define FULL_WIDTH		2
@@ -1268,6 +1270,70 @@ oob_status_t write_bmc_pcie_config(uint8_t soc_num, struct pci_address pci_addr,
 	if (!ret)
 		ret = esmi_oob_read_mailbox(soc_num, SET_BMC_PCIE_CONFIG,
 					    pcie_data, r_code);
+
+	return ret;
+}
+
+oob_status_t set_xgmi_pstate_range(uint8_t soc_num,
+				   uint8_t min_xgmi_pstate,
+				   uint8_t max_xgmi_pstate)
+{
+	uint32_t input = 0;
+
+	if (max_xgmi_pstate > min_xgmi_pstate
+	    || min_xgmi_pstate > MAX_XGMI_PSTATE)
+		return OOB_INVALID_INPUT;
+
+	input = ((uint32_t)min_xgmi_pstate << BYTE_BITS)
+		| (uint32_t)max_xgmi_pstate;
+	return esmi_oob_write_mailbox(soc_num, SET_XGMI_PSTATE_RANGE, input);
+}
+
+oob_status_t set_cpu_rail_iso_freq_policy(uint8_t soc_num, uint8_t policy)
+{
+	uint32_t input = 0;
+
+	if (policy > BIT(0))
+		return OOB_INVALID_INPUT;
+
+	input |=  (policy & BIT(0));
+
+	return esmi_oob_write_mailbox(soc_num, CPU_RAIL_ISO_FREQ_POLICY, input);
+}
+
+oob_status_t get_cpu_rail_iso_freq_policy(uint8_t soc_num, uint8_t *policy)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	ret = esmi_oob_read_mailbox(soc_num, CPU_RAIL_ISO_FREQ_POLICY,
+				    input, &buffer);
+	if (!ret)
+		*policy = buffer & BIT(0);
+
+	return ret;
+}
+
+oob_status_t set_dfc_enable(uint8_t soc_num, uint8_t state)
+{
+	uint32_t input = 0;
+
+	if (state > BIT_LEN)
+		return OOB_INVALID_INPUT;
+
+	input |= (state & BIT(0));
+
+	return esmi_oob_write_mailbox(soc_num, DFC_ENABLE, input);
+}
+
+oob_status_t get_dfc_enable(uint8_t soc_num, uint8_t *state)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	ret = esmi_oob_read_mailbox(soc_num, DFC_ENABLE, input, &buffer);
+	if (!ret)
+		*state = buffer & BIT(0);
 
 	return ret;
 }

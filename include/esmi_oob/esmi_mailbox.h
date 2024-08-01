@@ -167,7 +167,10 @@ typedef enum {
 	SET_BMC_PCIE_CONFIG = 0x68,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
-	GET_DIMM_SPD	= 0x70
+	GET_DIMM_SPD	= 0x70,
+	SET_XGMI_PSTATE_RANGE = 0x73,
+	CPU_RAIL_ISO_FREQ_POLICY,
+	DFC_ENABLE = 0x76
 } esb_mailbox_commmands;
 
 /**
@@ -2056,6 +2059,108 @@ oob_status_t read_smu_fw_ver(uint8_t soc_num, uint32_t *smu_fw_ver);
  */
 oob_status_t write_bmc_pcie_config(uint8_t soc_num, struct pci_address pci_addr,
 				   uint32_t pcie_data, uint32_t *r_code);
+
+/**
+ *  @brief Set the max and min xGMI pstate.
+ *
+ *  @details This function will set the max and min xGMI pstate.
+ *  pstate values are 0 - DFP0 (high performace) and 1 - DFP1
+ *  (low performance). Max value must be less than or equal to
+ *  min value. XGMI p-state can be set through either HSMP or APML
+ *  and the value that was last set will be enforced.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] min_xgmi_pstate minimum xgmi pstate.Valid values are 0,1
+ *
+ *  @param[in] max_xgmi_pstate maximum xgmi pstate.Valid values are 0,1
+ *
+ *  NOTE: Max value must be less than or equal to min value.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_xgmi_pstate_range(uint8_t soc_num,
+				   uint8_t min_xgmi_pstate,
+				   uint8_t max_xgmi_pstate);
+
+/**
+ *  @brief Set the cpu rail iso frequency policy.
+ *
+ *  @details This function will set the cpu rail iso freq policy.
+ *  This policy allows or disables independent core clocks per
+ *  rail (VDDCR_CPU0 or VDDCR_CPU1).
+ *  If a socket wide limit (e.g. PPT) is setting the core clock
+ *  frequency, then this setting has no effect.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] policy frequency policy. 0 means both rails have
+ *  same freqyency limit. 1 means each rail has independent frequency
+ *  limit.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_cpu_rail_iso_freq_policy(uint8_t soc_num, uint8_t policy);
+
+/**
+ *  @brief Get the cpu rail iso frequency policy.
+ *
+ *  @details This function will get the cpu rail iso freq policy.
+ *  The response 0 means both rails have same frequency limit and
+ *  1 means each rail has independent frequency limit.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] policy current frequency policy. 0 means both rails have
+ *  same freqyency limit. 1 means each rail has independent frequency
+ *  limit.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_cpu_rail_iso_freq_policy(uint8_t soc_num, uint8_t *policy);
+
+/**
+ *  @brief Set the DF C-state enabling control.
+ *
+ *  @details This function will set the DF C-state enabling control.
+ *  DF C-state is a low power state for IOD.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] state DF C-state. 0 to disable DFC 1 to enable DFC
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_dfc_enable(uint8_t soc_num, uint8_t state);
+
+/**
+ *  @brief Get the DF C-state enabling control.
+ *
+ *  @details This function will get the DF C-state enabling control.
+ *  DF C-state is a low power state for IOD.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] state current DF C-state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_dfc_enable(uint8_t soc_num, uint8_t *state);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
