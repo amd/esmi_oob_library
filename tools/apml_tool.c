@@ -2603,6 +2603,87 @@ static oob_status_t apml_get_smu_fw_version(uint8_t soc_num)
 	printf("-----------------------------------------------\n");
 }
 
+static void apml_set_xgmi_pstate_range(uint8_t soc_num,
+					       uint8_t min_xgmi_pstate,
+					       uint8_t max_xgmi_pstate)
+{
+	oob_status_t ret;
+	ret = set_xgmi_pstate_range(soc_num, min_xgmi_pstate, max_xgmi_pstate);
+	if (ret) {
+		printf("Failed to set XGMI p-state range "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("XGMI pstate range set successfully\n");
+}
+
+static void apml_set_cpu_rail_iso_freq_policy(uint8_t soc_num,
+						      uint8_t policy)
+{
+	oob_status_t ret;
+	ret = set_cpu_rail_iso_freq_policy(soc_num, policy);
+	if (ret) {
+		printf("Failed to set cpu rail iso frequency policy "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("CPU rail iso frequency policy set successfully\n");
+}
+
+static void apml_set_dfc_enable(uint8_t soc_num, uint8_t state)
+{
+	oob_status_t ret;
+
+	ret = set_dfc_enable(soc_num, state);
+	if (ret) {
+		printf("Failed to set DFC enable "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("DFC State set successfully\n");
+}
+
+static void apml_get_cpu_rail_iso_freq_policy(uint8_t soc_num)
+{
+	uint8_t policy = 0;
+	oob_status_t ret;
+
+	ret = get_cpu_rail_iso_freq_policy(soc_num, &policy);
+	if (ret) {
+		printf("Failed to get cpu rail iso frequency policy "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------"
+		"------------------\n");
+	printf("| CURRENT POLICY\t | %-36s |\n", policy ?
+			"Each rail has different freq limit":
+			"Both rails have same freq limit");
+	printf("-----------------------------------------------"
+		"------------------\n");
+}
+
+static void apml_get_dfc_enable(uint8_t soc_num)
+{
+	uint8_t state = 0;
+	oob_status_t ret;
+
+	ret = get_dfc_enable(soc_num, &state);
+	if (ret) {
+		printf("Failed to get dfc enable "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-------------------------------------\n");
+	printf("| DFC State\t | %-16s |\n", state ? "ENABLED" : "DISABLED");
+	printf("-------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2760,7 +2841,19 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE] \t\t"
 	       " Show DIMM SPD register data\n"
 	       "  --getsmufwversion\t\t\t  \t\t\t\t\t "
-	       "Show SMC FW version\n");
+	       "Show SMC FW version\n"
+	       "  --setxgmipstaterange\t\t\t  [MIN_PSTATE][MAX_PSTATE]\t\t"
+	       " Set xgmi pstate range.Valid values are 0 -1.Max value must\n"
+	       "\t\t\t\t\t\t\t\t\t\t be <= min value\n"
+	       " --setcpurailfreqpolicy\t\t\t  [POLICY(0-1)] \t\t\t"
+	       " Set CPU rail frequency Policy. Valid values are 0 - 1\n"
+	       " --getcpurailfreqpolicy\t\t\t  \t\t\t\t\t "
+	       "Show CPU rail frequency policy\n"
+	       " --setdfcenable\t\t\t\t  [STATE(0-1)] \t\t\t\t"
+	       " Set DFC enable \n"
+	       " --getdfcenable\t\t\t  \t\t\t\t\t\t "
+	       "Show dfc enable state \n"
+	       );
 }
 
 static void get_common_mailbox_commands(char *exe_name)
@@ -3447,6 +3540,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getspddata",			required_argument,	&flag,	54},
 		{"getsmufwversion",		no_argument,		&flag,	56},
 		{"setpcieconfig",		required_argument,	&flag,	57},
+		{"setxgmipstaterange",		required_argument,	&flag,	58},
+		{"setcpurailfreqpolicy",	required_argument,	&flag,	59},
+		{"getcpurailfreqpolicy",	no_argument,		&flag,	60},
+		{"setdfcenable",		required_argument,	&flag,	61},
+		{"getdfcenable",		no_argument,		&flag,	62},
 		{0,			0,			0,	0},
 	};
 
@@ -3559,6 +3657,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 48 ||
 			 (*long_options[long_index].flag) == 53 ||
 			 (*long_options[long_index].flag) == 57 ||
+			 (*long_options[long_index].flag) == 58 ||
+			 (*long_options[long_index].flag) == 59 ||
+			 (*long_options[long_index].flag) == 61 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -3624,7 +3725,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
            (opt == 0 && (*long_options[long_index].flag == 15 ||
 	    *long_options[long_index].flag == 35 ||
 	    *long_options[long_index].flag == 47 ||
-	    *long_options[long_index].flag == 49))) {
+	    *long_options[long_index].flag == 49 ||
+	    *long_options[long_index].flag == 58))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
 			show_usage(argv[0]);
@@ -4077,6 +4179,30 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			pci_addr.func = strtoul(argv[optind++], &end, 16);
 			value = strtoul(argv[optind++], &end, 16);
 			apml_set_bmc_pcie_config(soc_num, pci_addr, value);
+			break;
+		} else if (*(long_options[long_index].flag) == 58) {
+			/* Set XGMI pstate range */
+			val1 = atoi(argv[optind - 1]);
+			val2 = atoi(argv[optind++]);
+			apml_set_xgmi_pstate_range(soc_num, val1, val2);
+			break;
+		} else if (*(long_options[long_index].flag) == 59) {
+			/* APML set CPU rail iso frequency  policy */
+			val1 = atoi(argv[optind - 1]);
+			apml_set_cpu_rail_iso_freq_policy(soc_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 60) {
+			/* APML get cpu rail iso frequency policy */
+			apml_get_cpu_rail_iso_freq_policy(soc_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 61) {
+			/* APML set DF C-State  */
+			val1 = atoi(argv[optind - 1]);
+			apml_set_dfc_enable(soc_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 62) {
+			/* APML set CPU rail iso frequency  policy */
+			apml_get_dfc_enable(soc_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
