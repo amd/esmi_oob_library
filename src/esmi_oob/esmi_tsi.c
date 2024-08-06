@@ -238,7 +238,7 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 	    config_mask != ARA_MASK)
 		return OOB_INVALID_INPUT;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGWR, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGURATION, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
