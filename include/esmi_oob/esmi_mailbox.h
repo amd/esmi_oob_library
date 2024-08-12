@@ -70,12 +70,6 @@
 #define PCIE_MAX_INTR_RATE	23     //!< PCIE Max interrupt rate //
 /* core mca error reporting enable*/
 #define MCA_ERR_REPORT_EN  31		//!< MCA error report enable //
-/* Maximum error log length */
-#define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
-/* Maximum DF block-ID's */
-#define MAX_DF_BLOCK_IDS                256	//!< Max DF block IDs //
-/* Maximum instances of DF - Block-ID */
-#define MAX_DF_BLOCK_INSTS              256	//!< Max DF block instances //
 
 /* Legacy APML encodings count */
 #define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
