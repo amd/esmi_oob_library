@@ -2587,7 +2587,7 @@ static oob_status_t apml_get_spd_sb_data(uint8_t soc_num, struct dimm_spd_d_in s
 	return OOB_SUCCESS;
 }
 
-static oob_status_t apml_get_smu_fw_version(uint8_t soc_num)
+static void apml_get_smu_fw_version(uint8_t soc_num)
 {
 	uint32_t fw_ver = 0;
 	oob_status_t ret = OOB_SUCCESS;
@@ -2595,7 +2595,7 @@ static oob_status_t apml_get_smu_fw_version(uint8_t soc_num)
 	if (ret != OOB_SUCCESS) {
 		printf("Failed to get smu fw version, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
-		return ret;
+		return;
 	}
 	printf("-----------------------------------------------\n");
 	printf("| SMU FW VERSION\t | 0x%-16x |\n", fw_ver);
