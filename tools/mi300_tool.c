@@ -859,15 +859,18 @@ static void apml_get_pcie_stats(uint8_t soc_num, uint32_t pcie_select)
 		break;
 	case 1:
 		/* Replay count */
-		stat = "Replay count";
+		stat = "Replay Count";
 		break;
-	case 2:
-		/* NAK sent count */
-		stat = "NAK sent count";
+	case 2: /* Replay rollover count */
+		stat = "Replay Rollover Count";
 		break;
 	case 3:
+		/* NAK sent count */
+		stat = "NAK sent Count";
+		break;
+	case 4:
 		/* NAK received count */
-		stat = "NAK received count";
+		stat = "NAK Received Count";
 		break;
 	default:
 		printf("| Invalid Input\t\t\t\t\t|\n");
