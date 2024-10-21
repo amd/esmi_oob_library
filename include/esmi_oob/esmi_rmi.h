@@ -53,10 +53,11 @@
  *  Description of the API, arguments and return values.
  *  The Error codes returned by the API.
  */
-
-#define MAX_ALERT_REG           32      //!< Max alert register //
-#define MAX_THREAD_REG_V20      32      //!< Max thread register for rev 20 //
-#define MAX_THREAD_REG_V10      16      //!< Max thread register for rev 10 //
+#define MAX_ALERT_REG_V21_DENSE		48	//!< Max alert registers for V21 dense platform //
+#define MAX_ALERT_REG           	32      //!< Max alert register //
+#define MAX_THREAD_REG_V20      	32      //!< Max thread register for rev 20 //
+#define MAX_THREAD_REG_V10      	16      //!< Max thread register for rev 10 //
+#define MAX_THREAD_REG_V21_DENSE	48      //!< Max thread register for rev 21 dense platform //
 
 /**
  * @brief Error codes retured by APML mailbox functions
@@ -95,10 +96,14 @@ typedef enum {
 	SBRMI_THREADNUMBERHIGH = 0x4F,
 	SBRMI_ALERTSTATUS16 = 0x50,
 	SBRMI_ALERTSTATUS31 = 0x5F,
+	SBRMI_ALERTSTATUS32 = 0x220,
+	SBRMI_ALERTSTATUS47 = 0x22F,
 	SBRMI_MP0OUTBNDMSG0 = 0x80,
 	SBRMI_MP0OUTBNDMSG7 = 0x87,
 	SBRMI_ALERTMASK16 = 0xC0,
 	SBRMI_ALERTMASK31 = 0xCF,
+	SBRMI_ALERTMASK32 = 0x1C0,
+	SBRMI_ALERTMASK47 = 0x1CF,
 } sbrmi_registers;
 
 /* SBRMI registers Revision 0x10 */
@@ -164,15 +169,30 @@ extern const uint8_t thread_en_reg_v10[MAX_THREAD_REG_V10];
  */
 extern const uint8_t thread_en_reg_v20[MAX_THREAD_REG_V20];
 
+/* SBRMI registers Revision 0x21 for Dense Platform */
+/**
+ * @brief thread enable register revision 0x21 for dense plaform
+ */
+extern const uint16_t thread_en_reg_v21_dense[MAX_THREAD_REG_V21_DENSE];
 /**
  * @brief alert status register
  */
 extern const uint8_t alert_status[MAX_ALERT_REG];
 
 /**
+ * @brief alert status register for V21 dense platform
+ */
+extern const uint16_t alert_status_v21_dense[MAX_ALERT_REG_V21_DENSE];
+
+/**
  * @brief alert mask
  */
 extern const uint8_t alert_mask[MAX_ALERT_REG];
+
+/**
+ * @brief alert mask
+ */
+extern const uint16_t alert_mask_v21_dense[MAX_ALERT_REG_V21_DENSE];
 
 /**
  *  @brief Read revision from SB_RMI register command.
