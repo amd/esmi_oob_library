@@ -607,6 +607,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 	uint8_t *buffer;
 	oob_status_t ret;
 	bool is_rsdn = false;
+	bool is_brhdn = false;
 
 	ret = validate_apml_sbrmi_module(soc_num);
 	if (ret)
@@ -644,17 +645,33 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 		       SBRMI_READSIZE, buf);
 
 	usleep(APML_SLEEP);
-	if (rev == 0x10)
+	if (rev == 0x10) {
 		range = sizeof(thread_en_reg_v10);
-	else
+	} else if (rev == 0x20) {
 		range = sizeof(thread_en_reg_v20);
+	} else if (rev == 0x21) {
+		ret = esmi_get_processor_info(soc_num, &plat_info);
+		if (ret)
+			return ret;
+		if (plat_info.family == 0x1A && plat_info.model >= 0x10
+		    && plat_info.model <= 0x1F) {
+			is_brhdn = true;
+			range = ARRAY_SIZE(thread_en_reg_v21_dense);
+		} else {
+			range = sizeof(thread_en_reg_v20);
+		}
+	} else {
+		range = sizeof(thread_en_reg_v20);
+	}
+
 	buffer = malloc(range * sizeof(uint8_t));
 	if (read_sbrmi_multithreadenablestatus(soc_num,
 					       buffer) == 0) {
 		printf("_RMI_THREADENSTATUS \t\t\t\t|\n");
 		for (i = 0; i < range; i++)
 			printf("\t[0x%x] Thread[%d:%d]	\t\t| %#4x\n",
-			       thread_en_reg_v20[i], (i * 8) + 7, i * 8, buffer[i]);
+			       (is_brhdn ? thread_en_reg_v21_dense[i] : thread_en_reg_v20[i]),
+			       (i * 8) + 7, i * 8, buffer[i]);
 	}
 	free(buffer);
 	buffer = NULL;
@@ -669,41 +686,52 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 	}
 
 	usleep(APML_SLEEP);
-	range = sizeof(alert_status);
+	if (is_brhdn)
+		range = ARRAY_SIZE(alert_status_v21_dense);
+	else
+		range = MAX_ALERT_REG;
 	buffer = malloc(range * sizeof(uint8_t));
 	if (!buffer)
 		return OOB_NO_MEMORY;
 	if (read_sbrmi_alert_status(soc_num, range, &buffer) == 0) {
 			printf("_RMI_ALERTSTATUS [0x%x ~ 0x%x] [0x%x ~ 0x%x] \t|\n",
-			       SBRMI_ALERTSTATUS0, SBRMI_ALERTSTATUS15,
-			       SBRMI_ALERTSTATUS16, SBRMI_ALERTSTATUS31);
-
+				SBRMI_ALERTSTATUS0, SBRMI_ALERTSTATUS15,
+				SBRMI_ALERTSTATUS16, SBRMI_ALERTSTATUS31);
+			if (is_brhdn)
+				printf("\t\t [0x%x ~ 0x%x] \t\t|\n",
+					SBRMI_ALERTSTATUS32, SBRMI_ALERTSTATUS47);
 			for (i = 0; i < range; i++) {
 				printf("\t[ ");
-				for (int j = 15; j >= 0; j--) {
-					switch (j % 16) {
-					case 4 ... 7:
-						if (i / 16)
-                                                        printf("%3d ", 16 * (j % 16) + (i - 16));
-						break;
-					case 12 ... 15:
-						if (i / 16 && rev != 0x10)
-							if (rev == 0x20 && is_rsdn)
-								printf("%3d ",
-									16 * (j % 16) + (i - 16));
-						break;
-					case 0 ... 3:
-						if (i / 16 == 0)
-							printf("%3d ", 16 * (j % 16) + i);
-						break;
-					case 8 ... 11:
-						if (i / 16 == 0 && rev != 0x10)
-							printf("%3d ", 16 * (j % 16) + i);
-						break;
+				if ( i < MAX_ALERT_REG) {
+					for (int j = 15; j >= 0; j--) {
+						switch (j % 16) {
+						case 4 ... 7:
+							if (i / 16)
+								printf("%3d ", 16 * (j % 16) + (i - 16));
+							break;
+						case 12 ... 15:
+							if (i / 16 && rev != 0x10)
+								if ((rev == 0x20 && is_rsdn)
+								     || rev == 0x21)
+									printf("%3d ",
+										16 * (j % 16) + (i - 16));
+							break;
+						case 0 ... 3:
+							if (i / 16 == 0)
+								printf("%3d ", 16 * (j % 16) + i);
+							break;
+						case 8 ... 11:
+							if (i / 16 == 0 && rev != 0x10)
+								printf("%3d ", 16 * (j % 16) + i);
+							break;
+						}
 					}
+				} else {
+					for (int j = 7; j >= 0; j--)
+						printf("%3d ", 16 * j + (256 + (i - MAX_ALERT_REG)));
 				}
 				if (rev != 0x10)
-					if (i > 15 && !is_rsdn)
+					if  (i > 15 && (!is_rsdn && rev !=0x21))
 						printf("] \t\t\t| %#4x\n", buffer[i]);
 					else
 						printf("] \t| %#4x\n", buffer[i]);
@@ -715,7 +743,10 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 	buffer = NULL;
 
 	usleep(APML_SLEEP);
-	range = sizeof(alert_mask);
+	if (is_brhdn)
+		range = ARRAY_SIZE(alert_mask_v21_dense);
+	else
+		range = sizeof(alert_mask);
 	buffer = malloc(range * sizeof(uint8_t));
 	if (!buffer)
 		return OOB_NO_MEMORY;
@@ -723,32 +754,42 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 			printf("_RMI_ALERTMASK [0x%x ~ 0x%x] [0x%x ~ 0x%x] \t|\n",
 			       SBRMI_ALERTMASK0, SBRMI_ALERTMASK15,
 			       SBRMI_ALERTMASK16, SBRMI_ALERTMASK31);
+			if (is_brhdn)
+				printf("\t       [0x%x ~ 0x%x] \t\t\t|\n",
+					SBRMI_ALERTMASK32, SBRMI_ALERTMASK47);
 			for (i = 0; i < range; i++) {
 				printf("\t[ ");
-				for (int j = 15; j >= 0; j--) {
-					switch (j % 16) {
-					case 4 ... 7:
-						 if (i / 16)
-                                                        printf("%3d ", 16 * (j % 16) + (i - 16));
-                                                break;
-					case 12 ... 15:
-						if (i / 16 && rev != 0x10)
-							if (rev == 0x20 && is_rsdn)
-								printf("%3d ",
-									16 * (j % 16) + (i - 16));
-						break;
-					case 0 ... 3:
-						if (i / 16 == 0)
-							printf("%3d ", 16 * (j % 16) + i);
+				if (i < sizeof(alert_mask)) {
+					for (int j = 15; j >= 0; j--) {
+						switch (j % 16) {
+						case 4 ... 7:
+							if (i / 16)
+								printf("%3d ", 16 * (j % 16) + (i - 16));
 							break;
-					case 8 ... 11:
-						if (i / 16 == 0 && rev != 0x10)
-							printf("%3d ", 16 * (j % 16) + i);
+						case 12 ... 15:
+							if (i / 16 && rev != 0x10)
+								if ((rev == 0x20 && is_rsdn)
+								     || rev == 0x21)
+									printf("%3d ",
+										16 * (j % 16) + (i - 16));
 							break;
+						case 0 ... 3:
+							if (i / 16 == 0)
+								printf("%3d ", 16 * (j % 16) + i);
+							break;
+						case 8 ... 11:
+							if (i / 16 == 0 && rev != 0x10)
+								printf("%3d ", 16 * (j % 16) + i);
+							break;
+						}
+					}
+				} else {
+					for (int j = 7; j >= 0; j--) {
+						printf("%3d ", 16 * j + (256 + (i - sizeof(alert_mask))));
 					}
 				}
 				if (rev != 0x10)
-					if (i > 15 && !is_rsdn)
+					if (i > 15 && (!is_rsdn && rev !=0x21))
 						printf("] \t\t\t| %#4x\n", buffer[i]);
 					else
 						printf("] \t| %#4x\n", buffer[i]);
