@@ -164,6 +164,9 @@ static oob_status_t get_proc_type(uint8_t soc_num,  uint8_t *p_type)
 	case 0x90 ... 0x9F:
 		*p_type = FAM_19_MOD_90;
 		break;
+	case 0xA0 ... 0xAF:
+		*p_type = FAM_19_MOD_A0;
+		break;
 	default:
 		*p_type = LEGACY_PLATFORMS;
 		break;
@@ -1992,6 +1995,7 @@ static void apml_get_ccx_bist_status(uint8_t soc_num, uint32_t instance)
 	case FAM_1A_MOD_10:
 	case FAM_19_MOD_10:
 	case FAM_19_MOD_90:
+	case FAM_19_MOD_A0:
 		if(p_type == FAM_19_MOD_90 )
 			status = true;
 
@@ -3050,6 +3054,7 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			       "run the RMI messages.\n"RESET);
 			return ret;
 		case FAM_19_MOD_10:
+		case FAM_19_MOD_A0:
 			get_common_mailbox_commands(exe_name);
 			fam_19_common_mailbox_commands();
 			fam_19_mod_10_mailbox_commands();
