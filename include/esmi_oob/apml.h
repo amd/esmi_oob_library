@@ -100,6 +100,7 @@ typedef enum {
  * FAM_19_MOD_90:    Family:0x19, MOdel: 90h~9Fh (MI300A)
  * FAM_1A_MOD_00:    Family:0x1A, MOdel: 00h~0Fh (Turin)
  * FAM_1A_MOD_10:    Family:0x1A, MOdel: 10h~1Fh (Turin-D)
+ * FAM_19_MOD_A0:    Family:0x19, Model: A0~AFh  (Genoa Dense)
  */
 typedef enum {
 	NOT_SUPPORTED,
@@ -108,6 +109,7 @@ typedef enum {
 	FAM_19_MOD_90,
 	FAM_1A_MOD_00,
 	FAM_1A_MOD_10,
+	FAM_19_MOD_A0,
 } PROC_DETAILS;
 
 #define SBRMI		"sbrmi"		//!< SBRMI module //
