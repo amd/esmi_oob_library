@@ -50,6 +50,8 @@
 #define extract_val(val, bits) ((uint32_t)val >> bits)	//!< extract value after performing
 							//!< right shift operations of specified bits
 							//!< on a given value
+#define shift_left_op(val, bits) ((uint32_t)val << bits) //!< Performs shift left for the specified bits
+
 
 /* Default data for input */
 #define DEFAULT_DATA            0

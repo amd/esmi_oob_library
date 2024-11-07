@@ -1331,3 +1331,25 @@ oob_status_t get_dfc_enable(uint8_t soc_num, uint8_t *state)
 
 	return ret;
 }
+
+oob_status_t get_avg_dram_throttle(uint8_t soc_num, uint32_t *dram_throttle)
+{
+	uint32_t input = BIT(31);
+
+	if (!dram_throttle)
+		return OOB_ARG_PTR_NULL;
+
+	return esmi_oob_read_mailbox(soc_num, GET_DRAM_THROTTLE_CHANNELS,
+				     input, dram_throttle);
+}
+
+
+oob_status_t get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr,
+				  uint32_t *dram_throttle)
+{
+	if (!dram_throttle)
+		return OOB_ARG_PTR_NULL;
+
+	return esmi_oob_read_mailbox(soc_num, GET_DRAM_THROTTLE_CHANNELS,
+				     (uint32_t)dimm_addr, dram_throttle);
+}

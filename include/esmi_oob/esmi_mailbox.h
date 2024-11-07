@@ -164,7 +164,8 @@ typedef enum {
 	GET_DIMM_SPD	= 0x70,
 	SET_XGMI_PSTATE_RANGE = 0x73,
 	CPU_RAIL_ISO_FREQ_POLICY,
-	DFC_ENABLE = 0x76
+	DFC_ENABLE = 0x76,
+	GET_DRAM_THROTTLE_CHANNELS = 0x78
 } esb_mailbox_commmands;
 
 /**
@@ -2155,6 +2156,43 @@ oob_status_t set_dfc_enable(uint8_t soc_num, uint8_t state);
  *
  */
 oob_status_t get_dfc_enable(uint8_t soc_num, uint8_t *state);
+
+/**
+ *  @brief Get the Avg DRAM throttle across all the channels.
+ *
+ *  @details This function will get the average DRAM throttle across
+ *  all the channels
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] dram_throttle average dram throttle
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_avg_dram_throttle(uint8_t soc_num, uint32_t *dram_throttle);
+
+/**
+ *  @brief Get the channel DRAM throttle.
+ *
+ *  @details This function will get the DRAM throttle for the given channel
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] dimm_addr dimm address for mode 1 containing umc instance ID,
+ *  dimm 0/1 and temp sensor 0/1.
+ *
+ *  @param[out] dram_throttle average dram throttle
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr,
+				  uint32_t *dram_throttle);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
