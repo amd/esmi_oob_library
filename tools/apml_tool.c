@@ -3420,6 +3420,11 @@ static oob_status_t validate_number(char *str, uint8_t base)
 	uint64_t buffer_number = 0;
 	char *endptr;
 
+	if (base == 10 || base == 0) {
+		if (str[0] < '0' || str[0] > '9' )
+			return OOB_INVALID_INPUT;
+	}
+
 	buffer_number = strtol(str, &endptr, base);
 	if (*endptr != '\0')
 		return OOB_INVALID_INPUT;
@@ -3720,7 +3725,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-
+		if (validate_number(argv[optind - 1], 0)) {
+			printf("Option '--%s' require 1st argument as valid"
+			       " numeric value\n\n", long_options[long_index].name);
+			show_usage(argv[0]);
+			return OOB_SUCCESS;
+		}
 		if ((opt == 0 && (*long_options[long_index].flag == 46
 		     || *long_options[long_index].flag == 48
 		     ||	*long_options[long_index].flag == 53))

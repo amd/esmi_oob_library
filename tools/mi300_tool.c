@@ -1307,6 +1307,11 @@ static oob_status_t validate_number(char *str, uint8_t base)
 	uint64_t buffer_number = 0;
 	char *endptr;
 
+	if (base == 10 || base == 0) {
+		if (str[0] < '0' || str[0] > '9' )
+			return OOB_INVALID_INPUT;
+	}
+
 	buffer_number = strtol(str, &endptr, base);
 	if (*endptr != '\0')
 		return OOB_INVALID_INPUT;
