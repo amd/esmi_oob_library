@@ -2814,6 +2814,89 @@ static void fam_19_mod_00_specific_mailbox_commands(void)
 	       "Show vddiomem power\n");
 }
 
+static void fam_1A_mod_50_common_mailbox_commands(void)
+{
+        printf("  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
+               " fuse data\n"
+               "  --getpostcode\t\t\t\t  [POST_CODE_OFFSET(0 - 7 or s"
+               "/summary)] Get post code for the given offset or"
+               " recent 8 offsets\n"
+               "  --showPCIeconfigspacedata\t\t  [SEGMENT][OFFSET]\n"
+               "\t\t\t\t\t  [BUS(HEX)][DEVICE(HEX)][FUNC]\t\t Show "
+               "32 bit data from extended PCI config space\n"
+               "  --setpcieconfig\t\t\t  [SEGMENT][OFFSET][BUS(HEX)]\n"
+               "\t\t\t\t\t  [DEVICE(HEX)][FUNC(HEX)][WR_DATA(HEX)] "
+               "Set 32 bit data to extended PCI config space\n"
+               "  --showvalidmcabanks\t\t\t\t\t\t\t\t "
+               "Show number of MCA banks & bytes/bank with valid "
+               "status after a fatal error\n"
+               "  --showrasmcamsr\t\t\t  [MCA_BANK_INDEX][OFFSET]"
+               "\t\t Show 32 bit data from specified MCA bank and "
+               "offset\n"
+               "  --showfchresetreason\t\t\t  [FCHID(0 or 1)]\t\t"
+               "\t Show previous reset reason from FCH register\n"
+               "  --showdimmtemprangeandrefreshrate\t  [DIMM_ADDR]"
+               "\t\t\t\t Show per dimm temp range and refresh rate\n"
+               "  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
+               "Show per dimm power consumption\n"
+               "  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
+               "\t Show per dimm thermal sensor\n"
+               "  --showsktfreqlimit\t\t\t\t\t\t\t\t "
+               "Show per socket current active freq limit\n"
+               "  --showcclklimit\t\t\t  [THREAD]\t\t\t\t "
+               "Show core clock limit\n"
+               "  --showsvitelemetryallrails\t\t\t\t\t\t\t "
+               "Show svi based pwr telemetry for all rails\n"
+               "  --showsktfreqrange\t\t\t\t\t\t\t\t "
+               "Show per socket fmax fmin\n"
+               "  --showiobandwidth\t\t\t  "
+               "[LINKID(P0-P3,G0-G3)][BW(AGG_BW)]"
+               "\t Show IO bandwidth\n"
+               "  --showxGMIbandwidth\t\t\t  [LINKID(P0-P3,G0-G3)]\n"
+               "\t\t\t\t          [BW(AGG_BW,RD_BW,WR_BW)]"
+               "\t\t Show current xGMI bandwidth\n"
+               "  --setxGMIlinkwidthrange\t\t  [MIN(0,1,2)]"
+               "[MAX(0,1,2)]\t\t Set xGMIlink width, max value >= "
+               "min value\n"
+               "  --APBDisable\t\t\t\t  [PSTATE(0,1,2)]\t\t\t"
+               " APB Disable specifies DFP-State, 0 is highest & 2 is"
+               " the lowest DF P-state\n"
+               "  --enabledfpstatedynamic\t\t  \t\t\t\t\t "
+               "Set df pstate dynamic\n"
+               "  --showfclkmclkuclk\t\t\t  \t\t\t\t\t "
+               "Show df clock, memory clock and umc clock frequencies\n"
+               "  --setlclkdpmlevel\t\t\t  [NBIOID(0-3)][MAXDPM]"
+               "[MINDPM]\t\t Set dpm level range, valid dpm "
+               "values from 0 - 3, max value >= min value\n"
+               "  --showraplcore\t\t\t  [THREAD]\t\t\t\t "
+               "Show runnng average power on specified core\n"
+               "  --showraplpkg\t\t\t\t  \t\t\t\t\t "
+               "Show running average power on pkg\n"
+               "  --showprocbasefreq\t\t\t  \t\t\t\t\t "
+               "Show processor base frequency\n"
+               "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
+               "Set PCIe link rate control\n"
+               "  --setpwrefficiencymode\t\t  [MODE(0 - 5)]\t\t\t\t "
+               "Set power efficiency profile policy\n"
+               "  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
+               "[MIN_PSTATE]\t\t Set data fabric pstate range, valid "
+               "value 0 - 2. max pstate <= min pstate\n"
+               "  --showlclkdpmlevelrange\t\t  [NBIOID(0~3)]\t\t\t\t "
+               "Show LCLK DPM level range\n"
+               "  --showucoderevision\t\t\t  \t\t\t\t\t "
+               "Show micro code revision number\n"
+               "  --rasoverridedelay\t\t\t"
+               "  [DELAYVALUE(5 -120 mins)\n\t\t\t\t\t  "
+               "[DISABLEDELAY(0 - 1)][STOPDELAY(0 -1)] "
+               "Override delay reset cpu on sync flood\n"
+               "  --rasresetonsyncflood\t\t\t \t\t\t\t\t "
+               "Request warm reset after sync flood\n"
+               "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
+               "Show RAS DF error validity check for a given blockID\n"
+               "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
+               "Show RAS DF error dump\n");
+}
+
 static void fam_19_mod_10_mailbox_commands(void)
 {
 	printf("  --showppinfuse\t\t\t\t\t\t\t\t Show 64bit PPIN"
@@ -3123,6 +3206,11 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 		case FAM_1A_MOD_10:
 			get_common_mailbox_commands(exe_name);
 			fam_19_mod_10_mailbox_commands();
+			fam_1A_mod_00_mailbox_commands();
+			break;
+		case FAM_1A_MOD_50:
+			get_common_mailbox_commands(exe_name);
+			fam_1A_mod_50_common_mailbox_commands();
 			fam_1A_mod_00_mailbox_commands();
 			break;
 		default:
