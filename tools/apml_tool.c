@@ -2728,6 +2728,42 @@ static void apml_get_dfc_enable(uint8_t soc_num)
 	printf("-------------------------------------\n");
 }
 
+static void apml_get_avg_dram_throttle(uint8_t soc_num)
+{
+        uint32_t dram_throttle = 0;
+        oob_status_t ret;
+
+        ret = get_avg_dram_throttle(soc_num, &dram_throttle);
+        if (ret) {
+                printf("Failed to get avg dram throttle for all channels "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("------------------------------------------\n");
+        printf("| Avg DRAM Throttle | %-16d %% |\n", dram_throttle);
+        printf("------------------------------------------\n");
+}
+
+static void apml_get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr)
+{
+        uint32_t dram_throttle = 0;
+        oob_status_t ret;
+
+        ret = get_ch_dram_throttle(soc_num, dimm_addr, &dram_throttle);
+        if (ret) {
+                printf("Failed to get dram throttle for the specified channel "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("-------------------------------------------------\n");
+	printf("| Dimm Addr\t\t | DRAM Throttle\t|\n");
+        printf("-------------------------------------------------\n");
+        printf("| 0x%-16x\t | %-16d %%   |\n", dimm_addr, dram_throttle);
+        printf("-------------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2897,6 +2933,10 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       " Set DFC enable \n"
 	       " --getdfcenable\t\t\t  \t\t\t\t\t\t "
 	       "Show dfc enable state \n"
+	       "  --getavgdramthrottle\t\t\t  \t\t\t\t\t "
+	       "Show avg dram throttle for all channels \n"
+	       "  --getchdramthrottle\t\t\t  [DIMM_ADDR(HEX)] \t\t\t "
+	       "Show channel dram throttle \n"
 	       );
 }
 
@@ -3592,6 +3632,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getcpurailfreqpolicy",	no_argument,		&flag,	60},
 		{"setdfcenable",		required_argument,	&flag,	61},
 		{"getdfcenable",		no_argument,		&flag,	62},
+                {"getavgdramthrottle",          no_argument,            &flag,  63},
+                {"getchdramthrottle",           required_argument,      &flag,  64},
 		{0,			0,			0,	0},
 	};
 
@@ -3707,6 +3749,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 58 ||
 			 (*long_options[long_index].flag) == 59 ||
 			 (*long_options[long_index].flag) == 61 ||
+			 (*long_options[long_index].flag) == 64 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -3733,7 +3776,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 		if ((opt == 0 && (*long_options[long_index].flag == 46
 		     || *long_options[long_index].flag == 48
-		     ||	*long_options[long_index].flag == 53))
+		     || *long_options[long_index].flag == 53
+		     ||	*long_options[long_index].flag == 64))
 		     && validate_number(argv[optind - 1], 16)) {
 			printf("Option  '-%c' requires argument as valid"
 			       " hex value\n\n", opt);
@@ -3756,7 +3800,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			    && opt != 'T' && opt !='P'
 			    && (opt == 0 && (*long_options[long_index].flag) != 46
 			    && (*long_options[long_index].flag) != 48
-			    && (*long_options[long_index].flag) != 53)
+			    && (*long_options[long_index].flag) != 53
+			    && (*long_options[long_index].flag) != 64)
 			    && validate_number(argv[optind - 1], 10)) {
 				printf("\nOption '-%c' require argument as valid"
 				       " numeric value\n\n", opt);
@@ -4256,6 +4301,15 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* APML set CPU rail iso frequency  policy */
 			apml_get_dfc_enable(soc_num);
 			break;
+                } else if (*(long_options[long_index].flag) == 63) {
+                        /* APML get average dram throttle for all channels */
+                        apml_get_avg_dram_throttle(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 64) {
+                        /* APML get dram throttle for the given channel */
+			dimm_addr = strtoul(argv[optind - 1], &end, 16);
+                        apml_get_ch_dram_throttle(soc_num, dimm_addr);
+                        break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_num, uprate);
