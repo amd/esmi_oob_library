@@ -162,9 +162,12 @@ typedef enum {
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
 	GET_DIMM_SPD	= 0x70,
+	SET_DIMM_SPD,
 	SET_XGMI_PSTATE_RANGE = 0x73,
 	CPU_RAIL_ISO_FREQ_POLICY,
-	DFC_ENABLE = 0x76,
+	PC6_ENABLE,
+	DFC_ENABLE,
+	CC6_ENABLE,
 	GET_DRAM_THROTTLE_CHANNELS = 0x78
 } esb_mailbox_commmands;
 
@@ -431,6 +434,20 @@ struct dimm_spd_d_in {
 };
 
 /**
+ * @brief SPD side band write:
+ * strucutre contains dimm address, LID of device, Register offset, Register space,
+ * and data to write
+ *
+ */
+struct dimm_spd_write {
+	uint8_t dimm_addr;		//!< DIMM address
+	uint8_t lid : 4;		//!< local identifier of device
+	uint16_t reg_offset : 11;	//!< Register offset in given register space
+	uint8_t reg_space : 1;		//!< Register space, Volatile:0, NVM:1
+	uint8_t w_data;			//!< Write data
+};
+
+/**
  * @brief frequency limit source names
  */
 static char * const freqlimitsrcnames[] = {
@@ -471,6 +488,7 @@ extern float esu_multiplier;
  *  \ref Fam-19h_Mod-10h-1Fh
  *  \ref Fam-19h_Mod-90h-9Fh
  *  \ref Fam-1Ah_Mod-00h-0Fh
+ *  \ref Fam-1Ah_Mod-50h-5Fh
  *  \section Fam-19h_Mod-00h-0Fh
  *  Platform with Family 19h and model in range 00h - 0Fh
  *  \section Fam-19h_Mod-10h-1Fh
@@ -479,6 +497,8 @@ extern float esu_multiplier;
  *  Platform with Family 19h and model in range 90h - 9Fh
  *  \section Fam-1Ah_Mod-00h-0Fh
  *  Platform with Family 1Ah and model in range 00h - 0Fh
+ *  \section Fam-1Ah_Mod-50h-5Fh
+ *  Platform with Family 1Ah and model in range 50h - 5Fh
  *
  */
 /** @} */ // end of Supporting Platforms
@@ -2004,6 +2024,22 @@ oob_status_t read_dimm_spd_register(uint8_t soc_num,
 				    uint32_t *spd_data);
 
 /**
+ *  @brief Set SPD SB data
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] d_in struct dimm_spd_write containing
+ *  DIMM address, LID, register offset, register space
+ *  and write data.
+ *
+ *  @param[out] spd_data containing spd data as per input
+ */
+oob_status_t write_dimm_spd_register(uint8_t soc_num,
+				     struct dimm_spd_write d_in);
+
+/**
  *  @brief Get DIMM serial number
  *
  *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
@@ -2193,6 +2229,182 @@ oob_status_t get_avg_dram_throttle(uint8_t soc_num, uint32_t *dram_throttle);
  */
 oob_status_t get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr,
 				  uint32_t *dram_throttle);
+
+/**
+ *  @brief Get the PC6 enabling control.
+ *
+ *  @details This function will get the PC6 enabling control.
+ *  PC6 is low power state for the CCD's also known as package C6 state.
+ *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] pc6_state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_pc6_enable(uint8_t soc_num, uint8_t *pc6_state);
+
+/**
+ *  @brief Set the PC6 enabling control.
+ *
+ *  @details This function will set the PC6 enabling control.
+ *  PC6 is low power state for the CCD's also known as package C6 state
+ *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] pc6_state
+ *
+ *  @param[out] updated_pc6_state updated PC6 state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_pc6_enable(uint8_t soc_num, uint8_t pc6_state,
+                            uint8_t *updated_pc6_state);
+
+/**
+ *  @brief Get the CC6 enabling control.
+ *
+ *  @details This function will get the CC6 enabling control.
+ *  This controls CC6 behavior for all the cores. A change to CC6 enablement
+ *  using the CC6_ENABLE corresponding APML or HSMP messages does not change
+ *  the state of the cores.
+ *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] cc6_state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_cc6_enable(uint8_t soc_num, uint8_t *cc6_state);
+
+/**
+ *  @brief Set the CC6 enabling control.
+ *
+ *  @details This function will set the CC6 enabling control.
+ *  This controls CC6 behavior for all the cores. A change to CC6 enablement
+ *  using the CC6_ENABLE corresponding APML or HSMP messages does not change
+ *  the state of the cores.
+ *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] cc6_state
+ *
+ *  @param[out] updated_cc6_state updated PC6 state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_cc6_enable(uint8_t soc_num, uint8_t cc6_state,
+                            uint8_t *updated_cc6_state);
+
+/**
+ *  @brief Get the max and min width of xGMI link.
+ *
+ *  @details This function will set the max and min width of xGMI Link.
+ *  Note1: Max value must be >= Min value. Invalid configurations
+ *  result in a Failed response.
+ *  Note2: If the API is called from both Primary and Secondary sockets, the
+ *  largest Width values from either call are used.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] min_link_width minimum link width.
+ *  0 = X4
+ *  1 = X8
+ *  2 = X16
+ *
+ *  @param[out] max_link_width maximum link width.
+ *  0 = X4
+ *  1 = X8
+ *  2 = X16
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_xgmi_link_width_range(uint8_t soc_num,
+				       uint8_t *min_link_width,
+				       uint8_t *max_link_width);
+/**
+ *  @brief Get the apb state.
+ *
+ *  @details This function will get the apb state and DF P-state
+ *  locked value. It specifies DF (Infinity Fabric TM)
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] apb_state APB state. If apb_state is disabled (i.e.
+ *  value is 1) then DF pstate value is reserved or NA.
+ *
+ *  @param[out] df_pstate DF P-State locked value.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_apb_state(uint8_t soc_num, uint8_t *apb_state, uint8_t *df_pstate);
+
+/**
+ *  @brief Get df pstate range
+ *
+ *  @details This function get df pstate range.
+ *  Max pstate must be <= Min min pstate.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] max_pstate maximum DF p-state
+ *
+ *  @param[in] min_pstate minimum DF p-state
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_df_pstate_range(uint8_t soc_num,
+				 uint8_t *max_pstate,
+				 uint8_t *min_pstate);
+
+/**
+ *  @brief Get the max and min xGMI pstate.
+ *
+ *  @details This function will get the max and min xGMI pstate.
+ *  pstate values are 0 - DFP0 (high performace) and 1 - DFP1
+ *  (low performance). Max value must be <= Min value. XGMI P-state
+ *  can be set through APML or HSMP; the value that was last set is
+ *  enforced.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] min_xgmi_pstate minimum xgmi pstate.
+ *
+ *  @param[out] max_xgmi_pstate maximum xgmi pstate.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
+                                   uint8_t *min_xgmi_pstate,
+                                   uint8_t *max_xgmi_pstate);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

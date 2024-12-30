@@ -1353,3 +1353,165 @@ oob_status_t get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr,
 	return esmi_oob_read_mailbox(soc_num, GET_DRAM_THROTTLE_CHANNELS,
 				     (uint32_t)dimm_addr, dram_throttle);
 }
+
+oob_status_t write_dimm_spd_register(uint8_t soc_num, struct dimm_spd_write d_in)
+{
+	uint32_t input = 0;
+
+	input = (uint32_t)d_in.dimm_addr | shift_left_op(d_in.lid, 8)
+		| shift_left_op(d_in.reg_offset, 12) | shift_left_op(d_in.reg_space, 23)
+		| shift_left_op(d_in.w_data, 24);
+
+	return esmi_oob_write_mailbox(soc_num, SET_DIMM_SPD, input);
+}
+
+oob_status_t get_pc6_enable(uint8_t soc_num, uint8_t *pc6_state)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!pc6_state)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, PC6_ENABLE, input, &buffer);
+	if (!ret)
+		*pc6_state = buffer & BIT(0);
+
+	return ret;
+}
+
+oob_status_t set_pc6_enable(uint8_t soc_num, uint8_t pc6_state,
+			    uint8_t *updated_pc6_state)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret;
+
+	if (!updated_pc6_state)
+		return OOB_ARG_PTR_NULL;
+
+	if (pc6_state > BIT(0))
+		return OOB_INVALID_INPUT;
+
+	ret = esmi_oob_read_mailbox(soc_num, PC6_ENABLE, (uint32_t)pc6_state, &buffer);
+	if (!ret)
+		*updated_pc6_state = buffer & BIT(0);
+
+	return ret;
+}
+
+oob_status_t get_cc6_enable(uint8_t soc_num, uint8_t *cc6_state)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!cc6_state)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, CC6_ENABLE, input, &buffer);
+	if (!ret)
+		*cc6_state = buffer & BIT(0);
+
+	return ret;
+}
+
+oob_status_t set_cc6_enable(uint8_t soc_num, uint8_t cc6_state,
+                            uint8_t *updated_cc6_state)
+{
+	uint32_t buffer = 0;
+	oob_status_t ret;
+
+	if (!updated_cc6_state)
+		return OOB_ARG_PTR_NULL;
+
+	if (cc6_state > BIT(0))
+		return OOB_INVALID_INPUT;
+
+	ret = esmi_oob_read_mailbox(soc_num, CC6_ENABLE, (uint32_t)cc6_state, &buffer);
+	if (!ret)
+		*updated_cc6_state = buffer & BIT(0);
+
+	return ret;
+}
+
+oob_status_t get_xgmi_link_width_range(uint8_t soc_num,
+				       uint8_t *min_link_width,
+				       uint8_t *max_link_width)
+{
+        uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!min_link_width || !max_link_width)
+		return OOB_ARG_PTR_NULL;
+
+        ret = esmi_oob_read_mailbox(soc_num, WRITE_XGMI_LINK_WIDTH_RANGE,
+				    input, &buffer);
+	if (!ret) {
+		*max_link_width = buffer;
+		*min_link_width = extract_val(buffer, BYTE_BITS);
+	}
+
+	return ret;
+}
+
+oob_status_t get_apb_state(uint8_t soc_num, uint8_t *apb_state, uint8_t *df_pstate)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!df_pstate || !apb_state)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, WRITE_APB_DISABLE,
+				    input, &buffer);
+	if (ret) {
+		*apb_state = extract_val(buffer, BIT(3)) & BIT(0);
+		if ( *apb_state)
+			*df_pstate = buffer;
+		else
+			// Setting to 0xFF to indicate the value is reserved
+			*df_pstate = 0xFF;
+	}
+
+	return ret;
+}
+
+oob_status_t get_df_pstate_range(uint8_t soc_num,
+				 uint8_t *max_pstate,
+				 uint8_t *min_pstate)
+{
+	uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!max_pstate || !min_pstate)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, WRITE_DF_PSTATE_RANGE,
+				    input, &buffer);
+
+	if (ret) {
+		*max_pstate = buffer;
+		*min_pstate = extract_val(buffer, BIT(3));
+	}
+
+	return ret;
+}
+
+oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
+                                   uint8_t *min_xgmi_pstate,
+                                   uint8_t *max_xgmi_pstate)
+{
+        uint32_t input = BIT(31), buffer = 0;
+	oob_status_t ret;
+
+	if (!min_xgmi_pstate || !max_xgmi_pstate)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_num, SET_XGMI_PSTATE_RANGE,
+				    input, &buffer);
+	if (ret) {
+		*max_xgmi_pstate = buffer;
+		*min_xgmi_pstate = extract_val(buffer, BIT(3));
+	}
+
+	return ret;
+}
