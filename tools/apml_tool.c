@@ -2781,6 +2781,166 @@ static void apml_get_ch_dram_throttle(uint8_t soc_num, uint8_t dimm_addr)
         printf("-------------------------------------------------\n");
 }
 
+static void apml_get_xgmi_pstate_range(uint8_t soc_num)
+{
+        uint8_t min_xgmi_pstate = 0, max_xgmi_pstate = 0;
+        oob_status_t ret;
+
+        ret = get_xgmi_pstate_range(soc_num, &min_xgmi_pstate,
+                                    &max_xgmi_pstate);
+        if (ret) {
+                printf("Failed to xgmi pstate range "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("---------------------------------------------\n");
+        printf("| Min XGMI P-State\t | %-16d |\n", min_xgmi_pstate);
+        printf("| Max XGMI P-State\t | %-16d |\n", max_xgmi_pstate);
+        printf("---------------------------------------------\n");
+}
+
+static void apml_get_xgmi_link_width_range(uint8_t soc_num)
+{
+        uint8_t min_link_width = 0, max_link_width = 0;
+        oob_status_t ret;
+
+        ret = get_xgmi_link_width_range(soc_num, &min_link_width,
+                                        &max_link_width);
+        if (ret) {
+                printf("Failed to xgmi link width range "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("---------------------------------------------\n");
+        printf("| Min link width\t | %-16d |\n", min_link_width);
+        printf("| Max link width\t | %-16d |\n", max_link_width);
+        printf("---------------------------------------------\n");
+}
+
+static void apml_get_apb_state(uint8_t soc_num)
+{
+        uint8_t apb_state = 0, df_pstate = 0;
+        oob_status_t ret;
+
+        ret = get_apb_state(soc_num, &apb_state, &df_pstate);
+        if (ret) {
+                printf("Failed to apb state "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("-------------------------------------\n");
+        printf("| APB State\t | %-16s |\n", apb_state ? "APB Disabled" : "APB Enabled");
+        if (apb_state)
+                printf("| DF P-State\t | %-16d |\n", df_pstate);
+	else
+		printf("| DF P-State\t | %-16s |\n", "NA");
+        printf("-------------------------------------\n");
+}
+
+static void apml_get_df_pstate_range(uint8_t soc_num)
+{
+        uint8_t min_pstate = 0, max_pstate = 0;
+        oob_status_t ret;
+
+        ret = get_df_pstate_range(soc_num, &min_pstate, &max_pstate);
+        if (ret) {
+                printf("Failed to DF P-state range "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("-------------------------------------\n");
+        printf("| Min p-state\t | %-16d |\n", min_pstate);
+        printf("| Max p-state\t | %-16d |\n", max_pstate);
+        printf("-------------------------------------\n");
+}
+
+static void apml_set_dimm_spd_register(uint8_t soc_num, struct dimm_spd_write d_in)
+{
+        oob_status_t ret;
+
+        ret = write_dimm_spd_register(soc_num, d_in);
+        if (ret) {
+                printf("Failed to set dimm spd register "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("SPD SB set successfully\n");
+}
+
+static void apml_set_pc6_enable(uint8_t soc_num, uint8_t pc6_state)
+{
+        uint8_t updated_pc6_state = 0;
+        oob_status_t ret;
+
+        ret = set_pc6_enable(soc_num, pc6_state, &updated_pc6_state);
+        if (ret) {
+                printf("Failed to set PC6 enable "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        if (updated_pc6_state == pc6_state)
+                printf("PC6 control set successfully\n");
+        else
+                printf("PC6 control not set\n");
+}
+static void apml_get_pc6_enable(uint8_t soc_num)
+{
+        uint8_t pc6_state = 0;
+        oob_status_t ret;
+
+        ret = get_pc6_enable(soc_num, &pc6_state);
+        if (ret) {
+                printf("Failed to get PC6 enable "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("-------------------------------------\n");
+        printf("| PC6 Control\t | %-16s |\n", pc6_state ? "Enabled" : "Disabled");
+        printf("-------------------------------------\n");
+}
+
+static void apml_set_cc6_enable(uint8_t soc_num, uint8_t cc6_state)
+{
+        uint8_t updated_cc6_state = 0;
+        oob_status_t ret;
+
+        ret = set_cc6_enable(soc_num, cc6_state, &updated_cc6_state);
+        if (ret) {
+                printf("Failed to set CC6 control "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        if (updated_cc6_state == cc6_state)
+                printf("CC6 control set successfully\n");
+        else
+                printf("CC6 control not set\n");
+}
+
+static void apml_get_cc6_enable(uint8_t soc_num)
+{
+        uint8_t cc6_state = 0;
+        oob_status_t ret;
+
+        ret = get_cc6_enable(soc_num, &cc6_state);
+        if (ret) {
+                printf("Failed to get CC6 enable "
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("-------------------------------------\n");
+        printf("| CC6 Control\t | %-16s |\n", cc6_state ? "Enabled" : "Disabled");
+        printf("-------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2815,6 +2975,30 @@ static void fam_19_mod_00_specific_mailbox_commands(void)
 {
 	printf("  --showvddiomempower\t\t\t  \t\t\t\t\t "
 	       "Show vddiomem power\n");
+}
+
+static void fam_1A_mod_50_mailbox_commands()
+{
+        printf("  --getxgmilinkwidthrange\t\t\t  \t\t\t\t "
+               "Show XGMI link width range\n"
+               "  --getapbstate\t\t\t  \t\t\t\t\t\t "
+               "Show apb state\n"
+               "  --getdfpstaterange\t\t\t  \t\t\t\t\t "
+               "Show df p-state range\n"
+               "  --getxgmipstaterange\t\t\t  \t\t\t\t\t "
+               "Show xgmi p-state range\n"
+               "  --setspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
+               "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE]"
+               "\n\t\t\t\t\t  [DATA(HEX)] \t\t\t\t"
+               " Set DIMM SPD register data\n"
+               "  --getpc6control\t\t\t  \t\t\t\t\t "
+               "Show PC6 enable state \n"
+               "  --setpc6control\t\t\t  [STATE(0-1)] \t\t\t\t"
+               " Set PC6 enable state\n"
+               "  --getcc6control\t\t\t  \t\t\t\t\t "
+               "Show CC6 enable state \n"
+               "  --setcc6control\t\t\t  [STATE(0-1)] \t\t\t\t"
+               " Set CC6 enable state\n");
 }
 
 static void fam_1A_mod_50_common_mailbox_commands(void)
@@ -3214,6 +3398,7 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 		case FAM_1A_MOD_50:
 			get_common_mailbox_commands(exe_name);
 			fam_1A_mod_50_common_mailbox_commands();
+			fam_1A_mod_50_mailbox_commands();
 			fam_1A_mod_00_mailbox_commands();
 			break;
 		default:
@@ -3617,6 +3802,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_power dp_soc_num;
 	struct dimm_thermal dt_soc_num;
 	struct dimm_spd_d_in spd_in;
+	struct dimm_spd_write spd_w_din = {0};
 	uint8_t soc_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -3742,6 +3928,15 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getdfcenable",		no_argument,		&flag,	62},
                 {"getavgdramthrottle",          no_argument,            &flag,  63},
                 {"getchdramthrottle",           required_argument,      &flag,  64},
+                {"getcc6control",               no_argument,            &flag,  65},
+                {"setcc6control",               required_argument,      &flag,  66},
+                {"getxgmilinkwidthrange",       no_argument,            &flag,  67},
+                {"getapbstate",                 no_argument,            &flag,  68},
+                {"getdfpstaterange",            no_argument,            &flag,  69},
+                {"getxgmipstaterange",          no_argument,            &flag,  70},
+                {"setspddata",                  required_argument,      &flag,  71},
+                {"getpc6control",               no_argument,            &flag,  72},
+                {"setpc6control",               required_argument,      &flag,  73},
 		{0,			0,			0,	0},
 	};
 
@@ -3857,6 +4052,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 59 ||
 			 (*long_options[long_index].flag) == 61 ||
 			 (*long_options[long_index].flag) == 64 ||
+			 (*long_options[long_index].flag) == 66 ||
+			 (*long_options[long_index].flag) == 73 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -4093,6 +4290,27 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 
 	}
+
+        if (opt == 0 && *long_options[long_index].flag == 71) {
+                if ((optind + 2) >= argc || *argv[optind] == '-'
+                     || *argv[optind + 1] == '-' || *argv[optind + 2] == '-'
+                     || *argv[optind + 3] == '-') {
+                        printf("\nOption '-%c' requires 5 arguments\n", opt);
+                        show_usage(argv[0]);
+                        return OOB_SUCCESS;
+                }
+                if (validate_number(argv[optind - 1], 16) ||
+                    validate_number(argv[optind], 16) ||
+                    validate_number(argv[optind + 1], 16) ||
+                    validate_number(argv[optind + 2], 16) ||
+                    validate_number(argv[optind + 3], 16))
+                {
+                        printf("\nOption '%c' requires all arguments as "
+                               "valid hexa value\n", opt);
+                        return OOB_SUCCESS;
+                }
+
+        }
 
 	if (opt == 'R') {
 		if ((optind + 3) >= argc || *argv[optind] == '-'
@@ -4420,6 +4638,49 @@ static oob_status_t parseesb_args(int argc, char **argv)
                         /* APML get dram throttle for the given channel */
 			dimm_addr = strtoul(argv[optind - 1], &end, 16);
                         apml_get_ch_dram_throttle(soc_num, dimm_addr);
+                        break;
+                } else if (*(long_options[long_index].flag) == 65) {
+                        /* APML get CC6 control */
+                        apml_get_cc6_enable(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 66) {
+                        /* APML set CC6 control */
+                        val1 = atoi(argv[optind - 1]);
+                        apml_set_cc6_enable(soc_num, val1);
+                        break;
+                } else if (*(long_options[long_index].flag) == 67) {
+                        /* APML get xgmi link width range */
+                        apml_get_xgmi_link_width_range(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 68) {
+                        /* APML get apb state */
+                        apml_get_apb_state(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 69) {
+                        /* APML get df p-state range */
+                        apml_get_df_pstate_range(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 70) {
+                        /* APML get xgmi pstate range */
+                        apml_get_xgmi_pstate_range(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 71) {
+                        /* APML set SPD data */
+                        spd_w_din.dimm_addr = strtoul(argv[optind - 1], &end, 16);
+                        spd_w_din.lid = strtoul(argv[optind++], &end, 16);
+                        spd_w_din.reg_offset = strtoul(argv[optind++], &end, 16);
+                        spd_w_din.reg_space = atoi(argv[optind++]);
+                        spd_w_din.w_data = strtoul(argv[optind++], &end, 16);
+                        apml_set_dimm_spd_register(soc_num, spd_w_din);
+                        break;
+                } else if (*(long_options[long_index].flag) == 72) {
+                        /* APML get pc6 control */
+                        apml_get_pc6_enable(soc_num);
+                        break;
+                } else if (*(long_options[long_index].flag) == 73) {
+                        /* APML set PC6 control */
+                        val1 = atoi(argv[optind - 1]);
+                        apml_set_pc6_enable(soc_num, val1);
                         break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
