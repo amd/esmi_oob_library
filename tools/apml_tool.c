@@ -1824,6 +1824,20 @@ static void read_tsi_register(uint8_t soc_num, uint32_t reg)
 	printf("\n---------------------------------\n");
 }
 
+static void read_tsi_raw_register(uint8_t soc_num, uint32_t reg)
+{
+	uint8_t buffer;
+	oob_status_t ret;
+
+	ret = esmi_oob_tsi_read_byte(soc_num, reg, &buffer);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to read tsi register %x, Err[%d]:%s\n",
+		       reg, ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("%02x\n", buffer);
+}
+
 static void write_rmi_register(uint8_t soc_num, uint32_t reg,
 			       uint32_t value)
 {
@@ -3028,7 +3042,9 @@ static void get_tsi_commands(char *exe_name)
 	       "  --setreadorder\t\t	  [VALUE]\t\t\t\t "
 	       "Set/Reset APML processor read order, VALUE = 0 or 1\n"
 	       "  --setara\t\t\t	  [VALUE]\t\t\t\t "
-	       "Set/Reset APML processor ARA, VALUE = 0 or 1\n", exe_name);
+	       "Set/Reset APML processor ARA, VALUE = 0 or 1\n"
+	       "  --readtsiraw\t\t\t\t  [REGISTER(hex)]\t\t\t "
+	       "Read TSI raw register value in hexa\n", exe_name);
 }
 
 static void get_reg_access_commands(char *exe_name)
@@ -3559,6 +3575,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setrunstop",		required_argument,	&flag,	1209},
 		{"setreadorder",	required_argument,	&flag,	1210},
 		{"setara",		required_argument,	&flag,	1211},
+		{"readtsiraw",		required_argument,	&flag,	1214},
 		{"setdimmpower",			required_argument,	0,	'P'},
 		{"setdimmthermalsensor",		required_argument,	0,	'T'},
 		{"showdimmpower",			required_argument,	0,	'O'},
@@ -3759,7 +3776,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 1208 ||
 			 (*long_options[long_index].flag) == 1209 ||
 			 (*long_options[long_index].flag) == 1210 ||
-			 (*long_options[long_index].flag) == 1211)) {
+			 (*long_options[long_index].flag) == 1211 ||
+			 (*long_options[long_index].flag) == 1214)) {
 		// make sure optind is valid  ... or another option
 		if ((optind - 1) >= argc) {
 			printf("\nOption '-%c' require an argument"
@@ -3777,7 +3795,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		if ((opt == 0 && (*long_options[long_index].flag == 46
 		     || *long_options[long_index].flag == 48
 		     || *long_options[long_index].flag == 53
-		     ||	*long_options[long_index].flag == 64))
+		     || *long_options[long_index].flag == 64
+		     ||	*long_options[long_index].flag == 1214))
 		     && validate_number(argv[optind - 1], 16)) {
 			printf("Option  '-%c' requires argument as valid"
 			       " hex value\n\n", opt);
@@ -3801,7 +3820,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			    && (opt == 0 && (*long_options[long_index].flag) != 46
 			    && (*long_options[long_index].flag) != 48
 			    && (*long_options[long_index].flag) != 53
-			    && (*long_options[long_index].flag) != 64)
+			    && (*long_options[long_index].flag) != 64
+			    && (*long_options[long_index].flag) != 1214)
 			    && validate_number(argv[optind - 1], 10)) {
 				printf("\nOption '-%c' require argument as valid"
 				       " numeric value\n\n", opt);
@@ -4358,6 +4378,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			set_tsi_config(soc_num, value,
 				       *long_options[long_index].flag);
 			break;
+		} else if (*(long_options[long_index].flag) == 1214) {
+			/* Read TSI register */
+			val1 = strtoul(argv[optind - 1], &end, 16);
+			read_tsi_raw_register(soc_num, val1);
+			break;
 		}
 		break;
 	case 'Y':
@@ -4580,18 +4605,26 @@ int main(int argc, char **argv)
 {
 	uint32_t soc_num;
 	oob_status_t ret;
+	uint8_t check = 0;
+	int i;
 
 	if (getuid() != 0)
 		rerun_sudo(argc, argv);
 
-	show_smi_message();
+	for (i = 0; i < argc; i++) {
+		if (!strcmp("--readtsiraw", *(argv + i)))
+			check = 1;
+	}
+	if (!check)
+		show_smi_message();
 
 	/* Parse command arguments */
 	ret = parseesb_args(argc, argv);
 	if (ret)
 		return ret;
 
-	show_smi_end_message();
+	if (!check)
+		show_smi_end_message();
 
 	return ret;
 }
