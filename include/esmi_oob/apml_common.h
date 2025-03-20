@@ -114,7 +114,7 @@
  *      10000000b: G3
  */
 struct apml_encodings {
-        uint8_t val;            //!< Link ID encoding value
+        uint16_t val;            //!< Link ID encoding value
         char    name[3];        //!< Link ID encoding name
 };
 

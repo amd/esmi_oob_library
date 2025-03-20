@@ -1532,6 +1532,21 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
 	return ret;
 }
 
+oob_status_t set_pcie_link_training(uint8_t soc_die_num, struct pcie_link_training d_in,
+				    uint32_t *auth_status)
+{
+	uint32_t input = 0;
+	oob_status_t ret;
+
+	if (!auth_status)
+		return OOB_ARG_PTR_NULL;
+
+	input = (uint32_t)d_in.link_id | shift_left_op(d_in.pcie_port, BIT(4));
+
+	return esmi_oob_read_mailbox(soc_die_num, SET_PCIE_LINK_TRAINING,
+				     input, auth_status);
+}
+
 oob_status_t get_ccd_power_consumption(uint8_t soc_die_num, uint32_t logical_core_id,
 				       uint32_t *ccd_pow)
 {

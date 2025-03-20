@@ -73,6 +73,8 @@
 
 /* Legacy APML encodings count */
 #define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
+/* SP7 APML Link ID Encodings count */
+#define SP7_ENCODING_SIZE              10      //!< Sp7 APML encoding size //
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
@@ -169,6 +171,7 @@ typedef enum {
 	DFC_ENABLE,
 	CC6_ENABLE,
 	GET_DRAM_THROTTLE_CHANNELS = 0x78,
+	SET_PCIE_LINK_TRAINING,
 	GET_CCD_POW_CONSUMPTION = 0x7A,
 	GET_T_DELTA,
 	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL
@@ -234,6 +237,15 @@ struct pci_address {
 	uint8_t bus;		//!< bus (8 bit data)
 	uint16_t offset : 12;	//!< offset address (12 bit data)
 	uint8_t segment : 4;	//!< segment (4 bit data)
+};
+
+/**
+ * @brief PCIe Halt Link Training information. It includes 10 bit link ID,
+ * 4 bit Pcie Port number range from 0 - 7.
+ */
+ struct pcie_link_training {
+	uint16_t link_id : 10;	//!< Link ID
+	uint8_t pcie_port : 4;	//!< PCIe port
 };
 
 /**
@@ -543,7 +555,11 @@ extern float esu_multiplier;
  */
 /** @} */ // end of Supporting Platforms
 
-
+/* Apml link ID encodings for SP7 platform */
+static struct apml_encodings sp7_encodings[SP7_ENCODING_SIZE] = {{1, "P0"}, {2, "P1"}, {4, "P2"},
+								{8, "P3"}, {16, "G0"}, {32, "G1"},
+								{64, "G2"}, {128, "G3"}, {256, "P4"},
+								{512, "P5"}};                  //!< SP7 platform link ID encodings
 /**
  *  @brief Get the power consumption of the socket.
  *
@@ -2421,6 +2437,34 @@ oob_status_t get_apb_state(uint8_t soc_die_num, uint8_t *apb_state, uint8_t *df_
 oob_status_t get_df_pstate_range(uint8_t soc_die_num,
 				 uint8_t *max_pstate,
 				 uint8_t *min_pstate);
+
+
+/**
+ *  @brief Set PCIe Link Training.
+ *
+ *  @details This function will halt PCIe link training for
+ *  for OOB devie authentication. BMC communicates information of PCIe links/ports
+ *  to be cleared for training to MP1 firmware over APML.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] pci_addr pci_address structure with fucntion(3 bit),
+ *  device(4 bit) bus(8 bit), offset(12 bit), segment(4 bit).
+ *  SEGMENT:0 BUS 0:DEVICE 18 and
+ *  SEGMENT:0 BUS 0:DEVICE 19 are inaccessable.
+ *
+ *  @param[in] d_in struct pcie_link_training containing link_id and pcie_port.
+ *
+ *  @param[out] auth_status return authentication status.Response is 0 if Authentication is successful
+ *	else not authenticated/ untrusted.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t set_pcie_link_training(uint8_t soc_die_num, struct pcie_link_training d_in,
+				    uint32_t *auth_status);
 
 /**
  *  @brief Get the max and min xGMI pstate.
