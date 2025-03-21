@@ -2941,6 +2941,23 @@ static void apml_get_cc6_enable(uint8_t soc_num)
         printf("-------------------------------------\n");
 }
 
+static void apml_get_ccd_power_consumption(uint8_t soc_num, uint32_t logical_core_id)
+{
+	uint32_t power = 0;
+	oob_status_t ret;
+
+	ret = get_ccd_power_consumption(soc_num, logical_core_id, &power);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get ccd power, Err[%d]: %s\n",
+			ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------------------");
+	printf("\n| Power (Watts)\t\t |");
+	printf(" %-17.3f|", (double)power/1000);
+	printf("\n---------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -2998,7 +3015,10 @@ static void fam_1A_mod_50_mailbox_commands()
                "  --getcc6control\t\t\t  \t\t\t\t\t "
                "Show CC6 enable state \n"
                "  --setcc6control\t\t\t  [STATE(0-1)] \t\t\t\t"
-               " Set CC6 enable state\n");
+               " Set CC6 enable state\n"
+	       "  --getccdpowconsumption\t\t  [COREID] \t\t\t\t"
+	       "Show CCD power consumption in Watts\n"
+			);
 }
 
 static void fam_1A_mod_50_common_mailbox_commands(void)
@@ -3937,6 +3957,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
                 {"setspddata",                  required_argument,      &flag,  71},
                 {"getpc6control",               no_argument,            &flag,  72},
                 {"setpc6control",               required_argument,      &flag,  73},
+		{"getccdpowconsumption",	required_argument,	&flag,	75},
 		{0,			0,			0,	0},
 	};
 
@@ -4054,6 +4075,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 64 ||
 			 (*long_options[long_index].flag) == 66 ||
 			 (*long_options[long_index].flag) == 73 ||
+			 (*long_options[long_index].flag) == 75 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -4681,6 +4703,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
                         /* APML set PC6 control */
                         val1 = atoi(argv[optind - 1]);
                         apml_set_pc6_enable(soc_num, val1);
+                        break;
+		} else if (*(long_options[long_index].flag) == 75) {
+                        /* Get CCD power consumption */
+                        val1 = atoi(argv[optind - 1]);
+                        apml_get_ccd_power_consumption(soc_num, val1);
                         break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
