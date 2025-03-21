@@ -153,6 +153,9 @@ static oob_status_t get_proc_type(uint8_t soc_num,  uint8_t *p_type)
 		case 0x10 ... 0x1F:
 			*p_type = FAM_1A_MOD_10;
 			break;
+                case 0x50 ... 0x5F:
+                        *p_type = FAM_1A_MOD_50;
+                        break;
 		default:
 			*p_type = LEGACY_PLATFORMS;
 		}
