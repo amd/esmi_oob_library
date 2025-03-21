@@ -1515,3 +1515,13 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
 
 	return ret;
 }
+
+oob_status_t get_ccd_power_consumption(uint8_t soc_num, uint32_t logical_core_id,
+				       uint32_t *ccd_pow)
+{
+	if (!ccd_pow)
+		return OOB_ARG_PTR_NULL;
+
+	return esmi_oob_read_mailbox(soc_num, GET_CCD_POW_CONSUMPTION,
+				     logical_core_id, ccd_pow);
+}

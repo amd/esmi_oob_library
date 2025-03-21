@@ -168,7 +168,8 @@ typedef enum {
 	PC6_ENABLE,
 	DFC_ENABLE,
 	CC6_ENABLE,
-	GET_DRAM_THROTTLE_CHANNELS = 0x78
+	GET_DRAM_THROTTLE_CHANNELS = 0x78,
+	GET_CCD_POW_CONSUMPTION = 0x7A
 } esb_mailbox_commmands;
 
 /**
@@ -2405,6 +2406,27 @@ oob_status_t get_df_pstate_range(uint8_t soc_num,
 oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
                                    uint8_t *min_xgmi_pstate,
                                    uint8_t *max_xgmi_pstate);
+
+/**
+ *  @brief Get CCD power consumption.
+ *
+ *  @details This function will get average power consumption
+ *  by the CCD.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] logical_core_id core ID
+ *
+ *  @param[out] ccd_pow average ccd power in mWatts
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t get_ccd_power_consumption(uint8_t soc_num,
+					uint32_t logical_core_id,
+					uint32_t *ccd_pow);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
