@@ -487,8 +487,16 @@ oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_num,
 	if (!freq)
 		return OOB_ARG_PTR_NULL;
 
-	// frequency limit source names array length
-	src_length = ARRAY_SIZE(freqlimitsrcnames);
+	ret = esmi_get_processor_info(soc_num, plat_info);
+	if (ret)
+		return ret;
+	if (plat_info->family == 0x1A
+	    && (plat_info->model >= 0x50 && plat_info->model <=0x5F))
+		// frequency limit source names array length
+		src_length = ARRAY_SIZE(freqlimitsrcnames_VER1);
+	else
+		// frequency limit source names array length
+		src_length = ARRAY_SIZE(freqlimitsrcnames);
 	ret = esmi_oob_read_mailbox(soc_num,
 				    READ_PWR_CURRENT_ACTIVE_FREQ_LIMIT_SOCKET,
 				    0, &output);
@@ -497,16 +505,19 @@ oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_num,
 
 	*freq = output >> 16;
 	limit = output & TWO_BYTE_MASK;
-
 	while (limit != 0 && index < src_length) {
 		if ((limit & 1) == 1) {
-			source_type[ind] = freqlimitsrcnames[index];
+			if (plat_info->family == 0x1A
+			    && (plat_info->model >= 0x50
+			    && plat_info->model <=0x5F))
+				source_type[ind] = freqlimitsrcnames_VER1[index];
+			else
+				source_type[ind] = freqlimitsrcnames[index];
 			ind++;
 		}
 		index += 1;
 		limit = limit >> 1;
 	}
-
 	return ret;
 }
 

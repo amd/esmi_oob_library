@@ -463,6 +463,22 @@ static char * const freqlimitsrcnames[] = {
 };
 
 /**
+ * @brief frequency limit source names for the FAM_1A and Model: 50H - 5FH
+ */
+static char * const freqlimitsrcnames_VER1[] = {
+        "cHTC-Active",
+        "PROCHOT",
+        "TDC_Limit_CPU_Rail",
+        "PPT Limit",
+        "OPN Max",
+        "Reliability Limit",
+        "APML Agent",
+        "HSMP Agent",
+	"VRHOT",
+	"TDC_Limit_VDD_MEM_S3Rail"
+};
+
+/**
  * @brief energy status multiplier
  * value is 1/2^ESU where ESU is
  * [12:8] bit of the mailbox command 0x55h.
