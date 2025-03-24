@@ -1321,19 +1321,34 @@ static void display_freq_limit_src_names(char **source_type)
 	uint8_t index = 0;
 
 	while (source_type[index]) {
-		printf(" %-17s ", source_type[index]);
+		printf(" %-22s ", source_type[index]);
 		index++;
 	}
 	if (index == 0)
-		printf(" %-17s ", "Reserved");
+		printf(" %-22s ", "Reserved");
 }
 
 static void apml_get_freq_limit(uint8_t soc_num)
 {
-	uint16_t freq;
-	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
+	uint16_t freq, source_len = 0;
+	uint8_t p_type = 0;
 	oob_status_t ret;
 
+	ret = get_proc_type(soc_num, &p_type);
+	if (ret) {
+		printf("------------------------------------------------------\n");
+		printf("Platform Identification failed.\n");
+		printf("------------------------------------------------------\n");
+		return;
+	}
+
+	if (p_type == FAM_1A_MOD_50)
+		source_len = ARRAY_SIZE(freqlimitsrcnames_VER1);
+	else
+		source_len = ARRAY_SIZE(freqlimitsrcnames);
+	char *source_type[source_len];
+
+	memset(source_type, 0, sizeof(source_type));
 	ret = read_pwr_current_active_freq_limit_socket(soc_num,
 							&freq, source_type);
 	if (ret != OOB_SUCCESS) {
@@ -1341,13 +1356,13 @@ static void apml_get_freq_limit(uint8_t soc_num)
 			ret, esmi_get_err_msg(ret));
 		return;
 	}
-	printf("------------------------------------------------------\n");
+	printf("-------------------------------------------------------------\n");
 	printf("| Frequency (MHz)\t\t |");
-	printf(" %-17u |\n", freq);
+	printf(" %-22u   |\n", freq);
 	printf("| Source\t\t\t |");
 	display_freq_limit_src_names(source_type);
 	printf("|\n");
-	printf("------------------------------------------------------\n");
+	printf("-------------------------------------------------------------\n");
 }
 
 static void apml_get_cclklimit(uint8_t soc_num, uint32_t thread)
