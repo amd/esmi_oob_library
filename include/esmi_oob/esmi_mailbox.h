@@ -169,7 +169,8 @@ typedef enum {
 	DFC_ENABLE,
 	CC6_ENABLE,
 	GET_DRAM_THROTTLE_CHANNELS = 0x78,
-	GET_CCD_POW_CONSUMPTION = 0x7A
+	GET_CCD_POW_CONSUMPTION = 0x7A,
+	GET_T_DELTA
 } esb_mailbox_commmands;
 
 /**
@@ -2443,6 +2444,26 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
  oob_status_t get_ccd_power_consumption(uint8_t soc_num,
 					uint32_t logical_core_id,
 					uint32_t *ccd_pow);
+
+/**
+ *  @brief Get Tdelta.
+ *
+ *  @details This function will get temperature delta to indicate behavior.
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[out] thermal_behav Thermal solution behavior.
+ *  Response as 0 means thermal solution behavior is normal
+ *  Non-zero response indicates thermal soultion is out of range.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t get_tdelta(uint8_t soc_num, uint32_t *thermal_behav);
+
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

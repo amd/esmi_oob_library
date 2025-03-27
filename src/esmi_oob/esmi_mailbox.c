@@ -1536,3 +1536,13 @@ oob_status_t get_ccd_power_consumption(uint8_t soc_num, uint32_t logical_core_id
 	return esmi_oob_read_mailbox(soc_num, GET_CCD_POW_CONSUMPTION,
 				     logical_core_id, ccd_pow);
 }
+
+
+ oob_status_t get_tdelta(uint8_t soc_num, uint32_t *thermal_behav)
+{
+	if (!thermal_behav)
+		return OOB_ARG_PTR_NULL;
+
+	return esmi_oob_read_mailbox(soc_num, GET_T_DELTA,
+				     DEFAULT_DATA, thermal_behav);
+}
