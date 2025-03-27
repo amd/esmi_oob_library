@@ -2973,6 +2973,27 @@ static void apml_get_ccd_power_consumption(uint8_t soc_num, uint32_t logical_cor
 	printf("\n---------------------------------------------\n");
 }
 
+static void apml_get_tdelta(uint8_t soc_num)
+{
+	uint32_t resp = 0;
+	char *err_response = "Thermal Solution is out of expected range";
+	char *success_response = "Thermal Solution behavior is normal";
+        oob_status_t ret;
+
+        ret = get_tdelta(soc_num, &resp);
+        if (ret != OOB_SUCCESS) {
+                printf("Failed to get tdelta, Err[%d]: %s\n",
+                        ret, esmi_get_err_msg(ret));
+                return;
+        }
+        printf("----------------------------------------------------------"
+	       "-----------------------");
+        printf("\n| TDelta \t\t\t |");
+        printf(" %-45s |\n", resp ? err_response : success_response);
+        printf("----------------------------------------------------------"
+	       "-----------------------");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -3033,6 +3054,8 @@ static void fam_1A_mod_50_mailbox_commands()
                " Set CC6 enable state\n"
 	       "  --getccdpowconsumption\t\t  [COREID] \t\t\t\t"
 	       "Show CCD power consumption in Watts\n"
+	       "  --gettempdelta\t\t\t  \t\t\t\t\t "
+	       "Show thermal solution health\n"
 			);
 }
 
@@ -3973,6 +3996,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
                 {"getpc6control",               no_argument,            &flag,  72},
                 {"setpc6control",               required_argument,      &flag,  73},
 		{"getccdpowconsumption",	required_argument,	&flag,	75},
+		{"gettempdelta",		no_argument,		&flag,	76},
 		{0,			0,			0,	0},
 	};
 
@@ -4723,6 +4747,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
                         /* Get CCD power consumption */
                         val1 = atoi(argv[optind - 1]);
                         apml_get_ccd_power_consumption(soc_num, val1);
+                        break;
+		} else if (*(long_options[long_index].flag) == 76) {
+                        /* Get Temperature Delta */
+                        apml_get_tdelta(soc_num);
                         break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
