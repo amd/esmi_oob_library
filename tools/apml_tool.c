@@ -1472,6 +1472,22 @@ static oob_status_t validate_mi300A_link_id(uint8_t size, char *link_id,
 	return OOB_INVALID_INPUT;
 }
 
+static oob_status_t validate_sp7_link_id(char *link_id, uint16_t *link_id_val)
+{
+       uint8_t index = 0;
+       uint8_t size = 0;
+
+       size = ARRAY_SIZE(sp7_encodings);
+       for (index = 0; index < size; index++) {
+               if (strcmp(link_id, sp7_encodings[index].name) == 0) {
+                       *link_id_val = sp7_encodings[index].val;
+                       return OOB_SUCCESS;
+               }
+       }
+
+       return OOB_INVALID_INPUT;
+}
+
 static oob_status_t validate_bw_link_id(uint8_t soc_die_num, char *link_id,
 					char *bw_type, bool is_xgmi_bw,
 					struct link_id_bw_type *link)
@@ -1518,6 +1534,37 @@ static oob_status_t validate_bw_link_id(uint8_t soc_die_num, char *link_id,
 		arr_size = ARRAY_SIZE(encodings);
 		return validate_legacy_link_id(arr_size, link_id, link);
 	}
+}
+
+static void apml_set_pcie_link_training(uint8_t soc_die_num, char *link_id,
+                                       uint8_t pcie_port)
+{
+       struct pcie_link_training d_in = {0};
+       uint32_t d_out = 0;
+       uint16_t link_id_val = 0;
+       oob_status_t ret;
+
+       convert_to_upper_case(link_id);
+	   ret = validate_sp7_link_id(link_id, &link_id_val);
+       if (ret) {
+               printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
+                       ret, esmi_get_err_msg(ret));
+               return;
+       }
+
+       d_in.link_id = link_id_val;
+       d_in.pcie_port = pcie_port;
+       ret = set_pcie_link_training(soc_die_num, d_in, &d_out);
+        if (ret) {
+                printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
+                        ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+       printf("------------------------------------------------------------\n");
+       printf("| Device Authentication Status | %-25s |\n", d_out ? "Not Authenticated"
+               : "Authentications Success");
+       printf("------------------------------------------------------------\n");
 }
 
 static void apml_get_iobandwidth(uint8_t soc_die_num, char *link_id,
@@ -3077,6 +3124,8 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "Show CCD power consumption in Watts\n"
 	       "  --gettempdelta\t\t\t  \t\t\t\t\t "
 	       "Show thermal solution health\n"
+	       "  --pciehaltlinktraining\t\t  [LINK_ID(P0-P5, G0-G3)][PCIE_PORT(0-7)]"
+	       "\n\t\t\t\t\t\t\t\t\t\t PCIE halt link training for OOB device authentication\n"
 	       "  --getsvi3vrtempbyrail\t\t\t  [TEMP_DATA_BIT(0-1)][RAIL_INDEX(0-4)]"
 	       "\n\t\t\t\t\t\t\t\t\t\t Get SVI3 VR controller temperature by rail\n"
 			);
@@ -4022,6 +4071,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
                 {"setpc6control",               required_argument,      &flag,  73},
 		{"getccdpowconsumption",	required_argument,	&flag,	75},
 		{"gettempdelta",		no_argument,		&flag,	76},
+		{"pciehaltlinktraining",        required_argument,      &flag,  77},
 		{"getsvi3vrtempbyrail",			required_argument,      &flag,  78},
 		{0,			0,			0,	0},
 	};
@@ -4219,6 +4269,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 47 ||
 	    *long_options[long_index].flag == 49 ||
 	    *long_options[long_index].flag == 58 ||
+	    *long_options[long_index].flag == 77 ||
 	    *long_options[long_index].flag == 78))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
@@ -4785,6 +4836,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			svi3_d_in.rail_mode = atoi(argv[optind - 1]);
 			svi3_d_in.svi3_rail_index = atoi(argv[optind++]);
 			apml_get_svi3_vr_controller_temp_by_rail(soc_die_num, svi3_d_in);
+                        break;
+		} else if (*(long_options[long_index].flag) == 77) {
+                        /* Link ID */
+			link_name = argv[optind - 1];
+			val1 = atoi(argv[optind++]);
+			apml_set_pcie_link_training(soc_die_num, link_name, val1);
                         break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
