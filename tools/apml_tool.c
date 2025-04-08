@@ -2994,6 +2994,26 @@ static void apml_get_tdelta(uint8_t soc_num)
 	       "-----------------------");
 }
 
+static void apml_get_svi3_vr_controller_temp_by_rail(uint8_t soc_num, struct svi3_vr_cont_data_in d_in)
+{
+	struct svi3_vr_cont_data_out d_out = {0};
+	uint32_t resp = 0;
+	oob_status_t ret;
+
+	ret = get_svi3_vr_controller_temp_by_rail(soc_num, d_in, &d_out);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get SVI3 vr controller temperature by rail, Err[%d]: %s\n",
+			ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("--------------------------------------------------------");
+	printf("\n| SVI3 Rail Temperature \t | %-17d °C|", d_out.svi3_temp);
+	printf("\n| SVI3 Rail Index \t\t | %-17d   |\n", d_out.svi3_rail_index);
+
+	printf("--------------------------------------------------------");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_num] [Option<s> / [--help] "
@@ -3056,6 +3076,8 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "Show CCD power consumption in Watts\n"
 	       "  --gettempdelta\t\t\t  \t\t\t\t\t "
 	       "Show thermal solution health\n"
+	       "  --getsvi3vrtempbyrail\t\t\t  [TEMP_DATA_BIT(0-1)][RAIL_INDEX(0-4)]"
+	       "\n\t\t\t\t\t\t\t\t\t\t Get SVI3 VR controller temperature by rail\n"
 			);
 }
 
@@ -3849,6 +3871,7 @@ static void validate_modules(uint8_t soc_num, bool *is_sbrmi,
 static oob_status_t parseesb_args(int argc, char **argv)
 {
 	union ras_df_err_dump df_err = {0};
+	struct svi3_vr_cont_data_in svi3_d_in = {0};
 	struct ras_rt_err_req_type err_category = {0};
 	struct oob_config_d_in oob_config = {0};
 	struct run_time_threshold th = {0};
@@ -3997,6 +4020,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
                 {"setpc6control",               required_argument,      &flag,  73},
 		{"getccdpowconsumption",	required_argument,	&flag,	75},
 		{"gettempdelta",		no_argument,		&flag,	76},
+		{"getsvi3vrtempbyrail",			required_argument,      &flag,  78},
 		{0,			0,			0,	0},
 	};
 
@@ -4192,7 +4216,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 35 ||
 	    *long_options[long_index].flag == 47 ||
 	    *long_options[long_index].flag == 49 ||
-	    *long_options[long_index].flag == 58))) {
+	    *long_options[long_index].flag == 58 ||
+	    *long_options[long_index].flag == 78))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '-%c' require TWO arguments\n", opt);
 			show_usage(argv[0]);
@@ -4208,7 +4233,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		       return OOB_SUCCESS;
 		}
 
-	       if (opt == 'V' && validate_number(argv[optind - 1], 10)) {
+	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78)))
+			    && validate_number(argv[optind - 1], 10)){
 			printf("Option '-%c' require 1st argument as valid"
 			       " numeric value\n\n", opt);
 			show_usage(argv[0]);
@@ -4751,6 +4777,12 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 76) {
                         /* Get Temperature Delta */
                         apml_get_tdelta(soc_num);
+                        break;
+		} else if (*(long_options[long_index].flag) == 78) {
+			/* Get SVI3 vr controller temperature by rail */
+			svi3_d_in.rail_mode = atoi(argv[optind - 1]);
+			svi3_d_in.svi3_rail_index = atoi(argv[optind++]);
+			apml_get_svi3_vr_controller_temp_by_rail(soc_num, svi3_d_in);
                         break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
