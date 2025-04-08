@@ -70,6 +70,8 @@
 #define DIMM_SERIAL_NUM_REG_OFF	0x205
 /* Register space to get DIMM serial Number */
 #define DIMM_SERIAL_NUM_REG_SPACE 0x1
+/* SV3_RAIL_INDEX_OFFSET */
+#define SV3_RAIL_INDEX_OFFSET 0x1C
 
 float esu_multiplier;
 struct processor_info plat_info[1];
@@ -1545,4 +1547,27 @@ oob_status_t get_ccd_power_consumption(uint8_t soc_num, uint32_t logical_core_id
 
 	return esmi_oob_read_mailbox(soc_num, GET_T_DELTA,
 				     DEFAULT_DATA, thermal_behav);
+}
+
+oob_status_t get_svi3_vr_controller_temp_by_rail(uint8_t soc_num, struct svi3_vr_cont_data_in d_in,
+												 struct svi3_vr_cont_data_out *d_out)
+{
+	uint32_t input = 0, resp = 0;
+	oob_status_t ret;
+
+	if (d_in.rail_mode)
+		input = (uint32_t)d_in.rail_mode | shift_left_op(d_in.svi3_rail_index,
+								 BIT(0));
+	else
+		input = (uint32_t)d_in.rail_mode;
+
+	ret = esmi_oob_read_mailbox(soc_num, GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL,
+				    input, &resp);
+	if (!ret) {
+		d_out->svi3_temp = resp;
+		d_out->svi3_rail_index = extract_val(resp, SV3_RAIL_INDEX_OFFSET);
+
+	}
+
+	return ret;
 }

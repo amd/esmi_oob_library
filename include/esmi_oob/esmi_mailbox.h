@@ -170,7 +170,8 @@ typedef enum {
 	CC6_ENABLE,
 	GET_DRAM_THROTTLE_CHANNELS = 0x78,
 	GET_CCD_POW_CONSUMPTION = 0x7A,
-	GET_T_DELTA
+	GET_T_DELTA,
+	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL
 } esb_mailbox_commmands;
 
 /**
@@ -447,6 +448,27 @@ struct dimm_spd_write {
 	uint16_t reg_offset : 11;	//!< Register offset in given register space
 	uint8_t reg_space : 1;		//!< Register space, Volatile:0, NVM:1
 	uint8_t w_data;			//!< Write data
+};
+
+/**
+ * @brief Data in for the SVI3 VR controller temperature by rail .
+ * strucutre contains rail mode and svi3 rail index.
+ *
+ */
+struct svi3_vr_cont_data_in {
+	uint8_t rail_mode : 1;			//!< Read temperature of individual SVI3 rails
+						//!< if the input is 1 else it will read the
+						//!< hottest rail temperature
+	uint8_t svi3_rail_index : 3;		//!< SVI3 Rail Index
+};
+/**
+ * @brief Data in for the SVI3 VR controller temperature by rail .
+ * strucutre contains read svi3 temp data bit and svi3 rail index.
+ *
+ */
+struct svi3_vr_cont_data_out {
+	uint32_t svi3_temp : 28;				//!< Read temperature data for SVI3 rail
+	uint8_t svi3_rail_index : 3;		//!< SVI3 Rail Index
 };
 
 /**
@@ -2464,6 +2486,29 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_num,
  */
  oob_status_t get_tdelta(uint8_t soc_num, uint32_t *thermal_behav);
 
+ /**
+ *  @brief Get SVI3 VR controller temperature by RAIL.
+ *
+ *  @details This function will get SVI3 VR controller temperature by RAIL.
+ *  If rail mode is 0 then it will read the temperature of the hottest rail.
+ *  IF rail mode is 1 it will read the temperature of given SVI3 rail index.
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_num Socket index.
+ *
+ *  @param[in] d_in struct svi3_vr_cont_data_in containing rail_mode and
+ * svi3_rail_index.
+ *
+ *  @param[out] d_out struct svi3_vr_cont_data_out containing svi3_temp and
+ * svi3_rail_index
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t get_svi3_vr_controller_temp_by_rail(uint8_t soc_num, struct svi3_vr_cont_data_in d_in,
+						  struct svi3_vr_cont_data_out *d_out);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
