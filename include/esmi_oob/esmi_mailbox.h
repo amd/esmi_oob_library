@@ -298,7 +298,9 @@ struct mca_bank {
 
 /**
  * @brief APML LINK ID and Bandwidth type Information.It contains
- * APML LINK ID Encoding. Non-MI300 Platforms Valid Link ID encodings are
+ * APML LINK ID Encoding. SP7 platforms valid Link ID encodings are
+ * 1(P0), 2(P1), 4(P2), 8(P3), 16(G0), 32(G1), 64(G2), 128(G3), 256(P4)
+ * and 512(P5) and rest of the Non-MI300 Platforms Valid Link ID encodings are
  * 1(P0), 2(P1), 4(P2), 8(P3), 16(G0), 32(G1), 64(G2), 128(G3). Valid APML
  * MI300 APML LINK ID Encoding. Valid Link ID encodings are 3(P2), 4(P3),
  * 8(G0), 9(G1), 10(G2), 11(G3), 12(G4), 13(G5), 14(G6), 15(G7).
@@ -307,7 +309,8 @@ struct mca_bank {
  */
 struct link_id_bw_type {
 	apml_io_bw_encoding bw_type;	//!< Bandwidth Type Information [1, 2, 4]
-	uint8_t link_id;		//!< Link ID [1,2,4,8,16,32,64,128] for Non-MI300 platforms
+	uint16_t link_id;		//!< Link ID [1,2,4,8,16,32,64,128] for SP7 platform
+					//!< Link ID [1,2,4,8,16,32,64,128] for rest of the Non-MI300 platforms
 					//!< Link ID [3,4,8,9,10,11,12,13,14,15] for MI300 platforms
 };
 

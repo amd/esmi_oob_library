@@ -630,6 +630,30 @@ static oob_status_t validate_mi300_link_id_encoding(uint8_t link_id)
 	return ret;
 }
 
+
+static oob_status_t validate_SP7_link_id_encoding(uint16_t link_id)
+{
+	oob_status_t ret;
+	switch(link_id) {
+	case 1:
+	case 2:
+	case 4:
+	case 8:
+	case 16:
+	case 32:
+	case 64:
+	case 128:
+	case 256:
+	case 512:
+                ret = OOB_SUCCESS;
+                break;
+        default:
+                ret = OOB_INVALID_INPUT;
+        };
+
+        return ret;
+}
+
 oob_status_t read_current_io_bandwidth(uint8_t soc_die_num,
 				       struct link_id_bw_type link,
 				       uint32_t *io_bw)
@@ -644,9 +668,18 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_die_num,
 	if (ret)
 		return ret;
 
+	if (plat_info->family == 0 && plat_info->model == 0) {
+		ret = esmi_get_processor_info(soc_die_num, plat_info);
+		if (ret)
+			return ret;
+	}
 	if (plat_info->family == 0x19
 	    && (plat_info->model >= 0x90 && plat_info->model <=0x9F)) {
 		if (validate_mi300_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	} else if (plat_info->family == 0x1A
+		&& (plat_info->model >= 0x50 && plat_info->model <= 0x5F)) {
+		if (validate_SP7_link_id_encoding(link.link_id))
 			return OOB_INVALID_INPUT;
 	} else {
 		if (validate_link_id_encoding(link.link_id))
@@ -670,13 +703,18 @@ oob_status_t read_current_xgmi_bandwidth(uint8_t soc_die_num,
 	if (validate_bw_type(link.bw_type))
 		return OOB_INVALID_INPUT;
 
-	ret = esmi_get_processor_info(soc_die_num, plat_info);
-	if (ret)
-		return ret;
-
+	if (plat_info->family == 0 && plat_info->model == 0) {
+		ret = esmi_get_processor_info(soc_die_num, plat_info);
+		if (ret)
+			return ret;
+	}
 	if (plat_info->family == 0x19
 	    && (plat_info->model >= 0x90 && plat_info->model <=0x9F)) {
 		if (validate_mi300_link_id_encoding(link.link_id))
+			return OOB_INVALID_INPUT;
+	} else if (plat_info->family == 0x1A
+		&& (plat_info->model >= 0x50 && plat_info->model <= 0x5F)) {
+		if (validate_SP7_link_id_encoding(link.link_id))
 			return OOB_INVALID_INPUT;
 	} else {
 		if (validate_link_id_encoding(link.link_id))
