@@ -1530,6 +1530,8 @@ static oob_status_t validate_bw_link_id(uint8_t soc_die_num, char *link_id,
 	if (is_mi300) {
 		arr_size = ARRAY_SIZE(mi300A_encodings);
 		return validate_mi300A_link_id(arr_size, link_id, link);
+	} else if (p_type == FAM_1A_MOD_50) {
+		return validate_sp7_link_id(link_id, &link->link_id);
 	} else {
 		arr_size = ARRAY_SIZE(encodings);
 		return validate_legacy_link_id(arr_size, link_id, link);
@@ -3167,9 +3169,9 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "  --showsktfreqrange\t\t\t\t\t\t\t\t "
                "Show per socket fmax fmin\n"
                "  --showiobandwidth\t\t\t  "
-               "[LINKID(P0-P3,G0-G3)][BW(AGG_BW)]"
+               "[LINKID(P0-P5,G0-G3)][BW(AGG_BW)]"
                "\t Show IO bandwidth\n"
-               "  --showxGMIbandwidth\t\t\t  [LINKID(P0-P3,G0-G3)]\n"
+               "  --showxGMIbandwidth\t\t\t  [LINKID(P0-P5,G0-G3)]\n"
                "\t\t\t\t          [BW(AGG_BW,RD_BW,WR_BW)]"
                "\t\t Show current xGMI bandwidth\n"
                "  --setxGMIlinkwidthrange\t\t  [MIN(0,1,2)]"
