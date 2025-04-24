@@ -489,9 +489,12 @@ oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_num,
 	if (!freq)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_get_processor_info(soc_num, plat_info);
-	if (ret)
-		return ret;
+	if (plat_info->family == 0 && plat_info->model == 0) {
+		ret = esmi_get_processor_info(soc_num, plat_info);
+
+		if (ret)
+			return ret;
+	}
 	if (plat_info->family == 0x1A
 	    && (plat_info->model >= 0x50 && plat_info->model <=0x5F))
 		// frequency limit source names array length
