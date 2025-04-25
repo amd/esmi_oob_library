@@ -3695,8 +3695,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	while ((opt = getopt_long(argc, argv, helperstring,
 				  long_options, &long_index)) != -1) {
-		if (opt == 0 && (*long_options[long_index].flag >= 1200
-		    && *long_options[long_index].flag <=1211)) {
+		if (opt == 0 && (*long_options[long_index].flag >= 1200)) {
 			ret = validate_apml_sbtsi_module(soc_num);
 			if (ret) {
 				show_smi_end_message();
@@ -3768,7 +3767,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-		if (validate_number(argv[optind - 1], 0)) {
+		if (validate_number(argv[optind - 1], 0) &&
+		    (opt == 0 && *long_options[long_index].flag <= 1200)) {
 			printf("Option '--%s' require 1st argument as valid"
 			       " numeric value\n\n", long_options[long_index].name);
 			show_usage(argv[0]);
