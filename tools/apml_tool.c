@@ -3124,6 +3124,30 @@ static void apml_get_svi3_vr_controller_temp_by_rail(uint8_t soc_die_num, struct
 	printf("--------------------------------------------------------");
 }
 
+static void apml_get_supporting_error_types(uint8_t soc_die_num)
+{
+	struct oob_err_inj_types err_types = {0};
+	uint8_t index = 0, offset = 0;
+	oob_status_t ret;
+
+	ret = get_supporting_error_types(soc_die_num, &err_types);
+	if (ret) {
+		printf("Failed to get supporting error types, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("--------------------------------------------------------");
+	printf("\n| Generic Error Types \t\t | 0x%-16x |", err_types.err_types_generic);
+	printf("\n| Vendor Error Size \t\t | 0x%-16x |", err_types.err_size);
+	printf("\n| Vendor Flag \t\t\t | %-18s |", err_types.vendor_flag ? "Enabled (1)" : "Disabled (0)");
+	for (index = 8; index <=err_types.err_size; index=index+4) {
+		printf("\n| Vendor Error Types[%d] \t | 0x%-16x |", offset, err_types.err_types_vendor[offset]);
+		offset++;
+	}
+	printf("\n--------------------------------------------------------");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3191,6 +3215,8 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "\n\t\t\t\t\t\t\t\t\t\t PCIE halt link training for OOB device authentication\n"
 	       "  --getsvi3vrtempbyrail\t\t\t  [TEMP_DATA_BIT(0-1)][RAIL_INDEX(0-4)]"
 	       "\n\t\t\t\t\t\t\t\t\t\t Get SVI3 VR controller temperature by rail\n"
+	       "  --getsupportingerrortypes\t\t\t  \t\t\t\t "
+	       "Get supporting error types \n"
 			);
 }
 
@@ -4136,6 +4162,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"gettempdelta",		no_argument,		&flag,	76},
 		{"pciehaltlinktraining",        required_argument,      &flag,  77},
 		{"getsvi3vrtempbyrail",			required_argument,      &flag,  78},
+		{"getsupportingerrortypes",	no_argument,		&flag,	79},
 		{0,			0,			0,	0},
 	};
 
@@ -4906,6 +4933,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = atoi(argv[optind++]);
 			apml_set_pcie_link_training(soc_die_num, link_name, val1);
                         break;
+		} else if (*(long_options[long_index].flag) == 79) {
+			/* Get supporting error types */
+			apml_get_supporting_error_types(soc_die_num);
+			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_die_num, uprate);
