@@ -77,6 +77,8 @@
 #define SP7_ENCODING_SIZE              10      //!< Sp7 APML encoding size //
 /* BMC RAS MCADump*/
 #define MCA_DEBUG_LOG_ID       32
+/* ERR TYPES block ID */
+#define OOB_ERR_TYPES_BLK_ID	253
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
@@ -516,6 +518,22 @@ static char * const freqlimitsrcnames_VER1[] = {
         "HSMP Agent",
 	"VRHOT",
 	"TDC_Limit_VDD_MEM_S3Rail"
+};
+
+/**
+ * @brief Error injection types containing generic error types, vendor specfic error types,
+ * error size and vendor flag.
+ *
+ */
+struct oob_err_inj_types {
+    uint32_t    err_types_generic;	//!< Generic error types
+    uint32_t    err_types_vendor[3];	//!< vendor specific error types
+					//!< Index 0 : Lower 32 bit error types
+					//!< Index 1 : Next 32 bit error types
+					//!< Index 2 : Upper 32 bit error types
+    uint16_t     err_size;		//!< [15:0] : should return error size which
+					//!< includes generic and vendor specfic error bytes,
+    uint16_t     vendor_flag;   	//!< [15:0]: vendor error enabled/disabled
 };
 
 /**
@@ -2558,6 +2576,26 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  */
  oob_status_t get_svi3_vr_controller_temp_by_rail(uint8_t soc_die_num, struct svi3_vr_cont_data_in d_in,
 						  struct svi3_vr_cont_data_out *d_out);
+
+/**
+ *  @brief Get supporting error types.
+ *
+ *  @details This function will get supporting error types from the
+ *  OOB error injection and also the vendor specific error types.
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[out] d_out struct oob_err_inj_types containing generic error types,
+ *  vendor specific error types, vendor error size and vendor flag.
+ *  err_types_vendor is only applicable in case vendor_flag is set.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t get_supporting_error_types(uint8_t soc_die_num, struct oob_err_inj_types *d_out);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

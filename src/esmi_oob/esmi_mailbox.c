@@ -1627,3 +1627,40 @@ oob_status_t get_svi3_vr_controller_temp_by_rail(uint8_t soc_die_num, struct svi
 
 	return ret;
 }
+
+oob_status_t get_supporting_error_types(uint8_t soc_die_num, struct oob_err_inj_types *d_out)
+{
+	uint32_t input = 0, resp = 0;
+	struct ras_df_err_chk err_chk = {0};
+	union ras_df_err_dump err_dump = {0};
+	uint8_t df_blk_id = OOB_ERR_TYPES_BLK_ID, index = 0, offset = 0;
+	oob_status_t ret;
+
+	// Read BMC RAS debug log validity check
+	ret = read_ras_df_err_validity_check(soc_die_num, df_blk_id, &err_chk);
+	if (ret)
+		return ret;
+
+	/* Default error injection types */
+	err_dump.input[0] = 0;
+	err_dump.input[1] = df_blk_id;
+	err_dump.input[2] = 0;
+	ret = read_ras_df_err_dump(soc_die_num, err_dump, &resp);
+	if (ret)
+		return ret;
+	// Generic supporting error types
+	d_out->err_types_generic = resp;
+	d_out->err_size = err_chk.err_log_len;
+	d_out->vendor_flag = resp >> 31;
+
+	// Get Vendor specific error types
+	for (index = 8 ; index <= err_chk.err_log_len; index = index+4) {
+		// Read 32 bits of vendor specific data types to err_types_vendor[offset]
+		err_dump.input[0] = index - 4;
+		ret = ret = read_ras_df_err_dump(soc_die_num, err_dump, &resp);
+		if (ret)
+			return ret;
+		d_out->err_types_vendor[offset] = resp;
+		offset++;
+	}
+}
