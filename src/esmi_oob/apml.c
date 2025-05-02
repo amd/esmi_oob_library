@@ -70,11 +70,46 @@ const uint16_t sbrmi_addr[MAX_DEV_COUNT] = {0x3c, 0x38, 0x3e, 0x3f,
 const uint16_t sbtsi_addr[MAX_DEV_COUNT] = {0x4c, 0x48, 0x4e, 0x4f,
 					    0x44, 0x45, 0x46, 0x47};	//!< SBTSI Addresses
 
+static void update_sock_num(uint8_t soc_num_orig, uint8_t *soc_num_u)
+{
+	uint8_t iod_num;
+	uint8_t soc_num;
+
+	iod_num = soc_num_orig >> 4;
+	soc_num = soc_num_orig & 0xF;
+
+	/*
+	 * As per definition of static address for socket and iod in Venice
+	 * [1:0]: Socket number &
+	 * [2]: IOD number
+	 */
+	if (iod_num > 0)
+		*soc_num_u = 4 + soc_num;
+	else
+		*soc_num_u = soc_num_orig;
+}
+
 oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 {
 	int fd = 0, ret = 0;
 	char dev_file[DEV_SIZE] = "";
 	uint16_t soc_addr = 0;
+	uint8_t soc_num_u;
+
+	/*
+	 * In venice each socket has 2 IODs
+	 * Modify sock_num input bits as
+	 * bit[7:4] : IOD
+	 * bit [3:0]: Socket No.
+	 * soc_num: 0  : Socket 0, Die Id 0
+	 * soc_num: 1  : Socket 1, Die Id 0
+	 * soc_num: 16 : Socket 0, Die Id 1
+	 * soc_num: 17 : Socket 1, Die Id 1
+	 * update soc number as per the Venice mapping for IOD
+	 */
+
+	update_sock_num(soc_num, &soc_num_u);
+	soc_num = soc_num_u;
 
 	if (soc_num >= ARRAY_SIZE(sbrmi_addr))
 		return OOB_FILE_ERROR;
@@ -110,6 +145,10 @@ oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg)
 	int fd = 0, ret = 0;
 	char dev_file[DEV_SIZE] = "";
 	uint16_t soc_addr = 0;
+	uint8_t soc_num_u;
+
+	update_sock_num(soc_num, &soc_num_u);
+	soc_num = soc_num_u;
 
 	if (soc_num >= ARRAY_SIZE(sbtsi_addr))
 		return OOB_FILE_ERROR;
@@ -294,8 +333,13 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num,
 oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi)
 {
 	char dev_file[DEV_SIZE] = "";
+	uint8_t soc_num_u;
 
 	*is_sbtsi = false;
+
+	update_sock_num(soc_num, &soc_num_u);
+	soc_num = soc_num_u;
+
 	if (soc_num >= ARRAY_SIZE(sbtsi_addr))
 		return OOB_FILE_ERROR;
 
@@ -314,8 +358,13 @@ oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi)
 oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi)
 {
 	char dev_file[DEV_SIZE] = "";
+	uint8_t soc_num_u;
 
 	*is_sbrmi = false;
+
+	update_sock_num(soc_num, &soc_num_u);
+	soc_num = soc_num_u;
+
 	if (soc_num >= ARRAY_SIZE(sbrmi_addr))
 		return OOB_FILE_ERROR;
 
