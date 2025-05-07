@@ -59,12 +59,12 @@
 static int flag;
 #define APML_SLEEP 10000
 
-oob_status_t get_hbm_temp_status(uint8_t soc_num)
+oob_status_t get_hbm_temp_status(uint8_t soc_die_num)
 {
 	uint8_t reg_val;
 	oob_status_t ret;
 
-	ret = read_sbtsi_status(soc_num, &reg_val);
+	ret = read_sbtsi_status(soc_die_num, &reg_val);
 	if (ret)
 		return ret;
 	printf("\tMem Temp Alert  |\t\t|\t\t|");
@@ -80,12 +80,12 @@ oob_status_t get_hbm_temp_status(uint8_t soc_num)
 	return ret;
 }
 
-static void apml_get_hbm_throttle(uint8_t soc_num)
+static void apml_get_hbm_throttle(uint8_t soc_die_num)
 {
 	uint32_t buffer;
 	oob_status_t ret;
 
-	ret = get_hbm_throttle(soc_num, &buffer);
+	ret = get_hbm_throttle(soc_die_num, &buffer);
 	if (ret) {
 		printf("Failed to get the HBM throttle, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -96,12 +96,12 @@ static void apml_get_hbm_throttle(uint8_t soc_num)
 	printf("------------------------------------\n");
 }
 
-static void apml_set_hbm_throttle(uint8_t soc_num, uint32_t mem_thr)
+static void apml_set_hbm_throttle(uint8_t soc_die_num, uint32_t mem_thr)
 {
 	uint32_t limit = 0;
 	oob_status_t ret;
 
-	ret = set_hbm_throttle(soc_num, mem_thr);
+	ret = set_hbm_throttle(soc_die_num, mem_thr);
 	if (ret) {
 		printf("Failed: to set HBM throttle, Err[%d]: %s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -112,12 +112,12 @@ static void apml_set_hbm_throttle(uint8_t soc_num, uint32_t mem_thr)
 	return;
 }
 
-static void apml_get_hbm_bandwidth(uint8_t soc_num)
+static void apml_get_hbm_bandwidth(uint8_t soc_die_num)
 {
 	struct max_mem_bw bw;
 	oob_status_t ret;
 
-	ret = get_max_mem_bw_util(soc_num, &bw);
+	ret = get_max_mem_bw_util(soc_die_num, &bw);
 	if (ret) {
 		printf("Failed: to get hbm bandwidth, Err[%d]: %s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -129,14 +129,14 @@ static void apml_get_hbm_bandwidth(uint8_t soc_num)
 	printf("---------------------------------------------------");
 }
 
-static void apml_set_gfx_core_clock(uint8_t soc_num, enum range_type type,
+static void apml_set_gfx_core_clock(uint8_t soc_die_num, enum range_type type,
 				    uint32_t freq)
 {
 	char *status;
 	oob_status_t ret;
 
 	status = type ? "Max" : "Min";
-	ret = set_gfx_core_clock(soc_num, type, freq);
+	ret = set_gfx_core_clock(soc_die_num, type, freq);
 	if (ret != OOB_SUCCESS) {
 		printf("Failed to set %s gfx core clock freq, "
 		       "Err[%d]:%s\n", status, ret, esmi_get_err_msg(ret));
@@ -191,13 +191,13 @@ static void apml_display_alarms_status(enum alarms_type type, uint32_t buffer)
 		printf("%-51s", " No Alarm");
 }
 
-static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
+static void apml_get_alarms(uint8_t soc_die_num, enum alarms_type type)
 {
 	uint32_t buffer;
 	char *status;
 	oob_status_t ret;
 
-	ret = get_alarms(soc_num, type, &buffer);
+	ret = get_alarms(soc_die_num, type, &buffer);
 	if (ret) {
 		printf("Failed to read alarms status, "
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -211,12 +211,12 @@ static void apml_get_alarms(uint8_t soc_num, enum alarms_type type)
 	       "----------\n");
 }
 
-static void apml_get_psn(uint8_t soc_num, uint32_t die_index)
+static void apml_get_psn(uint8_t soc_die_num, uint32_t die_index)
 {
 	uint64_t buffer;
 	oob_status_t ret;
 
-	ret = get_psn(soc_num, die_index, &buffer);
+	ret = get_psn(soc_die_num, die_index, &buffer);
 	if (ret) {
 		printf("Failed to read PSN, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -228,12 +228,12 @@ static void apml_get_psn(uint8_t soc_num, uint32_t die_index)
 	printf("----------------------------------------------\n");
 }
 
-static void apml_get_link_info(uint8_t soc_num)
+static void apml_get_link_info(uint8_t soc_die_num)
 {
 	uint8_t link_config, mod_id;
 	oob_status_t ret;
 
-	ret = get_link_info(soc_num, &link_config, &mod_id);
+	ret = get_link_info(soc_die_num, &link_config, &mod_id);
 	if (ret) {
 		printf("Failed to read link info, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -246,13 +246,13 @@ static void apml_get_link_info(uint8_t soc_num)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_die_hotspot_info(uint8_t soc_num)
+static void apml_die_hotspot_info(uint8_t soc_die_num)
 {
 	uint16_t temp;
 	uint8_t die_id;
 	oob_status_t ret;
 
-	ret = get_die_hotspot_info(soc_num, &die_id, &temp);
+	ret = get_die_hotspot_info(soc_die_num, &die_id, &temp);
 	if (ret) {
 		printf("Failed to read die hot spot info, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -265,13 +265,13 @@ static void apml_die_hotspot_info(uint8_t soc_num)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_mem_hotspot_info(uint8_t soc_num)
+static void apml_mem_hotspot_info(uint8_t soc_die_num)
 {
 	uint16_t temp;
 	uint8_t stack_id;
 	oob_status_t ret;
 
-	ret = get_mem_hotspot_info(soc_num, &stack_id, &temp);
+	ret = get_mem_hotspot_info(soc_die_num, &stack_id, &temp);
 	if (ret) {
 		printf("Failed to read mem hot spot info, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -284,12 +284,12 @@ static void apml_mem_hotspot_info(uint8_t soc_num)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_get_host_status(uint8_t soc_num)
+static void apml_get_host_status(uint8_t soc_die_num)
 {
 	struct host_status status = {0};
 	oob_status_t ret;
 
-	ret = get_host_status(soc_num, &status);
+	ret = get_host_status(soc_die_num, &status);
 	if (ret) {
 		printf("Failed to read PM status, Err[%d]:"
 		       "%s\n", ret, esmi_get_err_msg(ret));
@@ -303,12 +303,12 @@ static void apml_get_host_status(uint8_t soc_num)
 	printf("-----------------------------------------\n");
 }
 
-static void apml_get_max_min_gfx_freq(uint8_t soc_num)
+static void apml_get_max_min_gfx_freq(uint8_t soc_die_num)
 {
 	uint16_t max_freq = 0, min_freq = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_max_min_gfx_freq(soc_num, &max_freq, &min_freq);
+	ret = get_max_min_gfx_freq(soc_die_num, &max_freq, &min_freq);
 	if (ret) {
 		printf("Failed to read absolute max, min freq, Err[0x%x]:"
 		       "%s\n", ret, esmi_get_err_msg(ret));
@@ -321,12 +321,12 @@ static void apml_get_max_min_gfx_freq(uint8_t soc_num)
 	printf("-----------------------------------------------\n");
 }
 
-static void apml_get_act_gfx_freq(uint8_t soc_num)
+static void apml_get_act_gfx_freq(uint8_t soc_die_num)
 {
 	uint16_t freq = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_act_gfx_freq_cap(soc_num, &freq);
+	ret = get_act_gfx_freq_cap(soc_die_num, &freq);
 	if (ret) {
 		printf("Failed to actual gfx freq cap selected, Err[0x%x]:"
 		       "%s\n", ret, esmi_get_err_msg(ret));
@@ -338,14 +338,14 @@ static void apml_get_act_gfx_freq(uint8_t soc_num)
 	printf("-----------------------------------------------\n");
 }
 
-static void apml_get_clk_freq_limit(uint8_t soc_num, uint32_t clk_type)
+static void apml_get_clk_freq_limit(uint8_t soc_die_num, uint32_t clk_type)
 {
 	struct freq_limits limit = {0};
 	char *clk_status;
 	oob_status_t ret;
 
 	clk_status = clk_type ? "F_CLK" : "GFX_CLK";
-	ret = get_clk_freq_limits(soc_num, clk_type, &limit);
+	ret = get_clk_freq_limits(soc_die_num, clk_type, &limit);
 	if (ret) {
 		printf("Failed to read %s freq limit,"
 		       "Err[%d]:%s\n", clk_status, ret, esmi_get_err_msg(ret));
@@ -358,12 +358,12 @@ static void apml_get_clk_freq_limit(uint8_t soc_num, uint32_t clk_type)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_get_hbm_stack_temp(uint8_t soc_num, uint32_t stack_index)
+static void apml_get_hbm_stack_temp(uint8_t soc_die_num, uint32_t stack_index)
 {
 	uint16_t temp = 0;
 	oob_status_t ret;
 
-	ret = get_hbm_temperature(soc_num, stack_index, &temp);
+	ret = get_hbm_temperature(soc_die_num, stack_index, &temp);
 	if (ret) {
 		printf("Failed to read hbm temperature,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -395,14 +395,14 @@ static void get_xgmi_link_width(uint8_t xgmi_ln_width, uint8_t *width)
 	}
 }
 
-static void apml_get_xgmi_pstates(uint8_t soc_num, uint32_t pstate_ind)
+static void apml_get_xgmi_pstates(uint8_t soc_die_num, uint32_t pstate_ind)
 {
 	struct xgmi_speed_rate_n_width xgmi_pstate;
 	uint8_t ln_width = 0;
 	oob_status_t ret;
 
 
-	ret = get_xgmi_pstates(soc_num, pstate_ind, &xgmi_pstate);
+	ret = get_xgmi_pstates(soc_die_num, pstate_ind, &xgmi_pstate);
 	if (ret) {
 		printf("Failed to read XGMI pstates,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -419,11 +419,11 @@ static void apml_get_xgmi_pstates(uint8_t soc_num, uint32_t pstate_ind)
 	       "-------------\n");
 }
 
-static void apml_set_xgmi_pstate(uint8_t soc_num, uint32_t pstate)
+static void apml_set_xgmi_pstate(uint8_t soc_die_num, uint32_t pstate)
 {
 	oob_status_t ret;
 
-	ret = set_xgmi_pstate(soc_num, pstate);
+	ret = set_xgmi_pstate(soc_die_num, pstate);
 	if (ret) {
 		printf("Failed to write XGMI pstate,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -433,11 +433,11 @@ static void apml_set_xgmi_pstate(uint8_t soc_num, uint32_t pstate)
 	printf("XGMI pstate set successfully\n");
 }
 
-static void apml_unset_xgmi_pstate(uint8_t soc_num)
+static void apml_unset_xgmi_pstate(uint8_t soc_die_num)
 {
 	oob_status_t ret;
 
-	ret = unset_xgmi_pstate(soc_num);
+	ret = unset_xgmi_pstate(soc_die_num);
 	if (ret) {
 		printf("Failed to unset the XGMI pstate,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -447,12 +447,12 @@ static void apml_unset_xgmi_pstate(uint8_t soc_num)
 	printf("XGMI pstate unset successfully\n");
 }
 
-static void apml_get_mclk_fclk_pstates(uint8_t soc_num, uint32_t pstate_index)
+static void apml_get_mclk_fclk_pstates(uint8_t soc_die_num, uint32_t pstate_index)
 {
 	struct mclk_fclk_pstates pstate = {0};
 	oob_status_t ret;
 
-	ret = get_mclk_fclk_pstates(soc_num, pstate_index, &pstate);
+	ret = get_mclk_fclk_pstates(soc_die_num, pstate_index, &pstate);
 	if (ret) {
 		printf("Failed to get mem clk and fclk pstates,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -465,11 +465,11 @@ static void apml_get_mclk_fclk_pstates(uint8_t soc_num, uint32_t pstate_index)
 	printf("--------------------------------------------\n");
 }
 
-static void apml_set_max_mclk_fclk_pstate(uint8_t soc_num, uint32_t pstate)
+static void apml_set_max_mclk_fclk_pstate(uint8_t soc_die_num, uint32_t pstate)
 {
 	oob_status_t ret;
 
-	ret = set_mclk_fclk_max_pstate(soc_num, pstate);
+	ret = set_mclk_fclk_max_pstate(soc_die_num, pstate);
 	if (ret) {
 		printf("Failed to set max mem pstate,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -479,12 +479,12 @@ static void apml_set_max_mclk_fclk_pstate(uint8_t soc_num, uint32_t pstate)
 	printf("Max memory pstate set successfully\n");
 }
 
-static void apml_show_bist_results(uint8_t soc_num, uint32_t die_id)
+static void apml_show_bist_results(uint8_t soc_die_num, uint32_t die_id)
 {
 	uint32_t bist_result = 0;
 	oob_status_t ret;
 
-	ret = get_bist_results(soc_num, die_id, &bist_result);
+	ret = get_bist_results(soc_die_num, die_id, &bist_result);
 	if (ret) {
 		printf("Failed to get bist result,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -496,13 +496,13 @@ static void apml_show_bist_results(uint8_t soc_num, uint32_t die_id)
 	printf("-----------------------------------\n");
 }
 
-static void apml_get_svi_telemetry_by_rail(uint8_t soc_num,
+static void apml_get_svi_telemetry_by_rail(uint8_t soc_die_num,
 					   struct svi_port_domain port)
 {
 	uint32_t pow = 0;
 	oob_status_t ret;
 
-	ret = get_svi_rail_telemetry(soc_num, port, &pow);
+	ret = get_svi_rail_telemetry(soc_die_num, port, &pow);
 	if (ret) {
 		printf("Failed to get SVI based telemetry for individual"
 		       " rails,Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -513,13 +513,13 @@ static void apml_get_svi_telemetry_by_rail(uint8_t soc_num,
 	printf("---------------------------------------------\n");
 }
 
-static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
+static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_die_num)
 {
 	uint64_t energy_acc = 0;
 	uint64_t time_stamp = 0;
 	oob_status_t ret;
 
-	ret =  get_energy_accum_with_timestamp(soc_num, &energy_acc,
+	ret =  get_energy_accum_with_timestamp(soc_die_num, &energy_acc,
 					       &time_stamp);
 	if (ret) {
 		printf("Failed to get the energy accumulator with time stamp,"
@@ -536,12 +536,12 @@ static void apml_get_energy_accumulator_with_timestamp(uint8_t soc_num)
 	"--------------\n");
 }
 
-static void apml_get_xcc_idle_residency(uint8_t soc_num)
+static void apml_get_xcc_idle_residency(uint8_t soc_die_num)
 {
 	uint32_t xcc_res = 0;
 	oob_status_t ret;
 
-	ret = get_xcc_idle_residency(soc_num, &xcc_res);
+	ret = get_xcc_idle_residency(soc_die_num, &xcc_res);
 	if (ret) {
 		printf("Failed to read XCC idle residency,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -555,12 +555,12 @@ static void apml_get_xcc_idle_residency(uint8_t soc_num)
 	"---\n");
 }
 
-static void apml_get_number_of_soc(uint8_t soc_num)
+static void apml_get_number_of_soc(uint8_t soc_die_num)
 {
 	uint32_t sockets = 0;
 	oob_status_t ret;
 
-	ret = get_sockets_in_system(soc_num, &sockets);
+	ret = get_sockets_in_system(soc_die_num, &sockets);
 	if (ret) {
 		printf("Failed to read number of sockets,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -574,13 +574,13 @@ static void apml_get_number_of_soc(uint8_t soc_num)
 	       "-----\n");
 }
 
-static void apml_query_statistics(uint8_t soc_num, struct statistics stat)
+static void apml_query_statistics(uint8_t soc_die_num, struct statistics stat)
 {
 	uint32_t param_value;
 	char unit[BYTE_BITS] = "";
 	oob_status_t ret;
 
-	ret = get_statistics(soc_num, stat, &param_value);
+	ret = get_statistics(soc_die_num, stat, &param_value);
 	if (ret) {
 		printf("Failed to query statistics for a given parameter,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -637,11 +637,11 @@ static void apml_query_statistics(uint8_t soc_num, struct statistics stat)
 	       "----------------\n");
 }
 
-static void apml_clear_statistics(uint8_t soc_num)
+static void apml_clear_statistics(uint8_t soc_die_num)
 {
 	oob_status_t ret;
 
-	ret = clear_statistics(soc_num);
+	ret = clear_statistics(soc_die_num);
 	if (ret) {
 		printf("Failed to clear statistics,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -655,11 +655,11 @@ static void apml_clear_statistics(uint8_t soc_num)
 	       "---\n");
 }
 
-static void apml_set_hbm_high_threshold_temp(uint8_t soc_num, float temp_th)
+static void apml_set_hbm_high_threshold_temp(uint8_t soc_die_num, float temp_th)
 {
 	oob_status_t ret;
 
-	ret = write_sbtsi_hbm_hi_temp_th(soc_num, temp_th);
+	ret = write_sbtsi_hbm_hi_temp_th(soc_die_num, temp_th);
 	if (ret) {
 		printf("Failed to set hbm high temperature threshold,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -669,11 +669,11 @@ static void apml_set_hbm_high_threshold_temp(uint8_t soc_num, float temp_th)
 	printf("HBM high temperature threshold set successfully\n");
 }
 
-static void apml_set_hbm_low_threshold_temp(uint8_t soc_num, float temp_th)
+static void apml_set_hbm_low_threshold_temp(uint8_t soc_die_num, float temp_th)
 {
 	oob_status_t ret;
 
-	ret = write_sbtsi_hbm_lo_temp_th(soc_num, temp_th);
+	ret = write_sbtsi_hbm_lo_temp_th(soc_die_num, temp_th);
 	if (ret) {
 		printf("Failed to set hbm low temperature threshold,"
 		       "Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
@@ -683,11 +683,11 @@ static void apml_set_hbm_low_threshold_temp(uint8_t soc_num, float temp_th)
 	printf("HBM low temperature threshold set successfully\n");
 }
 
-static oob_status_t apml_set_hbm_alert_config(uint8_t soc_num, int value)
+static oob_status_t apml_set_hbm_alert_config(uint8_t soc_die_num, int value)
 {
 	oob_status_t ret;
 
-	ret = set_sbtsi_hbm_alertconfig(soc_num, value);
+	ret = set_sbtsi_hbm_alertconfig(soc_die_num, value);
 	if (ret) {
 		printf("Failed: to set hbm alert config, Err[%d]: %s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -698,13 +698,13 @@ static oob_status_t apml_set_hbm_alert_config(uint8_t soc_num, int value)
 	return OOB_SUCCESS;
 }
 
-static oob_status_t apml_get_maximum_die_id(uint8_t soc_num)
+static oob_status_t apml_get_maximum_die_id(uint8_t soc_die_num)
 {
 	uint32_t max_die_id;
 	oob_status_t ret;
 
 
-	ret = get_die_type(soc_num, BIT_LEN, &max_die_id);
+	ret = get_die_type(soc_die_num, BIT_LEN, &max_die_id);
 	if (ret) {
 		printf("Failed: to get maximum die-id, Err[%d]: %s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -716,7 +716,7 @@ static oob_status_t apml_get_maximum_die_id(uint8_t soc_num)
 	return OOB_SUCCESS;
 }
 
-static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
+static oob_status_t apml_get_die_type(uint8_t soc_die_num, uint32_t die_id)
 {
 	uint32_t buffer = 0;
 	char *die_type;
@@ -724,7 +724,7 @@ static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
 
 	die_id = die_id << 1;
 
-	ret = get_die_type(soc_num, die_id, &buffer);
+	ret = get_die_type(soc_die_num, die_id, &buffer);
 	if (ret) {
 		printf("Failed: to get die-type, Err[%d]: %s\n",
 		       ret, esmi_get_err_msg(ret));
@@ -761,12 +761,12 @@ static oob_status_t apml_get_die_type(uint8_t soc_num, uint32_t die_id)
 	return OOB_SUCCESS;
 }
 
-static void apml_get_curr_xgmi_pstate(uint8_t soc_num)
+static void apml_get_curr_xgmi_pstate(uint8_t soc_die_num)
 {
 	uint8_t xgmi_pstate = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_curr_xgmi_pstate(soc_num, &xgmi_pstate);
+	ret = get_curr_xgmi_pstate(soc_die_num, &xgmi_pstate);
 	if (ret) {
 		printf("Failed to get current xgmi pstate "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
@@ -778,12 +778,12 @@ static void apml_get_curr_xgmi_pstate(uint8_t soc_num)
 	printf("-----------------------------------------------------\n");
 }
 
-static void apml_get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type)
+static void apml_get_max_operating_temp(uint8_t soc_die_num, uint32_t ctf_type)
 {
 	uint16_t temp = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_max_operating_temp(soc_num, ctf_type, &temp);
+	ret = get_max_operating_temp(soc_die_num, ctf_type, &temp);
 	if (ret) {
 		printf("Failed to get max operating temperature "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
@@ -798,12 +798,12 @@ static void apml_get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type)
 	       "-----------------------\n");
 }
 
-static void apml_get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type)
+static void apml_get_slow_down_temp(uint8_t soc_die_num, uint32_t ctf_type)
 {
 	uint16_t temp = 0;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_slow_down_temp(soc_num, ctf_type, &temp);
+	ret = get_slow_down_temp(soc_die_num, ctf_type, &temp);
 	if (ret) {
 		printf("Failed to get slow down temperature "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
@@ -818,12 +818,12 @@ static void apml_get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type)
 	       "---------------------------\n");
 }
 
-static void apml_get_hbm_dev_info(uint8_t soc_num)
+static void apml_get_hbm_dev_info(uint8_t soc_die_num)
 {
 	struct hbm_device_info dev_info = {0};
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_hbm_dev_info(soc_num, &dev_info);
+	ret = get_hbm_dev_info(soc_die_num, &dev_info);
 	if (ret) {
 		printf("Failed to get hbm device info "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
@@ -837,13 +837,13 @@ static void apml_get_hbm_dev_info(uint8_t soc_num)
 	printf("-----------------------------------------------------\n");
 }
 
-static void apml_get_pcie_stats(uint8_t soc_num, uint32_t pcie_select)
+static void apml_get_pcie_stats(uint8_t soc_die_num, uint32_t pcie_select)
 {
 	uint32_t pcie_stat = 0;
 	char *stat;
 	oob_status_t ret = OOB_SUCCESS;
 
-	ret = get_pciestats(soc_num, pcie_select, &pcie_stat);
+	ret = get_pciestats(soc_die_num, pcie_select, &pcie_stat);
 	if (ret) {
 		printf("Failed to get PCI statistics "
 		       "Err[0x%x]: %s\n", ret, esmi_get_err_msg(ret));
@@ -882,7 +882,7 @@ static void apml_get_pcie_stats(uint8_t soc_num, uint32_t pcie_select)
 	printf("-----------------------------------------------------\n");
 }
 
-void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
+void get_mi_300_mailbox_cmds_summary(uint8_t soc_die_num)
 {
 	struct mclk_fclk_pstates pstate = {0};
 	struct xgmi_speed_rate_n_width xgmi_pstate = {0};
@@ -897,10 +897,10 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	oob_status_t ret;
 	struct host_status h_status = {0};
 
-	ret = esmi_get_processor_info(soc_num, &plat_info);
+	ret = esmi_get_processor_info(soc_die_num, &plat_info);
 
 	printf("\n| MemClk/FClk_Pstate [0x%x] \t\t |", pstate_index);
-	ret = get_mclk_fclk_pstates(soc_num, pstate_index, &pstate);
+	ret = get_mclk_fclk_pstates(soc_die_num, pstate_index, &pstate);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -909,7 +909,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| XGMI power state Mappings [0x%x] \t |", pstate_index);
-	ret = get_xgmi_pstates(soc_num, pstate_index, &xgmi_pstate);
+	ret = get_xgmi_pstates(soc_die_num, pstate_index, &xgmi_pstate);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -921,7 +921,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		       ln_width);
 	}
 	printf("\n| Energy Accumulator \t\t\t |");
-	ret = get_energy_accum_with_timestamp(soc_num, &energy_acc,
+	ret = get_energy_accum_with_timestamp(soc_die_num, &energy_acc,
 					      &time_stamp);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
@@ -933,20 +933,20 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| PM Status \t\t\t\t |");
-	ret = get_alarms(soc_num, PM, &d_out);
+	ret = get_alarms(soc_die_num, PM, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		apml_display_alarms_status(PM, d_out);
 
 	printf("\n| PSN (0x%x)\t\t\t\t |", pstate_index);
-	ret = get_psn(soc_num, pstate_index, &psn);
+	ret = get_psn(soc_die_num, pstate_index, &psn);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" 0x%-llx", psn);
 	printf("\n| Link Info \t\t\t\t |");
-	ret = get_link_info(soc_num, &link_config, &module_id);
+	ret = get_link_info(soc_die_num, &link_config, &module_id);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -955,7 +955,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| Die Hot Spot Info \t\t\t |");
-	ret = get_die_hotspot_info(soc_num, &die_id, &temp);
+	ret = get_die_hotspot_info(soc_die_num, &die_id, &temp);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -964,7 +964,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| Mem Hot Spot Info \t\t\t |");
-	ret = get_mem_hotspot_info(soc_num, &hbm_id, &temp);
+	ret = get_mem_hotspot_info(soc_die_num, &hbm_id, &temp);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -973,7 +973,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| Host Status \t\t\t\t |");
-	ret = get_host_status(soc_num, &h_status);
+	ret = get_host_status(soc_die_num, &h_status);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -984,19 +984,19 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 	}
 
 	printf("\n| HBM Throttle (%%)\t\t\t |");
-	ret = get_hbm_throttle(soc_num, &d_out);
+	ret = get_hbm_throttle(soc_die_num, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-17u", d_out);
 	printf("\n| HBM Stack Temp [0x%x](ºC)\t\t |", pstate_index);
-	ret = get_hbm_temperature(soc_num, pstate_index, &temp);
+	ret = get_hbm_temperature(soc_die_num, pstate_index, &temp);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
 		printf(" %-16u", temp);
 	printf("\n| F_CLK Freq Limit (MHz) \t\t |");
-	ret = get_clk_freq_limits(soc_num, F_CLK, &limit);
+	ret = get_clk_freq_limits(soc_die_num, F_CLK, &limit);
 	if (ret) {
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	} else {
@@ -1004,7 +1004,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 		printf("\n| \tMin Freq\t\t\t | %-16u", limit.min);
 	}
 	printf("\n| Number of Sockets \t\t\t |");
-	ret = get_sockets_in_system(soc_num, &d_out);
+	ret = get_sockets_in_system(soc_die_num, &d_out);
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
@@ -1013,7 +1013,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_num)
 
 void get_mi300_mailbox_commands(char *exe_name)
 {
-	printf("Usage: %s  [SOC_NUM] [Option]"
+	printf("Usage: %s  [soc_die_num] [Option]"
 	       "\nOption:\n"
 	       "\n< MAILBOX COMMANDS [params] >:\n"
 	       "  --showmailboxsummary\t\t\t\t\t\t\t\t "
@@ -1182,7 +1182,7 @@ void get_mi300_mailbox_commands(char *exe_name)
 
 void get_mi300_tsi_commands(char *exec_name)
 {
-	printf("Usage: %s [SOC_NUM] [Option]"
+	printf("Usage: %s [soc_die_num] [Option]"
 	       "\nOption:\n"
 	       "\n< SB-TSI COMMANDS [params] >:\n"
 	       "  --showtsiregisters\t\t\t  \t\t\t\t\t Get "
@@ -1217,11 +1217,11 @@ void get_mi300_tsi_commands(char *exec_name)
 	       "Set/Reset APML processor read order, VALUE = 0 or 1\n", exec_name);
 }
 
-oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
+oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_die_num) {
 	float temp_value = 0;
 	oob_status_t ret;
 
-	ret = read_sbtsi_hbm_hi_temp_th(soc_num, &temp_value);
+	ret = read_sbtsi_hbm_hi_temp_th(soc_die_num, &temp_value);
 	if (ret)
 		return ret;
 
@@ -1236,7 +1236,7 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	       temp_value - floor(temp_value));
 
 	temp_value = 0;
-	ret = read_sbtsi_hbm_lo_temp_th(soc_num, &temp_value);
+	ret = read_sbtsi_hbm_lo_temp_th(soc_die_num, &temp_value);
 	if (ret)
 		return ret;
 
@@ -1251,7 +1251,7 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	usleep(APML_SLEEP);
 
 	temp_value = 0;
-	ret = read_sbtsi_max_hbm_temp(soc_num, &temp_value);
+	ret = read_sbtsi_max_hbm_temp(soc_die_num, &temp_value);
 	if (ret)
 		return ret;
 
@@ -1266,7 +1266,7 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	usleep(APML_SLEEP);
 
 	temp_value = 0;
-	ret = read_sbtsi_hbm_temp(soc_num, &temp_value);
+	ret = read_sbtsi_hbm_temp(soc_die_num, &temp_value);
 	if (ret)
 		return ret;
 
@@ -1283,11 +1283,11 @@ oob_status_t get_apml_mi300_tsi_register_descriptions(uint8_t soc_num) {
 	return ret;
 }
 
-static oob_status_t apml_set_hbm_alert_threshold(uint8_t soc_num, uint8_t value)
+static oob_status_t apml_set_hbm_alert_threshold(uint8_t soc_die_num, uint8_t value)
 {
 	oob_status_t ret;
 
-	ret = sbtsi_set_hbm_alert_threshold(soc_num, value);
+	ret = sbtsi_set_hbm_alert_threshold(soc_die_num, value);
 	if (ret != OOB_SUCCESS) {
 	printf("Failed: to set hbm alert threshold sample, Err[%d]: %s\n",
 	       ret, esmi_get_err_msg(ret));
@@ -1323,7 +1323,7 @@ static oob_status_t validate_number(char *str, uint8_t base)
  * @param argc number of command line parameters
  * @param argv list of command line parameters
  */
-oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
+oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_die_num)
 {
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -1454,189 +1454,189 @@ oob_status_t parseesb_mi300_args(int argc, char **argv, uint8_t soc_num)
 		switch(*long_options[long_index].flag) {
 		case 800:
 			/* Show hbm throttle */
-			apml_get_hbm_throttle(soc_num);
+			apml_get_hbm_throttle(soc_die_num);
 			break;
 		case 801:
 			/* Show hbm memory bandwidth */
-			apml_get_hbm_bandwidth(soc_num);
+			apml_get_hbm_bandwidth(soc_die_num);
 			break;
 		case 802:
 			/* Set and verify hbm throttle */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_hbm_throttle(soc_num, val1);
+			apml_set_hbm_throttle(soc_die_num, val1);
 			break;
 		case 803:
 			/* Set max gfx core clock frequency */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_gfx_core_clock(soc_num, MAX, val1);
+			apml_set_gfx_core_clock(soc_die_num, MAX, val1);
 			break;
 		case 804:
 			/* Set min gfx core clock frequency */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_gfx_core_clock(soc_num, MIN, val1);
+			apml_set_gfx_core_clock(soc_die_num, MIN, val1);
 			break;
 		case 806:
 			/* Get PM ALARMS status */
-			apml_get_alarms(soc_num, PM);
+			apml_get_alarms(soc_die_num, PM);
 			break;
 		case 807:
 			/* Get PSN */
 			val1 = atoi(argv[optind - 1]);
-			apml_get_psn(soc_num, val1);
+			apml_get_psn(soc_die_num, val1);
 			break;
 		case 808:
 			/* Get Link Info */
-			apml_get_link_info(soc_num);
+			apml_get_link_info(soc_die_num);
 			break;
 		case 809:
 			/* Get die hotspot Info */
-			apml_die_hotspot_info(soc_num);
+			apml_die_hotspot_info(soc_die_num);
 			break;
 		case 810:
 			/* Get Memory hotspot Info */
-			apml_mem_hotspot_info(soc_num);
+			apml_mem_hotspot_info(soc_die_num);
 			break;
 		case 811:
 			/* Get Status */
-			apml_get_host_status(soc_num);
+			apml_get_host_status(soc_die_num);
 			break;
 		case 812:
 			/* Get absolute max gfx frequnecy */
-			apml_get_max_min_gfx_freq(soc_num);
+			apml_get_max_min_gfx_freq(soc_die_num);
 			break;
 		case 813:
 			 /* Get act freq cap selected */
-			apml_get_act_gfx_freq(soc_num);
+			apml_get_act_gfx_freq(soc_die_num);
 			break;
 		case 814:
 			/* Get gfx freq limit */
-			apml_get_clk_freq_limit(soc_num, GFX_CLK);
+			apml_get_clk_freq_limit(soc_die_num, GFX_CLK);
 			break;
 		case 815:
 			/* Get fclk freq limit */
-			apml_get_clk_freq_limit(soc_num, F_CLK);
+			apml_get_clk_freq_limit(soc_die_num, F_CLK);
 			break;
 		case 816:
 			/* Get hbm stack index */
 			val1 = atoi(argv[optind - 1]);
 			/* Get hbm stack temperature */
-			apml_get_hbm_stack_temp(soc_num, val1);
+			apml_get_hbm_stack_temp(soc_die_num, val1);
 			break;
 		case 817:
 			/* Get xgmi pstates */
 			/* pstate index */
 			type = atoi(argv[optind - 1]);
-			apml_get_xgmi_pstates(soc_num, type);
+			apml_get_xgmi_pstates(soc_die_num, type);
 			break;
 		case 818:
 			/* Set XGMI PState */
 			/* Pstate value */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_xgmi_pstate(soc_num, val1);
+			apml_set_xgmi_pstate(soc_die_num, val1);
 			break;
 		case 819:
 			/* Unset XGMI Pstate */
-			apml_unset_xgmi_pstate(soc_num);
+			apml_unset_xgmi_pstate(soc_die_num);
 			break;
 		case 820:
 			/* pstateindex */
 			val1 = atoi(argv[optind - 1]);
 			/* Get pstates */
-			apml_get_mclk_fclk_pstates(soc_num, val1);
+			apml_get_mclk_fclk_pstates(soc_die_num, val1);
 			break;
 		case 821:
 			/* pstate */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_max_mclk_fclk_pstate(soc_num, val1);
+			apml_set_max_mclk_fclk_pstate(soc_die_num, val1);
 			break;
 		case 822:
 			/* Die ID */
 			val1 = atoi(argv[optind - 1]);
 			/* Get die level bist result */
-			apml_show_bist_results(soc_num, val1);
+			apml_show_bist_results(soc_die_num, val1);
 			break;
 		case 823:
 			/* port */
 			port.port = atoi(argv[optind - 1]);
 			port.slave_addr = atoi(argv[optind++]);
 			/* Get SVI based telemetry for individual rails */
-			apml_get_svi_telemetry_by_rail(soc_num, port);
+			apml_get_svi_telemetry_by_rail(soc_die_num, port);
 			break;
 		case 824:
 			/* Get Energy accumulator with time stamp */
-			apml_get_energy_accumulator_with_timestamp(soc_num);
+			apml_get_energy_accumulator_with_timestamp(soc_die_num);
 			break;
 		case 825:
 			/* Get XCC Idle residency */
-			apml_get_xcc_idle_residency(soc_num);
+			apml_get_xcc_idle_residency(soc_die_num);
 			break;
 		case 826:
 			/* Get number of sockets */
-			apml_get_number_of_soc(soc_num);
+			apml_get_number_of_soc(soc_die_num);
 			break;
 		case 827:
 			/* Get query statistics */
 			stat.stat_param = atoi(argv[optind - 1]);
 			stat.output_control = atoi(argv[optind++]);
-			apml_query_statistics(soc_num, stat);
+			apml_query_statistics(soc_die_num, stat);
 			break;
 		case 828:
 			/* Get Clear Statistics */
-			apml_clear_statistics(soc_num);
+			apml_clear_statistics(soc_die_num);
 			break;
 		case 829:
 			/* Hbm high temperature threshold */
 			temp = atof(argv[optind - 1]);
 			/* Set hbm high temperature threshold */
-			apml_set_hbm_high_threshold_temp(soc_num, temp);
+			apml_set_hbm_high_threshold_temp(soc_die_num, temp);
 			break;
 		case 830:
 			 /* Hbm low temperature threshold */
 			temp = atof(argv[optind - 1]);
 			/* Set hbm low temperature threshold */
-			apml_set_hbm_low_threshold_temp(soc_num, temp);
+			apml_set_hbm_low_threshold_temp(soc_die_num, temp);
 			break;
 		case 831:
 			/* Set HBM alert threshold samples */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_hbm_alert_threshold(soc_num, val1);
+			apml_set_hbm_alert_threshold(soc_die_num, val1);
 			break;
 		case 832:
 			/* Set HBM Alert config */
 			val1 = atoi(argv[optind - 1]);
-			apml_set_hbm_alert_config(soc_num, val1);
+			apml_set_hbm_alert_config(soc_die_num, val1);
 			break;
 		case 833:
 			/* show max die id */
-			apml_get_maximum_die_id(soc_num);
+			apml_get_maximum_die_id(soc_die_num);
 			break;
 		case 834:
 			/* Show die-type info */
 			val1 = atoi(argv[optind - 1]);
-			apml_get_die_type(soc_num, val1);
+			apml_get_die_type(soc_die_num, val1);
 			break;
 		case 835:
 			/* Get current XGMI pstate */
-			apml_get_curr_xgmi_pstate(soc_num);
+			apml_get_curr_xgmi_pstate(soc_die_num);
 			break;
 		case 836:
 			/* Get Max operating temperature */
 			val1 = atoi(argv[optind - 1]);
-			apml_get_max_operating_temp(soc_num, val1);
+			apml_get_max_operating_temp(soc_die_num, val1);
 			break;
 		case 837:
 			/* Get slow down temperature */
 			val1 = atoi(argv[optind - 1]);
-			apml_get_slow_down_temp(soc_num, val1);
+			apml_get_slow_down_temp(soc_die_num, val1);
 			break;
 		case 838:
 			/* Get hbm device info */
-			apml_get_hbm_dev_info(soc_num);
+			apml_get_hbm_dev_info(soc_die_num);
 			break;
 		case 839:
 			/* Get PCIe statistics */
 			val1 = atoi(argv[optind - 1]);
-			apml_get_pcie_stats(soc_num, val1);
+			apml_get_pcie_stats(soc_die_num, val1);
 			break;
 		default:
 			return ret;
