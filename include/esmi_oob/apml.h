@@ -128,7 +128,7 @@ extern const uint16_t sbtsi_addr[MAX_DEV_COUNT];	//!< SBTSI addresses //
  *  NOTE: In future, this API will be deprecated, as individual APIs for
  *  read SBRMI and read SBTSI support is available.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] reg_offset Register offset for RMI/TSI I/F.
  *
@@ -140,7 +140,7 @@ extern const uint16_t sbtsi_addr[MAX_DEV_COUNT];	//!< SBTSI addresses //
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint16_t reg_offset,
+oob_status_t esmi_oob_read_byte(uint8_t soc_die_num, uint16_t reg_offset,
 				char *file_name, uint8_t *buffer);
 
 /**
@@ -150,7 +150,7 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint16_t reg_offset,
  *  NOTE: In future, this API will be deprecated, as individual APIs for
  *  write SBRMI and write SBTSI support is available.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] file_name Character device file name for RMI/TSI I/F.
  *
@@ -162,7 +162,7 @@ oob_status_t esmi_oob_read_byte(uint8_t soc_num, uint16_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint16_t reg_offset,
+oob_status_t esmi_oob_write_byte(uint8_t soc_die_num, uint16_t reg_offset,
 				 char *file_name, uint8_t value);
 
 /**
@@ -170,7 +170,7 @@ oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint16_t reg_offset,
  *
  *  @details This function will read the data for the given RMI register.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] reg_offset RMI register offset.
  *
@@ -180,14 +180,14 @@ oob_status_t esmi_oob_write_byte(uint8_t soc_num, uint16_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint16_t reg_offset,
+oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_die_num, uint16_t reg_offset,
 				    uint8_t *buffer);
 /**
  *  @brief Reads data for the given TSI register.
  *
  *  @details This function will read the data for the given TSI register.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] reg_offset TSI register offset.
  *
@@ -197,7 +197,7 @@ oob_status_t esmi_oob_rmi_read_byte(uint8_t soc_num, uint16_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_die_num, uint8_t reg_offset,
 				    uint8_t *buffer);
 
 /**
@@ -205,7 +205,7 @@ oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
  *
  *  @details This function will write the data to the specified RMI register.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] reg_offset RMI register offset.
  *
@@ -215,7 +215,7 @@ oob_status_t esmi_oob_tsi_read_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint16_t reg_offset,
+oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_die_num, uint16_t reg_offset,
 				     uint8_t value);
 
 /**
@@ -223,7 +223,7 @@ oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint16_t reg_offset,
  *
  *  @details This function will write the data to the specified TSI register.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] reg_offset TSI register offset.
  *
@@ -233,7 +233,7 @@ oob_status_t esmi_oob_rmi_write_byte(uint8_t soc_num, uint16_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
+oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_die_num, uint8_t reg_offset,
 				     uint8_t value);
 
 /**
@@ -241,7 +241,7 @@ oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
  *
  *  @details This function will read mailbox command data.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] cmd mailbox command.
  *
@@ -253,7 +253,7 @@ oob_status_t esmi_oob_tsi_write_byte(uint8_t soc_num, uint8_t reg_offset,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_read_mailbox(uint8_t soc_num, uint32_t cmd,
+oob_status_t esmi_oob_read_mailbox(uint8_t soc_die_num, uint32_t cmd,
 				   uint32_t input, uint32_t *buffer);
 
 /**
@@ -261,7 +261,7 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num, uint32_t cmd,
  *
  *  @details This function will writes data to mailbox command.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] cmd mailbox command.
  *
@@ -271,7 +271,7 @@ oob_status_t esmi_oob_read_mailbox(uint8_t soc_num, uint32_t cmd,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
+oob_status_t esmi_oob_write_mailbox(uint8_t soc_die_num,
 				    uint32_t cmd, uint32_t data);
 /**
  *  @brief Writes data to RMI device file
@@ -279,7 +279,7 @@ oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
  *  @details This function will write data to RMI device file,
  *  through ioctl.
  *
- *  @param[in] soc_num  Socket index.
+ *  @param[in] soc_die_num  Socket Die index.
  *
  *  @param[in] msg struct apml_message which contains information about the protocol,
  *  input/output data etc.
@@ -288,7 +288,7 @@ oob_status_t esmi_oob_write_mailbox(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
+oob_status_t sbrmi_xfer_msg(uint8_t soc_die_num, struct apml_message *msg);
 
 /**
  *  @brief Writes data to TSI device file
@@ -296,7 +296,7 @@ oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
  *  @details This function will write data to TSI device file,
  *  through ioctl.
  *
- *  @param[in] soc_num  Socket index.
+ *  @param[in] soc_die_num  Socket Die index.
  *
  *  @param[in] msg struct apml_message which contains information about the protocol,
  *  input/output data etc.
@@ -305,7 +305,7 @@ oob_status_t sbrmi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
+oob_status_t sbtsi_xfer_msg(uint8_t soc_die_num, struct apml_message *msg);
 
 /**
  *  @brief Validates sbtsi module is present for the given socket
@@ -313,7 +313,7 @@ oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
  *  @details This function will validate sbtsi module is present
  *  for the specified socket.
  *
- *  @param[in] soc_num  Socket index.
+ *  @param[in] soc_die_num  Socket Die index.
  *
  *  @param[out] is_sbtsi returns true if the sbtsi is present else false
  *
@@ -321,7 +321,7 @@ oob_status_t sbtsi_xfer_msg(uint8_t soc_num, struct apml_message *msg);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi);
+oob_status_t validate_sbtsi_module(uint8_t soc_die_num, bool *is_sbtsi);
 
 /**
  *  @brief Validates sbrmi module is present for the given socket
@@ -329,7 +329,7 @@ oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi);
  *  @details This function will validate sbrmi module is present
  *  for the specified socket.
  *
- *  @param[in] soc_num  Socket index.
+ *  @param[in] soc_die_num  Socket Die index.
  *
  *  @param[out] is_sbrmi returns true if the sbrmi is present else false
  *
@@ -337,7 +337,7 @@ oob_status_t validate_sbtsi_module(uint8_t soc_num, bool *is_sbtsi);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi);
+oob_status_t validate_sbrmi_module(uint8_t soc_die_num, bool *is_sbrmi);
 
 /**
  *  @brief Validates sbrmi and sbtsi modules are present for the given socket
@@ -345,7 +345,7 @@ oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi);
  *  @details This function will validate sbrmi and sbtsi modules are present
  *  for the specified socket.
  *
- *  @param[in] soc_num  Socket index.
+ *  @param[in] soc_die_num  Socket Die index.
  *
  *  @param[out] is_sbrmi returns true if the sbrmi is present else false
  *
@@ -355,7 +355,6 @@ oob_status_t validate_sbrmi_module(uint8_t soc_num, bool *is_sbrmi);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t validate_apml_dependency(uint8_t soc_num, bool *is_sbrmi,
+oob_status_t validate_apml_dependency(uint8_t soc_die_num, bool *is_sbrmi,
 				      bool *is_sbtsi);
-
 #endif  // INCLUDE_APML_H_

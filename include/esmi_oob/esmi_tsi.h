@@ -117,7 +117,7 @@ typedef enum {
  *
  *  This field returns the integer portion of the CPU temperature
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -125,7 +125,7 @@ typedef enum {
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -136,7 +136,7 @@ oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -144,7 +144,7 @@ oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_status(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief The bits in this register are Read-only and can be written
@@ -152,7 +152,7 @@ oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -160,7 +160,7 @@ oob_status_t read_sbtsi_status(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_config(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief This register value specifies the rate at which CPU temperature
@@ -169,7 +169,7 @@ oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature
  *
@@ -177,7 +177,7 @@ oob_status_t read_sbtsi_config(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
+oob_status_t read_sbtsi_updaterate(uint8_t soc_die_num, float *buffer);
 
 /**
  *  @brief This register value specifies the rate at which CPU temperature
@@ -186,7 +186,7 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] uprate value to write in raw format
  *
@@ -194,7 +194,7 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num, float *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
+oob_status_t write_sbtsi_updaterate(uint8_t soc_die_num, float uprate);
 
 /**
  *  @brief This value specifies the integer  portion of the high temperature
@@ -205,7 +205,7 @@ oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the integer part of high cpu temp
  *
@@ -213,7 +213,7 @@ oob_status_t write_sbtsi_updaterate(uint8_t soc_num, float uprate);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_hitempint(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief This value specifies the integer portion of the low temperature
@@ -224,7 +224,7 @@ oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the integer part of low cpu temp
  *
@@ -232,14 +232,14 @@ oob_status_t read_sbtsi_hitempint(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_lotempint(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief This register provides write access to SBTSI::Config
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the configuraion
  *
@@ -247,14 +247,14 @@ oob_status_t read_sbtsi_lotempint(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
+oob_status_t read_sbtsi_configwrite(uint8_t soc_die_num, uint8_t *buffer);
 
 /**
  *  @brief The value returns the decimal portion of the CPU temperature
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] buffer a pointer to hold the cpu temperature decimal
  *
@@ -262,7 +262,7 @@ oob_status_t read_sbtsi_configwrite(uint8_t soc_num, uint8_t *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
+oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_die_num, float *buffer);
 
 /**
  *  @brief SBTSI::CpuTempOffInt and SBTSI::CpuTempOffDec combine to specify
@@ -270,7 +270,7 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] temp_int a pointer to hold the cpu offset interger
  *
@@ -278,7 +278,7 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num, float *buffer);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
+oob_status_t read_sbtsi_cputempoffint(uint8_t soc_die_num, uint8_t *temp_int);
 
 /**
  *  @brief This value specifies the decimal/fractional portion of the
@@ -286,7 +286,7 @@ oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] temp_dec a pointer to hold the cpu offset decimal
  *
@@ -294,7 +294,7 @@ oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num, uint8_t *temp_int);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
+oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_die_num, float *temp_dec);
 
 /**
  *  @brief This value specifies the decimal portion of the high temperature
@@ -302,7 +302,7 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] temp_dec a pointer to hold the decimal part of cpu high temp
  *
@@ -310,7 +310,7 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num, float *temp_dec);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
+oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_die_num, float *temp_dec);
 
 /**
  *  @brief value specifies the decimal portion of the low temperature
@@ -318,7 +318,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] temp_dec a pointer to hold the decimal part of cpu low temperature
  *
@@ -326,7 +326,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num, float *temp_dec);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
+oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_die_num, float *temp_dec);
 
 /**
  *  @brief value specifies 0=SMBus defined timeout support disabled.
@@ -338,7 +338,7 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] timeout a pointer to hold the cpu timeout configuration
  *
@@ -346,7 +346,7 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num, float *temp_dec);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
+oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_die_num, uint8_t *timeout);
 
 /**
  *  @brief Specifies the number of consecutive CPU temperature
@@ -355,7 +355,7 @@ oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] samples a pointer to hold the cpu temperature alert threshold
  *
@@ -363,7 +363,7 @@ oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num, uint8_t *timeout);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
+oob_status_t read_sbtsi_alertthreshold(uint8_t soc_die_num, uint8_t *samples);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -374,7 +374,7 @@ oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] mode a pointer to hold the cpu temperature alert configuration
  *
@@ -382,14 +382,14 @@ oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num, uint8_t *samples);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
+oob_status_t read_sbtsi_alertconfig(uint8_t soc_die_num, uint8_t *mode);
 
 /**
  *  @brief Returns the AMD manufacture ID
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] man_id a pointer to hold the manufacture id
  *
@@ -397,14 +397,14 @@ oob_status_t read_sbtsi_alertconfig(uint8_t soc_num, uint8_t *mode);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
+oob_status_t read_sbtsi_manufid(uint8_t soc_die_num, uint8_t *man_id);
 
 /**
  *  @brief Specifies the SBI temperature sensor interface revision
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] rivision a pointer to hold the cpu temperature revision
  *
@@ -412,7 +412,7 @@ oob_status_t read_sbtsi_manufid(uint8_t soc_num, uint8_t *man_id);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
+oob_status_t read_sbtsi_revision(uint8_t soc_die_num, uint8_t *rivision);
 
 /* Extra API's for bit parsing */
 /**
@@ -422,7 +422,7 @@ oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] cpu_temp a pointer to get temperature of the CPU
  *
@@ -430,7 +430,7 @@ oob_status_t read_sbtsi_revision(uint8_t soc_num, uint8_t *rivision);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
+oob_status_t sbtsi_get_cputemp(uint8_t soc_die_num, float *cpu_temp);
 
 /**
  *  @brief Status register is Read-only, volatile field
@@ -441,7 +441,7 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] loalert: 1=> CPU temp is less than or equal to low temperature
  *  threshold for consecutive samples
@@ -453,7 +453,7 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num, float *cpu_temp);
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
+oob_status_t sbtsi_get_temp_status(uint8_t soc_die_num,
 				   uint8_t *loalert, uint8_t *hialert);
 
 /**
@@ -462,7 +462,7 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] al_mask: 0=> ALERT_L pin enabled. 1=> ALERT_L pin disabled
  *  and does not assert.
@@ -481,7 +481,7 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_config(uint8_t soc_num,
+oob_status_t sbtsi_get_config(uint8_t soc_die_num,
 			      uint8_t *al_mask, uint8_t *run_stop,
 			      uint8_t *read_ord, uint8_t *ara);
 
@@ -493,7 +493,7 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
  *
  *  NOTE: Currently testing is not done for this API.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] mode: value to update 0 or 1
  *
@@ -503,7 +503,7 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_configwr(uint8_t soc_num,
+oob_status_t sbtsi_set_configwr(uint8_t soc_die_num,
 				uint8_t mode, uint8_t config_mask);
 
 /**
@@ -511,7 +511,7 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] timeout_en: 0=>SMBus defined timeout support disabled.
  *
@@ -525,7 +525,7 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_timeout(uint8_t soc_num,
+oob_status_t sbtsi_get_timeout(uint8_t soc_die_num,
 			       uint8_t *timeout_en);
 
 /**
@@ -533,7 +533,7 @@ oob_status_t sbtsi_get_timeout(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] mode:  0=>SMBus defined timeout support disabled.
  *
@@ -547,7 +547,7 @@ oob_status_t sbtsi_get_timeout(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
+oob_status_t sbtsi_set_timeout_config(uint8_t soc_die_num,
 				      uint8_t mode);
 
 /**
@@ -558,7 +558,7 @@ oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] hitemp_thr: Specifies the high temperature threshold
  *
@@ -566,7 +566,7 @@ oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_die_num,
 					float hitemp_thr);
 
 /**
@@ -577,7 +577,7 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] lotemp_thr: Specifies the low temperature threshold
  *
@@ -585,7 +585,7 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_die_num,
 					float lotemp_thr);
 
 /**
@@ -596,7 +596,7 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] hitemp_thr: Specifies the high temperature threshold
  *
@@ -604,7 +604,7 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_die_num,
 					float *hitemp_thr);
 
 /**
@@ -615,7 +615,7 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] lotemp_thr: Get the low temperature threshold
  *
@@ -623,7 +623,7 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_die_num,
 					float *lotemp_thr);
 
 /**
@@ -632,7 +632,7 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] temp_offset to get the offset value for temperature
  *
@@ -640,7 +640,7 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
+oob_status_t read_sbtsi_cputempoffset(uint8_t soc_die_num,
 				      float *temp_offset);
 
 /**
@@ -649,7 +649,7 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] temp_offset to set the offset value for temperature
  *
@@ -657,7 +657,7 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
+oob_status_t write_sbtsi_cputempoffset(uint8_t soc_die_num,
 				       float temp_offset);
 
 /**
@@ -667,7 +667,7 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] samples: Number of samples
  *  0h: 1 sample
@@ -678,7 +678,7 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_alert_threshold(uint8_t soc_die_num,
 				       uint8_t samples);
 
 /**
@@ -686,7 +686,7 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] mode 0=> SBTSI::Status[TempHighAlert] &
  *  SBTSI::Status[TempLowAlert] are read-clear.
@@ -698,7 +698,7 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
+oob_status_t sbtsi_set_alert_config(uint8_t soc_die_num,
 				    uint8_t mode);
 /** @} */  // end of SB-TSI Register access
 /*****************************************************************************/

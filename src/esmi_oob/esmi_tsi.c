@@ -47,27 +47,27 @@
 #include <esmi_oob/apml.h>
 
 /* sb-tsi register access */
-oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_num,
+oob_status_t read_sbtsi_cpuinttemp(uint8_t soc_die_num,
 				   uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPINT,
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPINT,
 				      buffer);
 }
 
-oob_status_t read_sbtsi_status(uint8_t soc_num,
+oob_status_t read_sbtsi_status(uint8_t soc_die_num,
 			       uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num,
+	return esmi_oob_tsi_read_byte(soc_die_num,
 				  SBTSI_STATUS, buffer);
 }
 
-oob_status_t read_sbtsi_config(uint8_t soc_num,
+oob_status_t read_sbtsi_config(uint8_t soc_die_num,
 			       uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGURATION, buffer);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CONFIGURATION, buffer);
 }
 
-oob_status_t read_sbtsi_updaterate(uint8_t soc_num,
+oob_status_t read_sbtsi_updaterate(uint8_t soc_die_num,
 				   float *buffer)
 {
 	/* as per the ssp document valid rates from 0 - 10 are as below */
@@ -79,7 +79,7 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num,
 	if (!buffer)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_UPDATERATE, &rdbyte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_UPDATERATE, &rdbyte);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	if (rdbyte >= items)
@@ -89,7 +89,7 @@ oob_status_t read_sbtsi_updaterate(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t write_sbtsi_updaterate(uint8_t soc_num,
+oob_status_t write_sbtsi_updaterate(uint8_t soc_die_num,
 				    float uprate)
 {
 	/* as per the ssp document valid rates from 0 - 10 are as below */
@@ -104,10 +104,10 @@ oob_status_t write_sbtsi_updaterate(uint8_t soc_num,
 	if (wrbyte >= items)
 		return OOB_INVALID_INPUT;
 
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_UPDATERATE, wrbyte);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_UPDATERATE, wrbyte);
 }
 
-oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_die_num,
 					float hitemp_thr)
 {
 	oob_status_t ret;
@@ -120,11 +120,11 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
 	byte_int = hitemp_thr;
 	temp_dec = hitemp_thr - byte_int;
 
-	ret = esmi_oob_tsi_write_byte(soc_num, SBTSI_HITEMPINT, byte_int);
+	ret = esmi_oob_tsi_write_byte(soc_die_num, SBTSI_HITEMPINT, byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_HITEMPDEC, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_HITEMPDEC, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
@@ -133,10 +133,10 @@ oob_status_t sbtsi_set_hitemp_threshold(uint8_t soc_num,
 
 	/* [7:5] HiTempDec and [4:0] Reserved */
 	current = ((byte_dec << 5) | (prev & 0x1F));
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_HITEMPDEC, current);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_HITEMPDEC, current);
 }
 
-oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_die_num,
 					float lotemp_thr)
 {
 	oob_status_t ret;
@@ -149,11 +149,11 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
 	byte_int = lotemp_thr;
 	temp_dec = lotemp_thr - byte_int;
 
-	ret = esmi_oob_tsi_write_byte(soc_num, SBTSI_LOTEMPINT, byte_int);
+	ret = esmi_oob_tsi_write_byte(soc_die_num, SBTSI_LOTEMPINT, byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_LOTEMPDEC, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_LOTEMPDEC, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
@@ -162,10 +162,10 @@ oob_status_t sbtsi_set_lotemp_threshold(uint8_t soc_num,
 
 	/* [7:5] LoTempDec and [4:0] Reserved */
 	current = ((byte_dec << 5) | (prev & 0x1F));
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_LOTEMPDEC, current);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_LOTEMPDEC, current);
 }
 
-oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
+oob_status_t sbtsi_set_timeout_config(uint8_t soc_die_num,
 				      uint8_t mode)
 {
 	oob_status_t ret;
@@ -174,16 +174,16 @@ oob_status_t sbtsi_set_timeout_config(uint8_t soc_num,
 	/* 1 : Enabled and 0 Disbaled */
 	if (mode != 1 && mode != 0)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_TIMEOUTCONFIG, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_TIMEOUTCONFIG, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
 	/* [7] TimeoutEn and [6:0] Reserved */
 	new = ((mode << 7) | (prev & 0x7F));
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_TIMEOUTCONFIG, new);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_TIMEOUTCONFIG, new);
 }
 
-oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
+oob_status_t sbtsi_set_alert_threshold(uint8_t soc_die_num,
 				       uint8_t samples)
 {
 	oob_status_t ret;
@@ -192,7 +192,7 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 	/* Alert threshold valid range from 1 to 8 samples. */
 	if (samples < 1 || samples > 8)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_ALERTTHRESHOLD, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_ALERTTHRESHOLD, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/**
@@ -203,10 +203,10 @@ oob_status_t sbtsi_set_alert_threshold(uint8_t soc_num,
 	 * 7h: 8 samples
 	 */
 	new = (prev & 0xF8) | (samples - 1);
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_ALERTTHRESHOLD, new);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_ALERTTHRESHOLD, new);
 }
 
-oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
+oob_status_t sbtsi_set_alert_config(uint8_t soc_die_num,
 				    uint8_t mode)
 {
 	oob_status_t ret;
@@ -215,15 +215,15 @@ oob_status_t sbtsi_set_alert_config(uint8_t soc_num,
 	/* single bit validation */
 	if (mode != 1 && mode != 0)
 		return OOB_INVALID_INPUT;
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_ALERTCONFIG, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_ALERTCONFIG, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Alert Comparator mode enable */
 	new = (prev & 0xFE) | mode;
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_ALERTCONFIG, new);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_ALERTCONFIG, new);
 }
 
-oob_status_t sbtsi_set_configwr(uint8_t soc_num,
+oob_status_t sbtsi_set_configwr(uint8_t soc_die_num,
 				uint8_t mode, uint8_t config_mask)
 {
 	oob_status_t ret;
@@ -238,33 +238,33 @@ oob_status_t sbtsi_set_configwr(uint8_t soc_num,
 	    config_mask != ARA_MASK)
 		return OOB_INVALID_INPUT;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGURATION, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CONFIGURATION, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
 	new = mode ? prev | config_mask : prev & (~config_mask);
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_CONFIGWR, new);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_CONFIGWR, new);
 }
 
-oob_status_t read_sbtsi_hitempint(uint8_t soc_num,
+oob_status_t read_sbtsi_hitempint(uint8_t soc_die_num,
 				  uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_HITEMPINT, buffer);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_HITEMPINT, buffer);
 }
 
-oob_status_t read_sbtsi_lotempint(uint8_t soc_num,
+oob_status_t read_sbtsi_lotempint(uint8_t soc_die_num,
 				  uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_LOTEMPINT, buffer);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_LOTEMPINT, buffer);
 }
 
-oob_status_t read_sbtsi_configwrite(uint8_t soc_num,
+oob_status_t read_sbtsi_configwrite(uint8_t soc_die_num,
 				    uint8_t *buffer)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGWR, buffer);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CONFIGWR, buffer);
 }
 
-oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num,
+oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_die_num,
 				       float *buffer)
 {
 	uint8_t rd_byte;
@@ -273,7 +273,7 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num,
 	if (!buffer)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPDEC, &rd_byte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPDEC, &rd_byte);
 	if (ret)
 		return ret;
 	*buffer = ((rd_byte >> 5) * TEMP_INC);
@@ -281,13 +281,13 @@ oob_status_t read_sbtsi_cputempdecimal(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_cputempoffint(uint8_t soc_num,
+oob_status_t read_sbtsi_cputempoffint(uint8_t soc_die_num,
 				      uint8_t *temp_int)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPOFFINT, temp_int);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPOFFINT, temp_int);
 }
 
-oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num,
+oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_die_num,
 				      float *temp_dec)
 {
 	uint8_t rd_byte;
@@ -296,7 +296,7 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num,
 	if (!temp_dec)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPOFFDEC, &rd_byte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPOFFDEC, &rd_byte);
 	if (ret)
 		return ret;
 	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
@@ -304,7 +304,7 @@ oob_status_t read_sbtsi_cputempoffdec(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num,
+oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_die_num,
 				      float *temp_dec)
 {
 	uint8_t rd_byte;
@@ -313,7 +313,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num,
 	if (!temp_dec)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_HITEMPDEC, &rd_byte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_HITEMPDEC, &rd_byte);
 	if (ret)
 		return ret;
 	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
@@ -321,7 +321,7 @@ oob_status_t read_sbtsi_hitempdecimal(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num,
+oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_die_num,
 				      float *temp_dec)
 {
 	uint8_t rd_byte;
@@ -330,7 +330,7 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num,
 	if (!temp_dec)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_LOTEMPDEC, &rd_byte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_LOTEMPDEC, &rd_byte);
 	if (ret)
 		return ret;
 	*temp_dec = ((rd_byte >> 5) * TEMP_INC);
@@ -338,13 +338,13 @@ oob_status_t read_sbtsi_lotempdecimal(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_num,
+oob_status_t read_sbtsi_timeoutconfig(uint8_t soc_die_num,
 				      uint8_t *timeout)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_TIMEOUTCONFIG, timeout);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_TIMEOUTCONFIG, timeout);
 }
 
-oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
+oob_status_t read_sbtsi_cputempoffset(uint8_t soc_die_num,
 				      float *temp_offset)
 {
 	oob_status_t ret;
@@ -354,10 +354,10 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 	if (!temp_offset)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPOFFINT, &byte_int);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPOFFINT, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPOFFDEC, &byte_dec);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPOFFDEC, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
@@ -368,7 +368,7 @@ oob_status_t read_sbtsi_cputempoffset(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
+oob_status_t write_sbtsi_cputempoffset(uint8_t soc_die_num,
 				       float temp_offset)
 {
 	oob_status_t ret;
@@ -384,23 +384,23 @@ oob_status_t write_sbtsi_cputempoffset(uint8_t soc_num,
 
 	byte_dec = (temp_offset - byte_int) / TEMP_INC;
 
-	ret = esmi_oob_tsi_write_byte(soc_num, SBTSI_CPUTEMPOFFINT, byte_int);
+	ret = esmi_oob_tsi_write_byte(soc_die_num, SBTSI_CPUTEMPOFFINT, byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPOFFDEC, &prev);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPOFFDEC, &prev);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	current = ((prev & 0x1F) | (byte_dec << 5));
-	return esmi_oob_tsi_write_byte(soc_num, SBTSI_CPUTEMPOFFDEC, current);
+	return esmi_oob_tsi_write_byte(soc_die_num, SBTSI_CPUTEMPOFFDEC, current);
 }
 
-oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num,
+oob_status_t read_sbtsi_alertthreshold(uint8_t soc_die_num,
 				       uint8_t *samples)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_ALERTTHRESHOLD, samples);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_ALERTTHRESHOLD, samples);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/**
@@ -415,12 +415,12 @@ oob_status_t read_sbtsi_alertthreshold(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_alertconfig(uint8_t soc_num,
+oob_status_t read_sbtsi_alertconfig(uint8_t soc_die_num,
 				    uint8_t *mode)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_ALERTCONFIG, mode);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_ALERTCONFIG, mode);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Alert Comparator mode enable */
@@ -429,12 +429,12 @@ oob_status_t read_sbtsi_alertconfig(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_manufid(uint8_t soc_num,
+oob_status_t read_sbtsi_manufid(uint8_t soc_die_num,
 				uint8_t *man_id)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_MANUFID, man_id);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_MANUFID, man_id);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7:1] reserved, [0] Manufacture ID */
@@ -443,13 +443,13 @@ oob_status_t read_sbtsi_manufid(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbtsi_revision(uint8_t soc_num,
+oob_status_t read_sbtsi_revision(uint8_t soc_die_num,
 				 uint8_t *rivision)
 {
-	return esmi_oob_tsi_read_byte(soc_num, SBTSI_REVISION, rivision);
+	return esmi_oob_tsi_read_byte(soc_die_num, SBTSI_REVISION, rivision);
 }
 
-oob_status_t sbtsi_get_cputemp(uint8_t soc_num,
+oob_status_t sbtsi_get_cputemp(uint8_t soc_die_num,
 			       float *cpu_temp)
 {
 	oob_status_t ret;
@@ -459,27 +459,27 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num,
 	if (!cpu_temp)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGURATION, &rd_order);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CONFIGURATION, &rd_order);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	rd_order &= READORDER_MASK;
 	if (rd_order) {
-		ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPDEC,
+		ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPDEC,
 					     &byte_dec);
 		if (ret != OOB_SUCCESS)
 			return ret;
 		usleep(1000);
-		ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPINT,
+		ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPINT,
 					     &byte_int);
 		if (ret != OOB_SUCCESS)
 			return ret;
 	} else {
-		ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPINT,
+		ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPINT,
 					     &byte_int);
 		if (ret != OOB_SUCCESS)
 			return ret;
 		usleep(1000);
-		ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CPUTEMPDEC,
+		ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CPUTEMPDEC,
 					     &byte_dec);
 		if (ret != OOB_SUCCESS)
 			return ret;
@@ -489,7 +489,7 @@ oob_status_t sbtsi_get_cputemp(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_die_num,
 					float *hitemp_thr)
 {
 	oob_status_t ret;
@@ -498,11 +498,11 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
 	if (!hitemp_thr)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_HITEMPINT, &byte_int);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_HITEMPINT, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	usleep(1000);
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_HITEMPDEC, &byte_dec);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_HITEMPDEC, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
@@ -513,7 +513,7 @@ oob_status_t sbtsi_get_hitemp_threshold(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
+oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_die_num,
 					float *lotemp_thr)
 {
 	oob_status_t ret;
@@ -522,11 +522,11 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 	if (!lotemp_thr)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_LOTEMPINT, &byte_int);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_LOTEMPINT, &byte_int);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	usleep(1000);
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_LOTEMPDEC, &byte_dec);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_LOTEMPDEC, &byte_dec);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* combining integer and decimal part to make float value
@@ -537,7 +537,7 @@ oob_status_t sbtsi_get_lotemp_threshold(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
+oob_status_t sbtsi_get_temp_status(uint8_t soc_die_num,
 				   uint8_t *loalert, uint8_t *hialert)
 {
 	oob_status_t ret;
@@ -546,7 +546,7 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 	if ((!loalert) || (!hialert))
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_STATUS, &rdbyte);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_STATUS, &rdbyte);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [4] temperature high alert, [3] temperature low alerti */
@@ -556,7 +556,7 @@ oob_status_t sbtsi_get_temp_status(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_config(uint8_t soc_num,
+oob_status_t sbtsi_get_config(uint8_t soc_die_num,
 			      uint8_t *al_mask, uint8_t *run_stop,
 			      uint8_t *read_ord, uint8_t *ara)
 {
@@ -566,7 +566,7 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
 	if ((!al_mask) || (!run_stop) || (!read_ord) || (!ara))
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_CONFIGURATION, &rdbytes);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_CONFIGURATION, &rdbytes);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	*al_mask = rdbytes & ALERTMASK_MASK;
@@ -577,12 +577,12 @@ oob_status_t sbtsi_get_config(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t sbtsi_get_timeout(uint8_t soc_num,
+oob_status_t sbtsi_get_timeout(uint8_t soc_die_num,
 			       uint8_t *timeout_en)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_tsi_read_byte(soc_num, SBTSI_TIMEOUTCONFIG, timeout_en);
+	ret = esmi_oob_tsi_read_byte(soc_die_num, SBTSI_TIMEOUTCONFIG, timeout_en);
 	if (ret != OOB_SUCCESS)
 		return ret;
 	/* [7] TimeoutEn and [6:0] Reserved */

@@ -66,7 +66,7 @@ typedef enum {
  *  Further details can be found in mentioned tech doc
  *  https://www.amd.com/system/files/TechDocs/57095-PUB_1.00.pdf
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] client DEV_SBRMI[0]/DEV_SBTSI[1] enum: apml_client
  *
@@ -74,5 +74,5 @@ typedef enum {
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t apml_recover_dev(uint8_t soc_num, uint8_t client);
+oob_status_t apml_recover_dev(uint8_t soc_die_num, uint8_t client);
 #endif	//INCLUDE_APML_RECOVERY_H_

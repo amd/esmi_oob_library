@@ -91,7 +91,7 @@ static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 
 }
 
-oob_status_t esmi_get_vendor_id(uint8_t soc_num,
+oob_status_t esmi_get_vendor_id(uint8_t soc_die_num,
 				char *vendor_id)
 {
 	uint32_t eax = 0, ebx = 0, ecx = 0, edx = 0;
@@ -102,7 +102,7 @@ oob_status_t esmi_get_vendor_id(uint8_t soc_num,
 	if (!vendor_id)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_cpuid(soc_num, core_id,
+	ret = esmi_oob_cpuid(soc_die_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret)
 		return ret;
@@ -135,7 +135,7 @@ static oob_status_t esmi_reg_offset_conv(uint32_t reg, uint32_t offset,
 	return (reg >> offset) & flag;
 }
 
-oob_status_t esmi_get_processor_info(uint8_t soc_num,
+oob_status_t esmi_get_processor_info(uint8_t soc_die_num,
 				     struct processor_info *proc_info)
 {
 
@@ -146,7 +146,7 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
 	if (!proc_info)
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_oob_cpuid(soc_num, core_id,
+	ret = esmi_oob_cpuid(soc_die_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret != 0)
 		return ret;
@@ -167,7 +167,7 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
 	return ret;
 }
 
-oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
+oob_status_t esmi_get_threads_per_core(uint8_t soc_die_num,
 				       uint32_t *threads_per_core)
 {
 	oob_status_t ret;
@@ -180,7 +180,7 @@ oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
 		return OOB_ARG_PTR_NULL;
 
 	cpuid_fn = 0x8000001e; // CPUID_Fn8000001E_EBX [Core Identifiers]
-	ret = esmi_oob_cpuid_ebx(soc_num, thread_ind, cpuid_fn,
+	ret = esmi_oob_cpuid_ebx(soc_die_num, thread_ind, cpuid_fn,
 				 cpuid_extd_fn, &value);
 	if (ret != OOB_SUCCESS)
 		return ret;
@@ -194,7 +194,7 @@ oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
 }
 
 oob_status_t
-esmi_get_logical_cores_per_socket(uint8_t soc_num,
+esmi_get_logical_cores_per_socket(uint8_t soc_die_num,
 				  uint32_t *logical_cores_per_socket)
 {
 	oob_status_t ret;
@@ -211,7 +211,7 @@ esmi_get_logical_cores_per_socket(uint8_t soc_num,
 	 */
 	cpuid_fn = 0xB;
 	cpuid_extd_fn = 1;
-	ret = esmi_oob_cpuid_ebx(soc_num, thread_ind, cpuid_fn,
+	ret = esmi_oob_cpuid_ebx(soc_die_num, thread_ind, cpuid_fn,
 				 cpuid_extd_fn, &value);
 	if (ret != OOB_SUCCESS)
 		return ret;
@@ -221,7 +221,7 @@ esmi_get_logical_cores_per_socket(uint8_t soc_num,
 }
 
 /* Thread > 127, Thread128 CS register, 1'b1 needs to be set to 1 */
-static oob_status_t esmi_oob_extend_thread(uint8_t soc_num, uint32_t *thread)
+static oob_status_t esmi_oob_extend_thread(uint8_t soc_die_num, uint32_t *thread)
 {
 	uint8_t val = 0;
 
@@ -229,20 +229,20 @@ static oob_status_t esmi_oob_extend_thread(uint8_t soc_num, uint32_t *thread)
 		*thread -= 128;
 		val = 1;
 	}
-	return esmi_oob_rmi_write_byte(soc_num, SBRMI_THREAD128CS, val);
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_THREAD128CS, val);
 }
 
-static oob_status_t validate_thread(uint8_t soc_num, uint32_t thread_num)
+static oob_status_t validate_thread(uint8_t soc_die_num, uint32_t thread_num)
 {
 	uint32_t max_threads_per_soc = 0;
 	uint8_t rev = 0;
 	oob_status_t ret;
 
-	ret = read_sbrmi_revision(soc_num, &rev);
+	ret = read_sbrmi_revision(soc_die_num, &rev);
 	if (ret)
 		return ret;
 	if (rev != 0x10) {
-		ret = esmi_get_threads_per_socket(soc_num, &max_threads_per_soc);
+		ret = esmi_get_threads_per_socket(soc_die_num, &max_threads_per_soc);
 		if (ret)
 			return ret;
 	} else {
@@ -255,7 +255,7 @@ static oob_status_t validate_thread(uint8_t soc_num, uint32_t thread_num)
 	return OOB_SUCCESS;
 }
 
-oob_status_t esmi_oob_read_msr(uint8_t soc_num,
+oob_status_t esmi_oob_read_msr(uint8_t soc_die_num,
 			       uint32_t thread, uint32_t msraddr,
 			       uint64_t *buffer)
 {
@@ -271,7 +271,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 	msg.data_in.cpu_msr_in = msraddr;
 
 	/* validate thread */
-	ret = validate_thread(soc_num, thread);
+	ret = validate_thread(soc_die_num, thread);
 	if (ret)
 		return ret;
 
@@ -281,7 +281,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 
 	/* Assign 7 byte to READ Mode */
 	msg.data_in.reg_in[7] = 1;
-	ret = sbrmi_xfer_msg(soc_num, &msg);
+	ret = sbrmi_xfer_msg(soc_die_num, &msg);
 	if (ret)
 		return ret;
 
@@ -290,7 +290,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t esmi_oob_cpuid(uint8_t soc_num, uint32_t thread,
+oob_status_t esmi_oob_cpuid(uint8_t soc_die_num, uint32_t thread,
 			    uint32_t *eax, uint32_t *ebx,
 			    uint32_t *ecx, uint32_t *edx)
 {
@@ -301,26 +301,26 @@ oob_status_t esmi_oob_cpuid(uint8_t soc_num, uint32_t thread,
 	fn_ecx = *ecx;
 
 	/* validate thread */
-	ret = validate_thread(soc_num, thread);
+	ret = validate_thread(soc_die_num, thread);
 	if (ret)
 		return ret;
 
-	ret = esmi_oob_cpuid_eax(soc_num, thread, fn_eax, fn_ecx, eax);
+	ret = esmi_oob_cpuid_eax(soc_die_num, thread, fn_eax, fn_ecx, eax);
 	if (ret)
 		return ret;
 
-	ret = esmi_oob_cpuid_ebx(soc_num, thread, fn_eax, fn_ecx, ebx);
+	ret = esmi_oob_cpuid_ebx(soc_die_num, thread, fn_eax, fn_ecx, ebx);
 	if (ret)
 		return ret;
 
-	ret = esmi_oob_cpuid_ecx(soc_num, thread, fn_eax, fn_ecx, ecx);
+	ret = esmi_oob_cpuid_ecx(soc_die_num, thread, fn_eax, fn_ecx, ecx);
 	if (ret)
 		return ret;
 
-	return esmi_oob_cpuid_edx(soc_num, thread, fn_eax, fn_ecx, edx);
+	return esmi_oob_cpuid_edx(soc_die_num, thread, fn_eax, fn_ecx, edx);
 }
 
-static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_num, uint32_t thread,
+static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_die_num, uint32_t thread,
 				      uint32_t fn_eax, uint32_t fn_ecx,
 				      uint8_t mode, uint32_t *value)
 {
@@ -352,7 +352,7 @@ static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_num, uint32_t thread,
         msg.data_in.cpu_msr_in = msg.data_in.cpu_msr_in | ((uint64_t) ext << 48);
 	/* Assign 7 byte to READ Mode */
 	msg.data_in.reg_in[7] = 1;
-        ret = sbrmi_xfer_msg(soc_num, &msg);
+        ret = sbrmi_xfer_msg(soc_die_num, &msg);
         if (ret)
                 return ret;
 
@@ -370,46 +370,46 @@ static oob_status_t esmi_oob_cpuid_fn(uint8_t soc_num, uint32_t thread,
 /*
  * CPUID functions returning a single datum
  */
-oob_status_t esmi_oob_cpuid_eax(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_eax(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *eax)
 {
-	return esmi_oob_cpuid_fn(soc_num, thread, fn_eax, fn_ecx,
+	return esmi_oob_cpuid_fn(soc_die_num, thread, fn_eax, fn_ecx,
 				 EAX, eax);
 }
 
-oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ebx)
 {
-	return esmi_oob_cpuid_fn(soc_num, thread, fn_eax, fn_ecx,
+	return esmi_oob_cpuid_fn(soc_die_num, thread, fn_eax, fn_ecx,
 				 EBX, ebx);
 }
 
-oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ecx)
 {
-        return esmi_oob_cpuid_fn(soc_num, thread, fn_eax, fn_ecx,
+        return esmi_oob_cpuid_fn(soc_die_num, thread, fn_eax, fn_ecx,
 				 ECX, ecx);
 }
 
-oob_status_t esmi_oob_cpuid_edx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_edx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *edx)
 {
-        return esmi_oob_cpuid_fn(soc_num, thread, fn_eax, fn_ecx,
+        return esmi_oob_cpuid_fn(soc_die_num, thread, fn_eax, fn_ecx,
 				 EDX, edx);
 }
 
-oob_status_t read_max_threads_per_l3(uint8_t soc_num, uint32_t *threads_l3)
+oob_status_t read_max_threads_per_l3(uint8_t soc_die_num, uint32_t *threads_l3)
 {
 	uint32_t thread;
 	oob_status_t ret;
 
 	/* Get maximum threads per l3 */
 	thread = 0;
-	ret = esmi_oob_cpuid_eax(soc_num, thread, THREADS_L3_FUNC,
+	ret = esmi_oob_cpuid_eax(soc_die_num, thread, THREADS_L3_FUNC,
 				 THREADS_L3_EXTD, threads_l3);
 	if (!ret)
 		*threads_l3 = ((*threads_l3 >> 14) & 0xFFF) + 1;

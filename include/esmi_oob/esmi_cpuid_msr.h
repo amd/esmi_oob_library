@@ -94,14 +94,14 @@ extern struct processor_info plat_info[1];
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] vendor_id to get the processor vendor, 12 byte RO value
  *
  *  @retval uint32_t is returned upon successful call.
  *
  */
-oob_status_t esmi_get_vendor_id(uint8_t soc_num, char *vendor_id);
+oob_status_t esmi_get_vendor_id(uint8_t soc_die_num, char *vendor_id);
 
 /**
  *  @brief Get the number of logical cores per socket
@@ -110,14 +110,14 @@ oob_status_t esmi_get_vendor_id(uint8_t soc_num, char *vendor_id);
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] proc_info to get family, model & stepping identifier
  *
  *  @retval uint32_t is returned upon successful call.
  *
  */
-oob_status_t esmi_get_processor_info(uint8_t soc_num,
+oob_status_t esmi_get_processor_info(uint8_t soc_die_num,
 				     struct processor_info *proc_info);
 
 /**
@@ -127,7 +127,7 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] logical_cores_per_socket is returned
  *
@@ -135,7 +135,7 @@ oob_status_t esmi_get_processor_info(uint8_t soc_num,
  *
  */
 oob_status_t
-esmi_get_logical_cores_per_socket(uint8_t soc_num,
+esmi_get_logical_cores_per_socket(uint8_t soc_die_num,
 				  uint32_t *logical_cores_per_socket);
 
 /**
@@ -145,13 +145,13 @@ esmi_get_logical_cores_per_socket(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] threads_per_core is returned
  *
  *  @retval threads_per_core is returned upon successful call.
  */
-oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
+oob_status_t esmi_get_threads_per_core(uint8_t soc_die_num,
 				       uint32_t *threads_per_core);
 
 
@@ -170,7 +170,7 @@ oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
  *  @details Given a @p thread and SB-RMI register command, this function reads
  *  msr value.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -181,7 +181,7 @@ oob_status_t esmi_get_threads_per_core(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_read_msr(uint8_t soc_num,
+oob_status_t esmi_oob_read_msr(uint8_t soc_die_num,
 			       uint32_t thread, uint32_t msraddr,
 			       uint64_t *buffer);
 
@@ -203,7 +203,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
  *  extended function input. this function will get the cpuid details
  *  for a particular thread in a pointer to @p eax, @p ebx, @p ecx, @p edx
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -218,7 +218,7 @@ oob_status_t esmi_oob_read_msr(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid(uint8_t soc_die_num,
 			    uint32_t thread, uint32_t *eax, uint32_t *ebx,
 			    uint32_t *ecx, uint32_t *edx);
 
@@ -229,7 +229,7 @@ oob_status_t esmi_oob_cpuid(uint8_t soc_num,
  *  extended function input, this function will get the cpuid
  *  details for a particular thread at @p eax.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -242,7 +242,7 @@ oob_status_t esmi_oob_cpuid(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_eax(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_eax(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *eax);
 
@@ -253,7 +253,7 @@ oob_status_t esmi_oob_cpuid_eax(uint8_t soc_num,
  *  extended function input, this function will get the cpuid
  *  details for a particular thread at @p ebx.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -266,7 +266,7 @@ oob_status_t esmi_oob_cpuid_eax(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ebx);
 
@@ -277,7 +277,7 @@ oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_num,
  *  extended function input, this function will get the cpuid
  *  details for a particular thread at @p ecx.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -290,7 +290,7 @@ oob_status_t esmi_oob_cpuid_ebx(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *ecx);
 
@@ -301,7 +301,7 @@ oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_num,
  *  extended function input, this function will get the cpuid
  *  details for a particular thread at @p edx.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] thread is a particular thread in the system.
  *
@@ -314,7 +314,7 @@ oob_status_t esmi_oob_cpuid_ecx(uint8_t soc_num,
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t esmi_oob_cpuid_edx(uint8_t soc_num,
+oob_status_t esmi_oob_cpuid_edx(uint8_t soc_die_num,
 				uint32_t thread, uint32_t fn_eax,
 				uint32_t fn_ecx, uint32_t *edx);
 
@@ -323,14 +323,14 @@ oob_status_t esmi_oob_cpuid_edx(uint8_t soc_num,
  *
  *  @details Reads max threads per L3 cache.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] threads_l3 threads per L3 cache.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_max_threads_per_l3(uint8_t soc_num, uint32_t *threads_l3);
+oob_status_t read_max_threads_per_l3(uint8_t soc_die_num, uint32_t *threads_l3);
 
 /** @} */  // end of cpuidAccess
 

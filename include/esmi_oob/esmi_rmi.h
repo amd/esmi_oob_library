@@ -138,14 +138,14 @@ extern const uint8_t alert_mask[MAX_ALERT_REG];
 
 /**
  *  @brief Read one byte from a given SB_RMI register number
- *  provided socket index and buffer to get the read data for a particular
+ *  provided Socket Die index and buffer to get the read data for a particular
  *  SB-RMI command register.
  *
- *  @details Given a socket index @p socket_ind and a pointer to hold the
+ *  @details Given a Socket Die index @p socket_ind and a pointer to hold the
  *  output at uint8_t @p buffer, this function will get the value from a
  *  particular command of SB_RMI register.
  *
- *  @param[in] soc_num Socket uindex.
+ *  @param[in] soc_die_num Socket uindex.
  *
  *  @param[inout] buffer a pointer to a uint8_t that indicates value to hold
  *
@@ -199,21 +199,21 @@ extern const uint16_t alert_mask_v21_dense[MAX_ALERT_REG_V21_DENSE];
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_revision(uint8_t soc_num,
+oob_status_t read_sbrmi_revision(uint8_t soc_die_num,
 				 uint8_t *buffer);
 /**
  *  @brief Read Control byte from SB_RMI register command.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_control(uint8_t soc_num,
+oob_status_t read_sbrmi_control(uint8_t soc_die_num,
 				uint8_t *buffer);
 /**
  *  @brief Read one byte of Status value from SB_RMI register command.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_status(uint8_t soc_num,
+oob_status_t read_sbrmi_status(uint8_t soc_die_num,
 			       uint8_t *buffer);
 /**
  *  @brief This register specifies the number of bytes to return when using
@@ -221,21 +221,21 @@ oob_status_t read_sbrmi_status(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_readsize(uint8_t soc_num,
+oob_status_t read_sbrmi_readsize(uint8_t soc_die_num,
 				 uint8_t *buffer);
 /**
  *  @brief Read one byte of Thread Status from SB_RMI register command.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_threadenablestatus(uint8_t soc_num,
+oob_status_t read_sbrmi_threadenablestatus(uint8_t soc_die_num,
 					   uint8_t *buffer);
 /**
  *  @brief Read one byte of Thread Status from SB_RMI register command.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
+oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_die_num,
 						uint8_t *buffer);
 /**
  *  @brief This register is used by the SMBus master to generate an
@@ -244,14 +244,14 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_swinterrupt(uint8_t soc_num,
+oob_status_t read_sbrmi_swinterrupt(uint8_t soc_die_num,
 				    uint8_t *buffer);
 /**
  *  @brief This register indicates the maximum number of threads present.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_threadnumber(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumber(uint8_t soc_die_num,
 				     uint8_t *buffer);
 
 /**
@@ -259,7 +259,7 @@ oob_status_t read_sbrmi_threadnumber(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_mp0_msg(uint8_t soc_die_num,
 				uint8_t *buffer);
 
 /**
@@ -269,7 +269,7 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] num_of_alert_status_reg number of alert status
  *  registers.
@@ -282,7 +282,7 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
+oob_status_t read_sbrmi_alert_status(uint8_t soc_die_num,
 				     uint8_t num_of_alert_status_reg,
 				     uint8_t **buffer);
 
@@ -293,7 +293,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] num_of_alert_mask_reg number of alert mask
  *  registers.
@@ -306,7 +306,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
  *
  *  @retval None-zero is returned upon failure.
  */
-oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
+oob_status_t read_sbrmi_alert_mask(uint8_t soc_die_num,
 				   uint8_t num_of_alert_mask_reg,
 				   uint8_t **buffer);
 
@@ -315,7 +315,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_inbound_msg(uint8_t soc_die_num,
 				    uint8_t *buffer);
 
 /**
@@ -323,7 +323,7 @@ oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_outbound_msg(uint8_t soc_die_num,
 				     uint8_t *buffer);
 
 /**
@@ -331,7 +331,7 @@ oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_die_num,
 					uint8_t *buffer);
 
 /**
@@ -339,7 +339,7 @@ oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_die_num,
 				       uint8_t *buffer);
 
 /**
@@ -347,7 +347,7 @@ oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
+oob_status_t read_sbrmi_thread_cs(uint8_t soc_die_num,
 				  uint8_t *buffer);
 
 /**
@@ -355,7 +355,7 @@ oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  */
-oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
+oob_status_t read_sbrmi_ras_status(uint8_t soc_die_num,
 				   uint8_t *buffer);
 
 /**
@@ -363,7 +363,7 @@ oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
  *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] buffer bit mask to clear ras status bits
  *
@@ -371,21 +371,21 @@ oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
  *
  *  @retval Non-zero is returned upon failure.
  */
-oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer);
+oob_status_t clear_sbrmi_ras_status(uint8_t soc_die_num, uint8_t buffer);
 
 /**
  *  @brief Get the number of threads per socket
  *
  *  @details Get the total number of threads in a socket.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[inout] threads_per_socket is returned
  *
  *  @retval threads_per_socket is returned upon successful call.
  *
  */
-oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
+oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
 					 uint32_t *threads_per_socket);
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/

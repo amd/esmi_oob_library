@@ -110,38 +110,38 @@ const uint16_t alert_mask_v21_dense[] = {0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x2
 					0x1C8, 0x1C9, 0x1CA, 0x1CB, 0x1CC, 0x1CD, 0x1CE, 0x1CF};
 
 /* sb-rmi register access */
-oob_status_t read_sbrmi_revision(uint8_t soc_num,
+oob_status_t read_sbrmi_revision(uint8_t soc_die_num,
 				 uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_REVISION, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_REVISION, buffer);
 }
 
-oob_status_t read_sbrmi_control(uint8_t soc_num,
+oob_status_t read_sbrmi_control(uint8_t soc_die_num,
 				uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_CONTROL, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_CONTROL, buffer);
 }
 
-oob_status_t read_sbrmi_status(uint8_t soc_num,
+oob_status_t read_sbrmi_status(uint8_t soc_die_num,
 			       uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_STATUS, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_STATUS, buffer);
 }
 
-oob_status_t read_sbrmi_readsize(uint8_t soc_num,
+oob_status_t read_sbrmi_readsize(uint8_t soc_die_num,
 				 uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_READSIZE, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_READSIZE, buffer);
 }
 
-oob_status_t read_sbrmi_threadenablestatus(uint8_t soc_num,
+oob_status_t read_sbrmi_threadenablestatus(uint8_t soc_die_num,
 					   uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_THREADENABLESTATUS0,
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_THREADENABLESTATUS0,
 				      buffer);
 }
 
-oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
+oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_die_num,
 						uint8_t *buffer)
 {
 	struct processor_info plat_info = {0};
@@ -152,31 +152,31 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
 	if (!buffer)
 		return OOB_ARG_PTR_NULL;
 
-	ret = read_sbrmi_revision(soc_num, &rev);
+	ret = read_sbrmi_revision(soc_die_num, &rev);
 	if (ret)
 		return ret;
 	if (rev == 0x10) {
 		for (i = 0; i < sizeof(thread_en_reg_v10); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, thread_en_reg_v10[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, thread_en_reg_v10[i],
 						     &buffer[i]);
 			if (ret)
 				return ret;
 		}
 	} else if (rev == 0x20) {
 		for (i = 0; i < sizeof(thread_en_reg_v20); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, thread_en_reg_v20[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, thread_en_reg_v20[i],
 						     &buffer[i]);
 			if (ret)
 				return ret;
 		}
 	} else if (rev == 0x21) {
-		ret = esmi_get_processor_info(soc_num, &plat_info);
+		ret = esmi_get_processor_info(soc_die_num, &plat_info);
 		if (ret)
 			return ret;
 		if (plat_info.family == 0x1A
 		    && (plat_info.model >= 0x10 && plat_info.model <=0x1F)) {
 			for (i = 0; i < ARRAY_SIZE(thread_en_reg_v21_dense); i++) {
-				ret = esmi_oob_rmi_read_byte(soc_num, thread_en_reg_v21_dense[i],
+				ret = esmi_oob_rmi_read_byte(soc_die_num, thread_en_reg_v21_dense[i],
 							     &buffer[i]);
 
 				if (ret)
@@ -184,7 +184,7 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
 			}
 		} else {
 			for (i = 0; i < sizeof(thread_en_reg_v20); i++) {
-				ret = esmi_oob_rmi_read_byte(soc_num, thread_en_reg_v20[i],
+				ret = esmi_oob_rmi_read_byte(soc_die_num, thread_en_reg_v20[i],
 							     &buffer[i]);
 				if (ret)
 					return ret;
@@ -193,7 +193,7 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
 
 	} else {
 		for (i = 0; i < sizeof(thread_en_reg_v20); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, thread_en_reg_v20[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, thread_en_reg_v20[i],
 						     &buffer[i]);
 			if (ret)
 				return ret;
@@ -203,31 +203,31 @@ oob_status_t read_sbrmi_multithreadenablestatus(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_swinterrupt(uint8_t soc_num,
+oob_status_t read_sbrmi_swinterrupt(uint8_t soc_die_num,
 				    uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_SOFTWAREINTERRUPT, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_SOFTWAREINTERRUPT, buffer);
 }
 
-oob_status_t read_sbrmi_threadnumber(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumber(uint8_t soc_die_num,
 				     uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_THREADNUMBER, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_THREADNUMBER, buffer);
 }
 
-oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumberlow(uint8_t soc_die_num,
 					uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_THREADNUMBERLOW, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_THREADNUMBERLOW, buffer);
 }
 
-oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_num,
+oob_status_t read_sbrmi_threadnumberhi(uint8_t soc_die_num,
 				       uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_THREADNUMBERHIGH, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_THREADNUMBERHIGH, buffer);
 }
 
-oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_mp0_msg(uint8_t soc_die_num,
 				uint8_t *buffer)
 {
 	int i, range;
@@ -235,7 +235,7 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
 
 	range = SBRMI_MP0OUTBNDMSG7 - SBRMI_MP0OUTBNDMSG0 + 1;
 	for (i = 0; i < range; i++) {
-		ret = esmi_oob_rmi_read_byte(soc_num, SBRMI_MP0OUTBNDMSG0 + i,
+		ret = esmi_oob_rmi_read_byte(soc_die_num, SBRMI_MP0OUTBNDMSG0 + i,
 					     &buffer[i]);
 		if (ret)
 			return ret;
@@ -244,7 +244,7 @@ oob_status_t read_sbrmi_mp0_msg(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
+oob_status_t read_sbrmi_alert_status(uint8_t soc_die_num,
 				     uint8_t num_of_alert_mask_reg,
 				     uint8_t **buffer)
 {
@@ -256,7 +256,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
 	if (!buffer || !(*buffer))
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_get_processor_info(soc_num, &plat_info);
+	ret = esmi_get_processor_info(soc_die_num, &plat_info);
 	if (ret)
 		return ret;
 
@@ -268,7 +268,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
 			return OOB_UNEXPECTED_SIZE;
 
 		for (i = 0; i < ARRAY_SIZE(alert_status_v21_dense); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, alert_status_v21_dense[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, alert_status_v21_dense[i],
 						     (*buffer) + i);
 			if (ret)
 				return ret;
@@ -280,7 +280,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
 			return OOB_UNEXPECTED_SIZE;
 
 		for (i = 0; i < sizeof(alert_status); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, alert_status[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, alert_status[i],
 						     (*buffer) + i);
 			if (ret)
 				return ret;
@@ -290,7 +290,7 @@ oob_status_t read_sbrmi_alert_status(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
+oob_status_t read_sbrmi_alert_mask(uint8_t soc_die_num,
 				   uint8_t num_of_alert_mask_reg,
 				   uint8_t **buffer)
 {
@@ -302,7 +302,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 	if (!buffer || !(*buffer))
 		return OOB_ARG_PTR_NULL;
 
-	ret = esmi_get_processor_info(soc_num, &plat_info);
+	ret = esmi_get_processor_info(soc_die_num, &plat_info);
 	if (ret)
 		return ret;
 
@@ -313,7 +313,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 		if (num_of_alert_mask_reg != ARRAY_SIZE(alert_mask_v21_dense))
 			return OOB_UNEXPECTED_SIZE;
 		for (i = 0; i < ARRAY_SIZE(alert_mask_v21_dense); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, alert_mask_v21_dense[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, alert_mask_v21_dense[i],
 						     (*buffer) + i);
 			if (ret)
 				return ret;
@@ -325,7 +325,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 			return OOB_UNEXPECTED_SIZE;
 
 		for (i = 0; i < sizeof(alert_mask); i++) {
-			ret = esmi_oob_rmi_read_byte(soc_num, alert_mask[i],
+			ret = esmi_oob_rmi_read_byte(soc_die_num, alert_mask[i],
 						     (*buffer) + i);
 		if (ret)
 			return ret;
@@ -335,7 +335,7 @@ oob_status_t read_sbrmi_alert_mask(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_inbound_msg(uint8_t soc_die_num,
 				    uint8_t *buffer)
 {
 	int i, range;
@@ -343,7 +343,7 @@ oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
 
 	range = SBRMI_INBNDMSG7 - SBRMI_INBNDMSG0 + 1;
 	for (i = 0; i < range; i++) {
-		ret = esmi_oob_rmi_read_byte(soc_num, SBRMI_INBNDMSG0 + i,
+		ret = esmi_oob_rmi_read_byte(soc_die_num, SBRMI_INBNDMSG0 + i,
 					     &buffer[i]);
 		if (ret)
 			return ret;
@@ -352,7 +352,7 @@ oob_status_t read_sbrmi_inbound_msg(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
+oob_status_t read_sbrmi_outbound_msg(uint8_t soc_die_num,
 				     uint8_t *buffer)
 {
 	int i, range;
@@ -360,7 +360,7 @@ oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
 
 	range = SBRMI_OUTBNDMSG7 - SBRMI_OUTBNDMSG0 + 1;
 	for (i = 0; i < range; i++) {
-		ret = esmi_oob_rmi_read_byte(soc_num, SBRMI_OUTBNDMSG0 + i,
+		ret = esmi_oob_rmi_read_byte(soc_die_num, SBRMI_OUTBNDMSG0 + i,
 					     &buffer[i]);
 		if (ret)
 			return ret;
@@ -369,29 +369,29 @@ oob_status_t read_sbrmi_outbound_msg(uint8_t soc_num,
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_thread_cs(uint8_t soc_num,
+oob_status_t read_sbrmi_thread_cs(uint8_t soc_die_num,
 				  uint8_t *buffer)
 {
 	oob_status_t ret;
 
-	ret = esmi_oob_rmi_read_byte(soc_num, SBRMI_THREAD128CS, buffer);
+	ret = esmi_oob_rmi_read_byte(soc_die_num, SBRMI_THREAD128CS, buffer);
 	*buffer &= 1;
 
 	return OOB_SUCCESS;
 }
 
-oob_status_t read_sbrmi_ras_status(uint8_t soc_num,
+oob_status_t read_sbrmi_ras_status(uint8_t soc_die_num,
 				   uint8_t *buffer)
 {
-	return esmi_oob_rmi_read_byte(soc_num, SBRMI_RASSTATUS, buffer);
+	return esmi_oob_rmi_read_byte(soc_die_num, SBRMI_RASSTATUS, buffer);
 }
 
-oob_status_t clear_sbrmi_ras_status(uint8_t soc_num, uint8_t buffer)
+oob_status_t clear_sbrmi_ras_status(uint8_t soc_die_num, uint8_t buffer)
 {
-	return esmi_oob_rmi_write_byte(soc_num, SBRMI_RASSTATUS, buffer);
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_RASSTATUS, buffer);
 }
 
-oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
+oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
 					 uint32_t *threads_per_socket)
 {
 	oob_status_t ret = 0;
@@ -402,16 +402,16 @@ oob_status_t esmi_get_threads_per_socket(uint8_t soc_num,
 		return OOB_ARG_PTR_NULL;
 
 	/* Verify if requested thread number is for Milan */
-	ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBER, SBRMI, &thread_num_low);
+	ret = esmi_oob_read_byte(soc_die_num, SBRMI_THREADNUMBER, SBRMI, &thread_num_low);
 	if (ret != OOB_SUCCESS)
 		return ret;
 
 	if (!thread_num_low) {
-		ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBERLOW, SBRMI, &thread_num_low);
+		ret = esmi_oob_read_byte(soc_die_num, SBRMI_THREADNUMBERLOW, SBRMI, &thread_num_low);
 		if (ret != OOB_SUCCESS)
 			return ret;
 
-		ret = esmi_oob_read_byte(soc_num, SBRMI_THREADNUMBERHIGH, SBRMI, &thread_num_hi);
+		ret = esmi_oob_read_byte(soc_die_num, SBRMI_THREADNUMBERHIGH, SBRMI, &thread_num_hi);
 		if (ret != OOB_SUCCESS)
 			return ret;
 	}
