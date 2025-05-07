@@ -219,7 +219,7 @@ static char *pm_alarm_status[4] = {"VRHOT", "DIE OVER TEMP",
  *  clock frequency in MHZ based on enumeration type #range_type.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] freq_type enumeration type #range_type containing "MIN" = 0
  *  or "MAX" = 1.
@@ -230,7 +230,7 @@ static char *pm_alarm_status[4] = {"VRHOT", "DIE OVER TEMP",
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t set_gfx_core_clock(uint8_t soc_num, enum range_type freq_type,
+oob_status_t set_gfx_core_clock(uint8_t soc_die_num, enum range_type freq_type,
 				uint32_t freq);
 
 /**
@@ -244,7 +244,7 @@ oob_status_t set_gfx_core_clock(uint8_t soc_num, enum range_type freq_type,
  *  In case if the in-band has also set the maximum Pstate, then lower of the
  *  limits is used.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] pstate maximum pstate.Valid pstate range is 0 - 3.
  *
@@ -252,7 +252,7 @@ oob_status_t set_gfx_core_clock(uint8_t soc_num, enum range_type freq_type,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_num, uint32_t pstate);
+oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_die_num, uint32_t pstate);
 
 /**
  *  @brief Get memory and fabric clock power state mappings
@@ -264,7 +264,7 @@ oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_num, uint32_t pstate);
  *  for each pstate.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] pstate_ind index of the pstate.
  *
@@ -275,7 +275,7 @@ oob_status_t set_mclk_fclk_max_pstate(uint8_t soc_num, uint32_t pstate);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_mclk_fclk_pstates(uint8_t soc_num, uint8_t pstate_ind,
+oob_status_t get_mclk_fclk_pstates(uint8_t soc_die_num, uint8_t pstate_ind,
 				   struct mclk_fclk_pstates *pstate);
 
 /**
@@ -286,7 +286,7 @@ oob_status_t get_mclk_fclk_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  be supported. Only 2 XGMI states are supported (0/1).
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] pstate power state. valid values are 0 - 1.
  *
@@ -294,7 +294,7 @@ oob_status_t get_mclk_fclk_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t set_xgmi_pstate(uint8_t soc_num, uint32_t pstate);
+oob_status_t set_xgmi_pstate(uint8_t soc_die_num, uint32_t pstate);
 
 /**
  *  @brief Resets the XGMI Pstate
@@ -304,13 +304,13 @@ oob_status_t set_xgmi_pstate(uint8_t soc_num, uint32_t pstate);
  *  by the GPU.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t unset_xgmi_pstate(uint8_t soc_num);
+oob_status_t unset_xgmi_pstate(uint8_t soc_die_num);
 
 /**
  *  @brief Read XGMI power state mappings
@@ -320,7 +320,7 @@ oob_status_t unset_xgmi_pstate(uint8_t soc_num);
  *  message.Link speeds reported in units of 1Gpbs.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] pstate_ind xgmi pstate index for speed rate.
  *
@@ -331,7 +331,7 @@ oob_status_t unset_xgmi_pstate(uint8_t soc_num);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_xgmi_pstates(uint8_t soc_num, uint8_t pstate_ind,
+oob_status_t get_xgmi_pstates(uint8_t soc_die_num, uint8_t pstate_ind,
 			      struct xgmi_speed_rate_n_width *xgmi_pstate);
 
 /**
@@ -342,7 +342,7 @@ oob_status_t get_xgmi_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  in the socket are running in idle.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] gfx_cores_idle_res idle residency in percentage
  *
@@ -350,7 +350,7 @@ oob_status_t get_xgmi_pstates(uint8_t soc_num, uint8_t pstate_ind,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_xcc_idle_residency(uint8_t soc_num, uint32_t *gfx_cores_idle_res);
+oob_status_t get_xcc_idle_residency(uint8_t soc_die_num, uint32_t *gfx_cores_idle_res);
 
 /**
  *  @brief Read energy accumulator with time stamp
@@ -359,7 +359,7 @@ oob_status_t get_xcc_idle_residency(uint8_t soc_num, uint32_t *gfx_cores_idle_re
  *  and the 56 bit time stamp.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] energy accumulator  2^ 16 J.
  *
@@ -369,7 +369,7 @@ oob_status_t get_xcc_idle_residency(uint8_t soc_num, uint32_t *gfx_cores_idle_re
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_energy_accum_with_timestamp(uint8_t soc_num, uint64_t *energy,
+oob_status_t get_energy_accum_with_timestamp(uint8_t soc_die_num, uint64_t *energy,
 					     uint64_t *time_stamp);
 
 /**
@@ -382,7 +382,7 @@ oob_status_t get_energy_accum_with_timestamp(uint8_t soc_num, uint64_t *energy,
  *  HBM over temp and if the buffer is 8 then status is PWRBRK.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] type enumeration type #alarms_type. PM = 0.
  *
@@ -392,7 +392,7 @@ oob_status_t get_energy_accum_with_timestamp(uint8_t soc_num, uint64_t *energy,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_alarms(uint8_t soc_num, enum alarms_type type,
+oob_status_t get_alarms(uint8_t soc_die_num, enum alarms_type type,
 			uint32_t *buffer);
 
 /**
@@ -402,7 +402,7 @@ oob_status_t get_alarms(uint8_t soc_num, enum alarms_type type,
  *  unique to each die.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] die_index core/die index.
  *
@@ -412,7 +412,7 @@ oob_status_t get_alarms(uint8_t soc_num, enum alarms_type type,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_psn(uint8_t soc_num, uint32_t die_index, uint64_t *buffer);
+oob_status_t get_psn(uint8_t soc_die_num, uint32_t die_index, uint64_t *buffer);
 
 /**
  *  @brief Read link Info
@@ -421,7 +421,7 @@ oob_status_t get_psn(uint8_t soc_num, uint32_t die_index, uint64_t *buffer);
  *  read the module ID and link config reflecting strapping pins.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] link_config link configuration.
  *
@@ -431,7 +431,7 @@ oob_status_t get_psn(uint8_t soc_num, uint32_t die_index, uint64_t *buffer);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_link_info(uint8_t soc_num, uint8_t *link_config,
+oob_status_t get_link_info(uint8_t soc_die_num, uint8_t *link_config,
 			   uint8_t *module_id);
 
 /**
@@ -441,7 +441,7 @@ oob_status_t get_link_info(uint8_t soc_num, uint8_t *link_config,
  *  allowed GFX engine frequency.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] max_freq maximum GFX frequency in MHZ.
  *
@@ -451,7 +451,7 @@ oob_status_t get_link_info(uint8_t soc_num, uint8_t *link_config,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_max_min_gfx_freq(uint8_t soc_num, uint16_t *max_freq,
+oob_status_t get_max_min_gfx_freq(uint8_t soc_die_num, uint16_t *max_freq,
 				  uint16_t *min_freq);
 
 /**
@@ -463,7 +463,7 @@ oob_status_t get_max_min_gfx_freq(uint8_t soc_num, uint16_t *max_freq,
  *  controls.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] freq maximum GFX frequency in MHZ.
  *
@@ -471,7 +471,7 @@ oob_status_t get_max_min_gfx_freq(uint8_t soc_num, uint16_t *max_freq,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq);
+oob_status_t get_act_gfx_freq_cap(uint8_t soc_die_num, uint16_t *freq);
 
 /**
  *  @brief Read SVI based telemetry for individual rails
@@ -480,7 +480,7 @@ oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq);
  *  individual rails.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] port struct svi_telemetry_domain containing port
  *  and slave address.
@@ -491,7 +491,7 @@ oob_status_t get_act_gfx_freq_cap(uint8_t soc_num, uint16_t *freq);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
+oob_status_t get_svi_rail_telemetry(uint8_t soc_die_num,
 				    struct svi_port_domain port,
 				    uint32_t *pow);
 
@@ -503,7 +503,7 @@ oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
  *  the most recently measured temperature in °C is reported.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] die_id Hottest die ID.
  *
@@ -513,7 +513,7 @@ oob_status_t get_svi_rail_telemetry(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_die_hotspot_info(uint8_t soc_num, uint8_t *die_id,
+oob_status_t get_die_hotspot_info(uint8_t soc_die_num, uint8_t *die_id,
 				  uint16_t *temp);
 
 /**
@@ -524,7 +524,7 @@ oob_status_t get_die_hotspot_info(uint8_t soc_num, uint8_t *die_id,
  *  the most recently measured temperature is reported.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] hbm_stack_id Local ID of the hottest HBM stack.
  *
@@ -534,7 +534,7 @@ oob_status_t get_die_hotspot_info(uint8_t soc_num, uint8_t *die_id,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_mem_hotspot_info(uint8_t soc_num, uint8_t *hbm_stack_id,
+oob_status_t get_mem_hotspot_info(uint8_t soc_die_num, uint8_t *hbm_stack_id,
 				  uint16_t *hbm_temp);
 
 /**
@@ -544,7 +544,7 @@ oob_status_t get_mem_hotspot_info(uint8_t soc_num, uint8_t *hbm_stack_id,
  *  and driver running status in a bit vector
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] status struct host_status containing power management
  *  controller status and driver running status.
@@ -553,7 +553,7 @@ oob_status_t get_mem_hotspot_info(uint8_t soc_num, uint8_t *hbm_stack_id,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_host_status(uint8_t soc_num, struct host_status *status);
+oob_status_t get_host_status(uint8_t soc_die_num, struct host_status *status);
 
 /**
  *  @brief Reads max memory bandwidth utilization.
@@ -562,7 +562,7 @@ oob_status_t get_host_status(uint8_t soc_num, struct host_status *status);
  *  bandwidth of the system in GB/s, utilized bandwidth in GB/S.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] bw struct max_mem_bw containing max bw,
  *  utilized b/w.
@@ -571,7 +571,7 @@ oob_status_t get_host_status(uint8_t soc_num, struct host_status *status);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_max_mem_bw_util(uint8_t soc_num,
+oob_status_t get_max_mem_bw_util(uint8_t soc_die_num,
 				 struct max_mem_bw *bw);
 
 /**
@@ -580,7 +580,7 @@ oob_status_t get_max_mem_bw_util(uint8_t soc_num,
  *  @details This function will read HBM throttle in percentage.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] mem_th hbm throttle in percentage (0 - 100%).
  *
@@ -588,7 +588,7 @@ oob_status_t get_max_mem_bw_util(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_hbm_throttle(uint8_t soc_num, uint32_t *mem_th);
+oob_status_t get_hbm_throttle(uint8_t soc_die_num, uint32_t *mem_th);
 
 /**
  *  @brief writes HBM throttle.
@@ -596,7 +596,7 @@ oob_status_t get_hbm_throttle(uint8_t soc_num, uint32_t *mem_th);
  *  @details This function will write HBM throttle.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] mem_th hbm throttle in percentage (0 - 80%).
  *
@@ -604,7 +604,7 @@ oob_status_t get_hbm_throttle(uint8_t soc_num, uint32_t *mem_th);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t set_hbm_throttle(uint8_t soc_num, uint32_t mem_th);
+oob_status_t set_hbm_throttle(uint8_t soc_die_num, uint32_t mem_th);
 
 /**
  *  @brief Reads hbm stack temperature.
@@ -612,7 +612,7 @@ oob_status_t set_hbm_throttle(uint8_t soc_num, uint32_t mem_th);
  *  @details This function will read particular hbm stack temperature.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] index hbm stack index ( 0 - 7 for MI300).
  *
@@ -622,7 +622,7 @@ oob_status_t set_hbm_throttle(uint8_t soc_num, uint32_t mem_th);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_hbm_temperature(uint8_t soc_num, uint32_t index,
+oob_status_t get_hbm_temperature(uint8_t soc_die_num, uint32_t index,
 				 uint16_t *temp);
 
 /**
@@ -636,7 +636,7 @@ oob_status_t get_hbm_temperature(uint8_t soc_num, uint32_t index,
  *  limits.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] type enumeration type #clk_type .
  *  Values are "GFX_CLK" = 0  or "F_CLK" = 1.
@@ -648,7 +648,7 @@ oob_status_t get_hbm_temperature(uint8_t soc_num, uint32_t index,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
+oob_status_t get_clk_freq_limits(uint8_t soc_die_num, enum clk_type type,
 				 struct freq_limits *limit);
 
 /**
@@ -657,7 +657,7 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
  *  @details This function will read number of sockets in system.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] sockets_count Numbers of sockets in system
  *
@@ -665,7 +665,7 @@ oob_status_t get_clk_freq_limits(uint8_t soc_num, enum clk_type type,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count);
+oob_status_t get_sockets_in_system(uint8_t soc_die_num, uint32_t *sockets_count);
 
 /**
  *  @brief Reads die level bist result status from package
@@ -674,7 +674,7 @@ oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count);
  *  from package.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] die_id die level id.
  *
@@ -685,7 +685,7 @@ oob_status_t get_sockets_in_system(uint8_t soc_num, uint32_t *sockets_count);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_bist_results(uint8_t soc_num, uint8_t die_id,
+oob_status_t get_bist_results(uint8_t soc_die_num, uint8_t die_id,
 			      uint32_t *bist_result);
 
 /**
@@ -695,7 +695,7 @@ oob_status_t get_bist_results(uint8_t soc_num, uint8_t die_id,
  *  since the last clear statistics command.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] stat struct statistics containing statistics parameter
  *  of interest and output control.
@@ -706,7 +706,7 @@ oob_status_t get_bist_results(uint8_t soc_num, uint8_t die_id,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_statistics(uint8_t soc_num, struct statistics stat,
+oob_status_t get_statistics(uint8_t soc_die_num, struct statistics stat,
 			    uint32_t *param);
 
 /**
@@ -716,13 +716,13 @@ oob_status_t get_statistics(uint8_t soc_num, struct statistics stat,
  *  and then resumes data collection or aggregation.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t clear_statistics(uint8_t soc_num);
+oob_status_t clear_statistics(uint8_t soc_die_num);
 
 /**
  *  @brief Get die type
@@ -737,7 +737,7 @@ oob_status_t clear_statistics(uint8_t soc_num);
  *  AID associated with specified die-ID.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] data_in input to get the die-type, counts and
  *  AID base.
@@ -749,14 +749,14 @@ oob_status_t clear_statistics(uint8_t soc_num);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in,
+oob_status_t get_die_type(uint8_t soc_die_num, uint32_t data_in,
 			  uint32_t *data_out);
 
 /**
  *  @brief Get current xgmi pstate
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] xgmi_pstate current xgmi pstate
  *
@@ -764,7 +764,7 @@ oob_status_t get_die_type(uint8_t soc_num, uint32_t data_in,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
+oob_status_t get_curr_xgmi_pstate(uint8_t soc_die_num, uint8_t *xgmi_pstate);
 
 /**
  *  @brief Get maximum operating temperature
@@ -773,7 +773,7 @@ oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
  *  and HBM temperature.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] ctf_type critical temperature fault type. 0 for AID,
  *  1 for CCD, 2 for XCD and 3 for HBM.
@@ -784,14 +784,14 @@ oob_status_t get_curr_xgmi_pstate(uint8_t soc_num, uint8_t *xgmi_pstate);
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type,
+oob_status_t get_max_operating_temp(uint8_t soc_die_num, uint32_t ctf_type,
                                     uint16_t *temp);
 
 /**
  *  @brief Get slow down temperature
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] ctf_type critical temperature fault type. 0 for AID,
  *  1 for CCD, 2 for XCD and 3 for HBM.
@@ -802,7 +802,7 @@ oob_status_t get_max_operating_temp(uint8_t soc_num, uint32_t ctf_type,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
+oob_status_t get_slow_down_temp(uint8_t soc_die_num, uint32_t ctf_type,
 				uint16_t *slow_down_temp);
 
 /**
@@ -812,7 +812,7 @@ oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
  *  vendor, part number and total memory size (GBs).
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[out] dev_info struct hbm_device_info contatining device vendor,
  *  part number and total memory size (GBs).
@@ -821,7 +821,7 @@ oob_status_t get_slow_down_temp(uint8_t soc_num, uint32_t ctf_type,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_hbm_dev_info(uint8_t soc_num,
+oob_status_t get_hbm_dev_info(uint8_t soc_die_num,
                               struct hbm_device_info *dev_info);
 
 /**
@@ -835,7 +835,7 @@ oob_status_t get_hbm_dev_info(uint8_t soc_num,
  *  receiver.
  *  Supported platforms: \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_num Socket index.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
  *  @param[in] pcie_stat_select PCIe stat selector.
  *  0 for L0 to recovery count, 1 for replay count,
@@ -847,9 +847,8 @@ oob_status_t get_hbm_dev_info(uint8_t soc_num,
  *  @retval Non-zero is returned upon failure.
  *
  */
-oob_status_t get_pciestats(uint8_t soc_num, uint32_t pcie_stat_select,
+oob_status_t get_pciestats(uint8_t soc_die_num, uint32_t pcie_stat_select,
                            uint32_t *pcie_stats);
-
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
