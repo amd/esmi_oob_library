@@ -67,7 +67,7 @@ static void print_uint32(uint32_t val)
 	}
 }
 
-static oob_status_t read_cupid_fn00000000(uint8_t soc_num, int core_id)
+static oob_status_t read_cupid_fn00000000(uint8_t soc_die_num, int core_id)
 {
 	oob_status_t ret;
 
@@ -75,7 +75,7 @@ static oob_status_t read_cupid_fn00000000(uint8_t soc_num, int core_id)
 	ebx = 0;
 	ecx = 0;
 	edx = 0;
-	ret = esmi_oob_cpuid(soc_num, core_id,
+	ret = esmi_oob_cpuid(soc_die_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret != 0)
 		return ret;
@@ -90,7 +90,7 @@ static oob_status_t read_cupid_fn00000000(uint8_t soc_num, int core_id)
 	return ret;
 }
 
-static oob_status_t read_cupid_fn00000001(uint8_t soc_num,
+static oob_status_t read_cupid_fn00000001(uint8_t soc_die_num,
 					  int core_id)
 {
 	uint32_t res;
@@ -98,7 +98,7 @@ static oob_status_t read_cupid_fn00000001(uint8_t soc_num,
 
 	eax = 1;
 	ecx = 0;
-	ret = esmi_oob_cpuid(soc_num, core_id,
+	ret = esmi_oob_cpuid(soc_die_num, core_id,
 			     &eax, &ebx, &ecx, &edx);
 	if (ret != 0)
 		return ret;
@@ -176,8 +176,9 @@ static oob_status_t read_cupid_fn00000001(uint8_t soc_num,
 
 static void show_usage(char *exe_name)
 {
-	printf("Usage: %s  [-b] soc_num \n"
-		"Where:  soc_num : socket Index starting from 0\n", exe_name);
+	printf("Usage: %s  [-b] soc_die_num \n"
+		"Where:  soc_die_num : Socket Die index : "
+	        "[7:0], [3:0]: Socket Number, [7:4]: Die Number\n", exe_name);
 }
 
 static void rerun_sudo(int argc, char **argv)
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
 {
 	uint32_t core_id = 0;
 	uint8_t force_flag, bus_type;
-	uint8_t soc_num;
+	uint8_t soc_die_num;
 	char *end;
 	int ret, opt, long_index = 0;
 	char *helperstring = "+hb:";
@@ -228,7 +229,7 @@ int main(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		case 'b':
-			soc_num = strtoul(optarg, &end, 0);
+			soc_die_num = strtoul(optarg, &end, 0);
 			break;
 		default:
 			show_usage(argv[0]);
@@ -236,13 +237,13 @@ int main(int argc, char **argv)
 		}
 	}
 
-	ret = read_cupid_fn00000000(soc_num, core_id);
+	ret = read_cupid_fn00000000(soc_die_num, core_id);
 	if (ret != OOB_SUCCESS) {
 		printf("Failed: to get addr[0x0] cpuid info, Err[%d]: %s\n",
 			ret, esmi_get_err_msg(ret));
 		return ret;
 	}
-	ret = read_cupid_fn00000001(soc_num, core_id);
+	ret = read_cupid_fn00000001(soc_die_num, core_id);
 	if (ret != OOB_SUCCESS) {
 		printf("Failed: to get addr[0x1] cpuid info, Err[%d]: %s\n",
 			ret, esmi_get_err_msg(ret));
