@@ -1193,40 +1193,101 @@ static void apml_set_bmc_pcie_config(uint8_t soc_die_num,
 
 static void apml_get_ras_valid_mca_banks(uint8_t soc_die_num)
 {
-	uint16_t bytespermca;
-	uint16_t numbanks;
 	oob_status_t ret;
+	uint8_t p_type = 0;
 
-	ret = read_bmc_ras_mca_validity_check(soc_die_num,
-					      &bytespermca, &numbanks);
-	if (ret != OOB_SUCCESS) {
-		printf("Failed to get MCA banks with valid status "
-			"after a fatal error, Err[%d]:%s\n",
-			ret, esmi_get_err_msg(ret));
+	ret = get_proc_type(soc_die_num, &p_type);
+	if (ret) {
+		printf("Failed to get processor type for soc_die_num %d,"
+		       "error: %d\n", soc_die_num, ret);
 		return;
 	}
-	printf("---------------------------------------\n");
-	printf("| Valid MCA banks |");
-	printf(" %-17u |\n", numbanks);
-	printf("| Bytes per bank  |");
-	printf(" %-17u |\n", bytespermca);
-	printf("---------------------------------------\n");
+
+	if (p_type == FAM_1A_MOD_50) {
+		struct ras_df_err_chk err_chk;
+
+		ret = read_ras_df_err_validity_check(soc_die_num, MCA_DEBUG_LOG_ID, &err_chk);
+		if (ret && ret != OOB_MAILBOX_ADD_ERR_DATA) {
+			printf("Failed to get MCA banks with valid status"
+			       "after a fatal error Err[%d]:%s\n",
+			       ret, esmi_get_err_msg(ret));
+			return;
+		}
+
+		printf("----------------------------------------------------\n");
+		if (ret == OOB_MAILBOX_ADD_ERR_DATA) {
+			printf("| MB error:0x%x additional error data | 0x%x|\n",
+			       ret, err_chk.add_err_data);
+		} else {
+			printf("| Valid MCA banks |");
+			printf(" %-17u |\n", err_chk.df_block_instances);
+			printf("| Bytes per bank  |");
+			printf(" %-17u |\n", err_chk.err_log_len);
+		}
+		printf("----------------------------------------------------\n");
+
+	} else {
+		uint16_t bytespermca;
+		uint16_t numbanks;
+		ret = read_bmc_ras_mca_validity_check(soc_die_num,
+						      &bytespermca, &numbanks);
+		if (ret != OOB_SUCCESS) {
+			printf("Failed to get MCA banks with valid status "
+			       "after a fatal error, Err[%d]:%s\n",
+			       ret, esmi_get_err_msg(ret));
+			return;
+		}
+		printf("---------------------------------------\n");
+		printf("| Valid MCA banks |");
+		printf(" %-17u |\n", numbanks);
+		printf("| Bytes per bank  |");
+		printf(" %-17u |\n", bytespermca);
+		printf("---------------------------------------\n");
+	}
 }
 
 static void apml_get_ras_mca_msr(uint8_t soc_die_num, struct mca_bank mca_dump)
 {
-	uint32_t buffer;
 	oob_status_t ret;
+	uint8_t p_type = 0;
 
-	ret = read_bmc_ras_mca_msr_dump(soc_die_num, mca_dump, &buffer);
-	if (ret != OOB_SUCCESS) {
-		printf("Failed to get MCA bank data, Err[%d]:%s\n",
-			ret, esmi_get_err_msg(ret));
+	ret = get_proc_type(soc_die_num, &p_type);
+	if (ret) {
+		printf("Failed to get processor type for soc_die_num %d,"
+		       "error: %d\n", soc_die_num, ret);
 		return;
 	}
-	printf("---------------------------------------\n");
-	printf("| Data MCA bank | 0x%-17x |\n", buffer);
-	printf("---------------------------------------\n");
+
+	if (p_type == FAM_1A_MOD_50) {
+		union ras_df_err_dump df_err;
+		uint32_t data = 0;
+
+		df_err.input[0] = mca_dump.offset;
+		df_err.input[1] = MCA_DEBUG_LOG_ID;
+		df_err.input[2] = mca_dump.index;
+
+		ret = read_ras_df_err_dump(soc_die_num, df_err, &data);
+		if (ret) {
+			printf("Failed to get MCA bank data offset[%d] "
+			       "Err[%d]:%s\n", df_err.input[0], ret,
+			esmi_get_err_msg(ret));
+			return;
+		}
+		printf("-----------------------------------------------\n");
+		printf("| Data MCA bank | 0x%-17x |\n", data);
+		printf("-----------------------------------------------\n");
+	} else {
+		uint32_t buffer;
+		ret = read_bmc_ras_mca_msr_dump(soc_die_num, mca_dump, &buffer);
+		if (ret != OOB_SUCCESS) {
+			printf("Failed to get MCA bank data, Err[%d]:%s\n",
+			       ret, esmi_get_err_msg(ret));
+			return;
+		}
+		printf("---------------------------------------\n");
+		printf("| Data MCA bank | 0x%-17x |\n", buffer);
+		printf("---------------------------------------\n");
+	}
 }
 
 static void apml_get_fch_reset_reason(uint8_t soc_die_num, uint32_t fchid)
