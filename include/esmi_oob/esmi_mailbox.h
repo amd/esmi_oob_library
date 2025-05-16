@@ -75,6 +75,8 @@
 #define LEGACY_ENCODING_SIZE		8	//!< Legacy encoding size //
 /* SP7 APML Link ID Encodings count */
 #define SP7_ENCODING_SIZE              10      //!< Sp7 APML encoding size //
+/* BMC RAS MCADump*/
+#define MCA_DEBUG_LOG_ID       32
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
