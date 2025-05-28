@@ -4045,6 +4045,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	char *bw_type;
 	oob_status_t ret;
 	bool is_sbrmi = false, is_sbtsi = false;
+	char *endptr;
 
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -4193,9 +4194,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
-	soc_die_num = atoi(argv[1]);
+	soc_die_num = strtol(argv[1], &endptr, 0);
 	if (argc > 2 && (!strcmp(argv[2], "--showdependency"))) {
-		soc_die_num = atoi(argv[1]);
+		soc_die_num = strtol(argv[1], &endptr, 0);
 		validate_modules(soc_die_num, &is_sbrmi, &is_sbtsi);
 		if (is_sbrmi && is_sbtsi)
 			printf(" Both SBRMI and SBTSI modules are present");
@@ -4207,11 +4208,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		return OOB_SUCCESS;
 	}
 
-	if (validate_number(argv[1], 10)) {
+	if (validate_number(argv[1], 0)) {
 		print_apml_usage(argv[0]);
 		return OOB_INVALID_INPUT;
 	}
-	soc_die_num = atoi(argv[1]);
+	soc_die_num = strtol(argv[1], &endptr, 0);
 
 	if (argc == 2) {
 		show_smi_parameters(soc_die_num);
