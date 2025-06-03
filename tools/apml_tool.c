@@ -4363,7 +4363,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 77 ||
 	    *long_options[long_index].flag == 78))) {
 	       if (optind >= argc || *argv[optind] == '-') {
-			printf("\nOption '-%c' require TWO arguments\n", opt);
+			printf("\nOption '%s' require TWO arguments\n", argv[optind - 2]);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
@@ -4379,8 +4379,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78)))
 			    && validate_number(argv[optind - 1], 10)){
-			printf("Option '-%c' require 1st argument as valid"
-			       " numeric value\n\n", opt);
+			printf("Option '%s' require 1st argument as valid"
+			       " numeric value\n\n", argv[optind - 2]);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
