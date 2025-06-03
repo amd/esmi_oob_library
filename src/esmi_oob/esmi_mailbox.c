@@ -1657,10 +1657,11 @@ oob_status_t get_supporting_error_types(uint8_t soc_die_num, struct oob_err_inj_
 	for (index = 8 ; index <= err_chk.err_log_len; index = index+4) {
 		// Read 32 bits of vendor specific data types to err_types_vendor[offset]
 		err_dump.input[0] = index - 4;
-		ret = ret = read_ras_df_err_dump(soc_die_num, err_dump, &resp);
+		ret = read_ras_df_err_dump(soc_die_num, err_dump, &resp);
 		if (ret)
 			return ret;
 		d_out->err_types_vendor[offset] = resp;
 		offset++;
 	}
+	return ret;
 }
