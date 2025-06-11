@@ -69,6 +69,7 @@
 /* PCIE Max Interrrupt rate */
 #define PCIE_MAX_INTR_RATE	23     //!< PCIE Max interrupt rate //
 /* core mca error reporting enable*/
+#define MCA_ERR_REPORT_EN	31	//!< CORE MCA error report enable //
 #define CORE_MCA_ERR_REPORT_EN  31	//!< CORE MCA error report enable //
 /* Maximum error log length */
 #define MAX_ERR_LOG_LEN                 256	//!< Max error log length //
