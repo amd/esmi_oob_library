@@ -1736,6 +1736,7 @@ static void apml_set_dfpstate(uint8_t soc_die_num, uint8_t pstate)
 static void apml_get_fclkmclkuclk(uint8_t soc_die_num)
 {
 	struct pstate_freq df_pstate;
+	uint8_t clock_divider = 0, p_type = 0;
 	oob_status_t ret;
 
 	ret = read_current_dfpstate_frequency(soc_die_num, &df_pstate);
@@ -1745,14 +1746,19 @@ static void apml_get_fclkmclkuclk(uint8_t soc_die_num)
 			ret, esmi_get_err_msg(ret));
 		return;
 	}
+	ret = get_proc_type(soc_die_num, &p_type);
+	if (p_type == FAM_1A_MOD_50)
+		clock_divider = df_pstate.uclk ? BIT(2) : BIT(1);
+	else
+		clock_divider = df_pstate.uclk ? BIT(1) : BIT(0);
+
 	printf("----------------------------------------------\n");
 	printf("| FCLK (MHz)\t\t |");
 	printf(" %-17u |\n", df_pstate.fclk);
 	printf("| MEMCLK (MHz)\t\t |");
 	printf(" %-17u |\n", df_pstate.mem_clk);
 	printf("| UCLK (MHz)\t\t |");
-	printf(" %-17u |\n", df_pstate.uclk ? (df_pstate.mem_clk / 2)
-	       : df_pstate.mem_clk);
+	printf(" %-17u |\n", df_pstate.mem_clk / clock_divider);
 	printf("----------------------------------------------\n");
 }
 
