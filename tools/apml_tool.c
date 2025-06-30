@@ -2889,7 +2889,7 @@ static void apml_get_avg_dram_throttle(uint8_t soc_die_num)
         }
 
         printf("------------------------------------------\n");
-        printf("| Avg DRAM Throttle | %-16d %% |\n", dram_throttle);
+        printf("| Avg DRAM Throttle | %-3d %-14s |\n", dram_throttle, "%");
         printf("------------------------------------------\n");
 }
 
@@ -2908,7 +2908,7 @@ static void apml_get_ch_dram_throttle(uint8_t soc_die_num, uint8_t dimm_addr)
         printf("-------------------------------------------------\n");
 	printf("| Dimm Addr\t\t | DRAM Throttle\t|\n");
         printf("-------------------------------------------------\n");
-        printf("| 0x%-16x\t | %-16d %%   |\n", dimm_addr, dram_throttle);
+        printf("| 0x%-16x\t | %-3d %-14s   |\n", dimm_addr, dram_throttle, "%");
         printf("-------------------------------------------------\n");
 }
 
@@ -3161,12 +3161,12 @@ static void show_usage(char *exe_name)
 	printf("Where:  soc_die_num : "
 	       "[7:0], [3:0]: Socket Number, [7:4]: Die Number\n");
 	printf("Description:\n");
-	printf("%s -v \t\t\t\t- Displays tool version\n", exe_name);
+	printf("%s -v \t\t\t\t\t- Displays tool version\n", exe_name);
 	printf("%s [SOC_DIE_NUM] --showdependency \t- Displays module dependency\n",
 	       exe_name);
-	printf("%s --help <MODULE>\t\t- Displays help on the options for "
+	printf("%s --help <MODULE>\t\t\t- Displays help on the options for "
 		"the specified module\n", exe_name);
-	printf("%s <option/s>\t\t\t- Runs the specified option/s."
+	printf("%s <option/s>\t\t\t\t- Runs the specified option/s."
 	       "\nUsage: %s [soc_die_num]"
 	       " [Option] params\n\n", exe_name, exe_name);
 	printf("\tMODULES:\n");
@@ -3214,7 +3214,7 @@ static void fam_1A_mod_50_mailbox_commands()
                "  --setcc6control\t\t\t  [STATE(0-1)] \t\t\t\t"
                " Set CC6 enable state\n"
 	       "  --getccdpowconsumption\t\t  [COREID] \t\t\t\t"
-	       "Show CCD power consumption in Watts\n"
+	       " Show CCD power consumption in Watts\n"
 	       "  --gettempdelta\t\t\t  \t\t\t\t\t "
 	       "Show thermal solution health\n"
 	       "  --pciehaltlinktraining\t\t  [LINK_ID(P0-P5, G0-G3)][PCIE_PORT(0-7)]"
@@ -3240,7 +3240,7 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "\t\t\t\t\t  [DEVICE(HEX)][FUNC(HEX)][WR_DATA(HEX)] "
                "Set 32 bit data to extended PCI config space\n"
                "  --showvalidmcabanks\t\t\t\t\t\t\t\t "
-               "Show number of MCA banks & bytes/bank with valid "
+               "Show number of MCA banks & bytes/bank with valid\n"
                "\t\t\t\t\t\t\t\t\t\t status after a fatal error\n"
                "  --showrasmcamsr\t\t\t  [MCA_BANK_INDEX][OFFSET]"
                "\t\t Show 32 bit data from specified MCA bank and "
