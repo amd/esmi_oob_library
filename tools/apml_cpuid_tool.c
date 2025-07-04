@@ -45,7 +45,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 #include <esmi_oob/esmi_cpuid_msr.h>
