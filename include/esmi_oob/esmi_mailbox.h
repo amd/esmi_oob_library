@@ -76,9 +76,9 @@
 /* SP7 APML Link ID Encodings count */
 #define SP7_ENCODING_SIZE              10      //!< Sp7 APML encoding size //
 /* BMC RAS MCADump*/
-#define MCA_DEBUG_LOG_ID       32
+#define MCA_DEBUG_LOG_ID       32		//!< RAS MCA Dump //
 /* ERR TYPES block ID */
-#define OOB_ERR_TYPES_BLK_ID	253
+#define OOB_ERR_TYPES_BLK_ID	253		//!< OOB Error Types Block ID //
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
@@ -2477,11 +2477,6 @@ oob_status_t get_df_pstate_range(uint8_t soc_die_num,
  *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
- *
- *  @param[in] pci_addr pci_address structure with fucntion(3 bit),
- *  device(4 bit) bus(8 bit), offset(12 bit), segment(4 bit).
- *  SEGMENT:0 BUS 0:DEVICE 18 and
- *  SEGMENT:0 BUS 0:DEVICE 19 are inaccessable.
  *
  *  @param[in] d_in struct pcie_link_training containing link_id and pcie_port.
  *
