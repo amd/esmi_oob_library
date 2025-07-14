@@ -1661,3 +1661,77 @@ oob_status_t get_supporting_error_types(uint8_t soc_die_num, struct oob_err_inj_
 	}
 	return ret;
 }
+
+static oob_status_t get_bmc_ras_run_time_error_info_for_all_offset(uint8_t soc_die_num,
+								   struct bmc_ras_runtime_din din,
+								   struct ras_runtime_response *resp)
+{
+	uint32_t d_input = 0, buffer = 0;
+	oob_status_t ret = OOB_SUCCESS;
+
+	if (!resp)
+		return OOB_ARG_PTR_NULL;
+
+	resp->num_of_instances = din.number_of_instance;
+	resp->buffer_size_per_instance = din.number_of_offsets;
+	/* Read data for each instance */
+	for (uint8_t instance = 0; instance < din.number_of_instance;
+	     instance++) {
+		if (!resp->buffer_data || !resp->buffer_data[instance])
+			return OOB_ARG_PTR_NULL;
+		for (uint32_t offset = 0; offset < din.number_of_offsets;
+		     offset++) {
+			d_input = ((uint32_t)instance << WORD_BITS)
+				    | (din.err_category << BYTE_BITS)
+				    | (offset * BIT(2));
+			ret = esmi_oob_read_mailbox(soc_die_num,
+						    GET_BMC_RAS_RUNTIME_ERR_INFO,
+						    d_input, &buffer);
+
+			if (ret) {
+				resp->op_buffer_size = instance * din.number_of_offsets
+						       + offset;
+				return ret;
+			}
+			(resp->buffer_data[instance])[offset] = buffer;
+		}
+	}
+
+	// If all reads succeeded, set response accordingly
+	resp->op_buffer_size = din.number_of_offsets * din.number_of_instance;
+
+	return ret;
+}
+
+oob_status_t get_bmc_ras_mca_run_time_error_info(uint8_t soc_die_num,
+						 struct bmc_ras_runtime_din din,
+						 struct ras_runtime_response *resp)
+{
+	if (din.err_category != MCA_ERR_CATEGORY)
+		return OOB_INVALID_INPUT;
+
+	return get_bmc_ras_run_time_error_info_for_all_offset(soc_die_num,
+							      din, resp);
+}
+
+oob_status_t get_bmc_ras_dram_ecc_run_time_error_info(uint8_t soc_die_num,
+						      struct bmc_ras_runtime_din din,
+						      struct ras_runtime_response *resp)
+{
+	if (din.err_category != DRAM_ECC_ERR_CATEGORY)
+		return OOB_INVALID_INPUT;
+
+	return get_bmc_ras_run_time_error_info_for_all_offset(soc_die_num,
+							      din, resp);
+}
+
+oob_status_t get_bmc_ras_pcie_run_time_error_info(uint8_t soc_die_num,
+						  struct bmc_ras_runtime_din din,
+						  struct ras_runtime_response *resp)
+{
+	if (din.err_category != PCIE_ERR_CATEGORY)
+		return OOB_INVALID_INPUT;
+
+	return get_bmc_ras_run_time_error_info_for_all_offset(soc_die_num,
+							      din, resp);
+}

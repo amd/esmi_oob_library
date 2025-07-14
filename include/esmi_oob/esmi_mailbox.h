@@ -79,6 +79,12 @@
 #define MCA_DEBUG_LOG_ID       32		//!< RAS MCA Dump //
 /* ERR TYPES block ID */
 #define OOB_ERR_TYPES_BLK_ID	253		//!< OOB Error Types Block ID //
+/* MCA BANK Error category */
+#define MCA_ERR_CATEGORY	0		//!< MCA Error category //
+/* DRAM ECC Error category */
+#define DRAM_ECC_ERR_CATEGORY	1 		//!< DRAM ECC Error category //
+/* PCIE Error category */
+#define PCIE_ERR_CATEGORY	2 		//!< DRAM ECC Error category //
 
 /** \file esmi_mailbox.h
  *  Header file for the Mailbox messages supported by APML library.
@@ -488,6 +494,67 @@ struct svi3_vr_cont_data_in {
 struct svi3_vr_cont_data_out {
 	uint32_t svi3_temp : 28;				//!< Read temperature data for SVI3 rail
 	uint8_t svi3_rail_index : 3;		//!< SVI3 Rail Index
+};
+
+
+/**
+ * @struct ras_runtime_response
+ * @brief Structure representing the response from a RAS runtime operation.
+ *
+ * This structure contains information about the buffer data for multiple
+ * instances, the number of instances, buffer sizes, and the status of the operation.
+ *
+ * @var ras_runtime_response::buffer_data
+ *   Pointer to an array of pointers, each pointing to buffer data for an instance.
+ * @var ras_runtime_response::num_of_instances
+ *   Number of instances for which the buffer data is maintained.
+ * @var ras_runtime_response::buffer_size_per_instance
+ *   Size of the buffer allocated for each instance.
+ * @var ras_runtime_response::op_buffer_size
+ *   Total size of the operation buffer. On successful operation, this is equal to
+ *   num_of_instances multiplied by buffer_size_per_instance.
+ * @var ras_runtime_response::op_status
+ *   Status of the operation. 0 indicates success, non-zero indicates an error code.
+ */
+struct ras_runtime_response {
+	uint32_t **buffer_data;			//!< buffer data for all the instances
+	uint32_t num_of_instances;		//!< Number of instances
+	uint32_t buffer_size_per_instance;	//!< buffer size per instance
+	uint32_t op_buffer_size; 		//!< operation buffer size .On successful
+						//!< operation op_buffer_size will be number
+						//!< of instances * buffer_size_per_instance
+};
+
+/**
+ * @struct bmc_ras_runtime_din
+ * @brief Structure representing BMC RAS runtime error information.
+ *
+ * This structure holds information about runtime errors detected by the BMC,
+ * categorized by error type (MCA, DRAM ECC, or PCIe). It provides the number
+ * of error instances and the number of offsets, which can be calculated by
+ * querying with the appropriate message ID and category.
+ *
+ * @var bmc_ras_runtime_din::err_category
+ *   Error category:
+ *     - 0: MCA
+ *     - 1: DRAM ECC
+ *     - 2: PCIe
+ * @var bmc_ras_runtime_din::number_of_instance
+ *   Number of MCA/DRAM/PCIe runtime error instances.
+ * @var bmc_ras_runtime_din::number_of_offsets
+ *   Number of offsets, calculated by calling message ID 0x6A with the
+ *   appropriate category and mode. The number of offsets is determined by
+ *   dividing the number of bytes per instance by 4.
+ */
+struct bmc_ras_runtime_din {
+	uint8_t  err_category;		//!< 0 for MCA, 1 for DRAM ECC, 2 PCIE
+	uint32_t number_of_instance;	//!< Number of mca/dram/pcie runtime errors
+	uint32_t number_of_offsets;	//!< Number of offsets which can be calculcated
+					//!< by calling 6A message ID with category as
+					//!< MCA/dram/pcie and mode as 0 and it returns number of
+					//!< instances and number of bytes per instance.
+					//!< Number of offsets will be number of bytes per
+					//!< instance / 4.
 };
 
 /**
@@ -2597,6 +2664,86 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  *
  */
  oob_status_t get_supporting_error_types(uint8_t soc_die_num, struct oob_err_inj_types *d_out);
+
+/**
+ * @brief Retrieves BMC RAS MCA runtime error information for a specified SoC die.
+ *
+ * This function queries the BMC for Machine Check Architecture (MCA) runtime
+ * error information related to Reliability, Availability, and Serviceability
+ * (RAS) for the given SoC die number. The input data is provided via the
+ * @p din structure, and the response is populated in the @p resp structure.
+ * 0x61 has to be called with category as MCA(0) and mode as 0 and the response
+ * will be number of MCA error instances and number of bytes per instance.
+ * Number of MCA error instances will be din.number_of_instance and number of
+ * bytes per instance / 4 will be assigned to din.number_of_offsets.
+ *
+ * @param[in] soc_die_num      The SoC die number to query.
+ * @param[in] din              Structure containing input data for the runtime query.
+ * @param[out] resp            Pointer to structure to be filled with the runtime response.
+ *
+ * @return oob_status_t        Status of the operation.
+ *                             - OOB_STATUS_SUCCESS on success
+ *                             - Appropriate error code otherwise
+ */
+oob_status_t get_bmc_ras_mca_run_time_error_info(uint8_t soc_die_num,
+						 struct bmc_ras_runtime_din din,
+						 struct ras_runtime_response *resp);
+
+/**
+ * @brief Retrieves BMC RAS DRAM ECC runtime error information for a specified SoC die.
+ *
+ * This function queries the BMC for DRAM ECC runtime error
+ * information related to Reliability, Availability, and Serviceability (RAS)
+ * for the given SoC die number. The input data is provided via the
+ * @p din structure, and the response is populated in the @p resp structure.
+ *
+ * 0x61 has to be called with category as DRAM ECC (01) and mode as 0.
+ * The response will be:
+ * - Number of DRAM ECC error instances (assigned to din.number_of_instance)
+ * - Number of bytes per instance / 4 (assigned to din.number_of_offsets)
+ *
+ * @param[in]  soc_die_num  The SoC die number to query.
+ * @param[in]  din          Structure containing input data for the
+ *			    runtime query.
+ * @param[out] resp         Pointer to structure to be filled with the
+ * 			    runtime response.
+ *
+ * @retval OOB_SUCCESS      Operation successful.
+ * @retval Non-zero         Appropriate error code otherwise.
+ */
+oob_status_t get_bmc_ras_dram_ecc_run_time_error_info(uint8_t soc_die_num,
+						      struct bmc_ras_runtime_din din,
+						      struct ras_runtime_response *resp
+);
+
+/**
+ * @brief Retrieves BMC RAS PCIe runtime error information for a specified SoC die.
+ *
+ * This function queries the BMC for PCIe runtime error information related to
+ * Reliability, Availability, and Serviceability (RAS) for the given SoC die
+ * number.The input data is provided via the @p din structure, and the response
+ * is populated in the @p resp structure.
+ *
+ * 0x61 has to be called with category as PCIe (02) and mode as 0.
+ * The response will be:
+ * - Number of PCIe error instances (assigned to din.number_of_instance)
+ * - Number of bytes per instance divided by 4
+ *   (assigned to din.number_of_offsets)
+ *
+ * @param[in]  soc_die_num  The SoC die number to query.
+ * @param[in]  din          Structure containing input data for the runtime
+ * 			    query.
+ * @param[out] resp         Pointer to structure to be filled with the runtime
+ * 			    response.
+ *
+ * @retval OOB_SUCCESS      Operation successful.
+ * @retval Non-zero         Appropriate error code otherwise.
+ */
+oob_status_t get_bmc_ras_pcie_run_time_error_info(uint8_t soc_die_num,
+						  struct bmc_ras_runtime_din din,
+						  struct ras_runtime_response *resp
+);
+
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
