@@ -3408,8 +3408,6 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "Show running average power on pkg\n"
                "  --showprocbasefreq\t\t\t  \t\t\t\t\t "
                "Show processor base frequency\n"
-               "  --setPCIegenratectrl\t\t\t  [MODE(0,1,2)]\t\t\t\t "
-               "Set PCIe link rate control\n"
                "  --setpwrefficiencymode\t\t  [MODE(0 - 5)]\t\t\t\t "
                "Set power efficiency profile policy\n"
                "  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
