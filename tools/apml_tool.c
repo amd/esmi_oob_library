@@ -2565,7 +2565,7 @@ static void apml_get_ras_runtime_err_info(uint8_t soc_die_num,
 	uint8_t ch_num;
 	uint8_t sub_ch;
 	uint8_t chip_sel_num;
-	uint8_t rank_mult;
+	uint8_t rank_mult, p_type = 0;
 	oob_status_t ret;
 
 	ret = get_bmc_ras_run_time_error_info(soc_die_num, d_in, &d_out);
@@ -2577,10 +2577,24 @@ static void apml_get_ras_runtime_err_info(uint8_t soc_die_num,
 
 	if (d_in.category == DRAM_ECC_ERR_CAT && d_in.offset == ZERO_OFFSET) {
 		err_count = d_out;
-		ch_num = (d_out >> CH_NUM_POS) & NIBBLE_MASK;
-		sub_ch = (d_out >> SUB_CH_POS) & BIT_MASK;
-		chip_sel_num = (d_out >> CHIP_SEL_NUM_POS) & TRIBBLE_BITS;
-		rank_mult = (d_out >> RANK_MUL_NUM_POS) & RANK_MUL_MASK;
+		ret = get_proc_type(soc_die_num, &p_type);
+		if (ret) {
+			printf("Failed to fetch processor type,"
+					"Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+			return;
+		}
+		if (p_type == FAM_1A_MOD_50) {
+			uint8_t ch_mask = 0x01F;
+			ch_num = (d_out >> CH_NUM_POS) & ch_mask;
+			sub_ch = (d_out >> (SUB_CH_POS + BIT(0))) & BIT_MASK;
+			chip_sel_num = (d_out >> (CHIP_SEL_NUM_POS + BIT(0))) & TRIBBLE_BITS;
+			rank_mult = (d_out >> (RANK_MUL_NUM_POS + BIT(0))) & RANK_MUL_MASK;
+		} else {
+			ch_num = (d_out >> CH_NUM_POS) & NIBBLE_MASK;
+			sub_ch = (d_out >> SUB_CH_POS) & BIT_MASK;
+			chip_sel_num = (d_out >> CHIP_SEL_NUM_POS) & TRIBBLE_BITS;
+			rank_mult = (d_out >> RANK_MUL_NUM_POS) & RANK_MUL_MASK;
+		}
 		printf("------------------------------------\n");
 		printf("|Error Count  | %-16u   |\n", err_count);
 		printf("|CHAN Number  | 0x%-16x |\n", ch_num);
