@@ -3154,6 +3154,114 @@ static void apml_get_supporting_error_types(uint8_t soc_die_num)
 	printf("\n--------------------------------------------------------");
 }
 
+static void apml_get_bmc_ras_run_time_error_info_all_offsets(uint8_t soc_die_num, uint8_t category)
+{
+	struct ras_rt_err_req_type err_category = {0};
+	struct ras_rt_valid_err_inst inst = {0};
+	struct bmc_ras_runtime_din din = {0};
+	struct ras_runtime_response resp;
+	uint32_t mca_offset_size = 0;
+	oob_status_t ret;
+
+	err_category.err_type = category;
+	err_category.req_type = 0;
+	ret = get_bmc_ras_run_time_err_validity_ck(soc_die_num, err_category, &inst);
+	if (ret) {
+		printf("Failed to get ras run time error info, Err[%d]: %s\n",
+			   ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	din.err_category = err_category.err_type;
+	din.number_of_instance = inst.number_of_inst;
+	din.number_of_offsets = inst.number_bytes / 4;
+
+	// Allocate buffer data
+	if (din.number_of_instance) {
+		resp.buffer_data = (uint32_t **)malloc(din.number_of_instance * sizeof(uint32_t *));
+	} else {
+		resp.buffer_data = NULL;
+		printf("Failed to allocate buffer data as number of instances returned is zero\n");
+		return;
+	}
+	if (!resp.buffer_data) {
+		printf("Failed to allocate buffer data, Err[%d]: %s\n",
+			   OOB_ARG_PTR_NULL, esmi_get_err_msg(OOB_ARG_PTR_NULL));
+		return;
+	}
+
+	for (uint32_t i = 0; i < din.number_of_instance; i++) {
+		resp.buffer_data[i] = (uint32_t *)malloc(din.number_of_offsets * sizeof(uint32_t));
+		if (!resp.buffer_data[i]) {
+			printf("Failed to allocate buffer data, Err[%d]: %s\n",
+				   OOB_ARG_PTR_NULL, esmi_get_err_msg(OOB_ARG_PTR_NULL));
+			// Free previously allocated buffers
+			for (uint32_t j = 0; j < i; j++)
+				free(resp.buffer_data[j]);
+			free(resp.buffer_data);
+			return;
+		}
+	}
+
+	switch (category) {
+	case MCA_ERR_CATEGORY:
+		ret = get_bmc_ras_mca_run_time_error_info(soc_die_num, din, &resp);
+		break;
+	case DRAM_ECC_ERR_CATEGORY:
+		ret = get_bmc_ras_dram_ecc_run_time_error_info(soc_die_num, din, &resp);
+		break;
+	case PCIE_ERR_CATEGORY:
+		ret = get_bmc_ras_pcie_run_time_error_info(soc_die_num, din, &resp);
+		break;
+	default:
+		ret = OOB_INVALID_INPUT;
+		break;
+	}
+	if (ret) {
+		printf("Failed to read bmc ras run time error info, Err[%d]: %s\n",
+			   ret, esmi_get_err_msg(ret));
+		for (uint32_t i = 0; i < din.number_of_instance; i++)
+			free(resp.buffer_data[i]);
+		free(resp.buffer_data);
+		return;
+	}
+
+	// Print header row
+	printf("------------");
+	for (uint32_t i = 0; i < resp.num_of_instances; i++)
+		printf("--------------");
+	printf("\n");
+
+	printf("%-12s |", "| Offset");
+	for (uint32_t i = 0; i < resp.num_of_instances; i++)
+		printf(" Instance %u |", i);
+	printf("\n");
+
+	// Print a separator line
+	printf("------------");
+	for (uint32_t i = 0; i < resp.num_of_instances; i++)
+		printf("--------------");
+	printf("\n");
+
+	// Print data rows
+	for (uint32_t j = 0; j < resp.buffer_size_per_instance; j++) {
+		printf("| %-10u |", j * BIT(2));  // Offset column
+		for (uint32_t i = 0; i < resp.num_of_instances; i++)
+			printf(" 0x%08X |", resp.buffer_data[i][j]);
+		printf("\n");
+	}
+
+	printf("------------");
+	for (uint32_t i = 0; i < resp.num_of_instances; i++)
+		printf("--------------");
+	printf("\n");
+
+	// Release the memory
+	for (uint32_t i = 0; i < resp.num_of_instances; i++)
+		free(resp.buffer_data[i]);
+	free(resp.buffer_data);
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3424,6 +3532,12 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\t\t\t Configures OOB state infrastructure in SoC\n"
 	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
 	       "Show BMC ras oob configuration\n"
+	       "  --getrasmcaruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras mca runtime error info\n"
+	       "  --getraspcieruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras pcie runtime error info\n"
+	       "  --getrasdrameccruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras dram ecc runtime error info\n"
 	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR(HEX)]\t\t\t"
 	       " Show DIMM serial number\n"
 	       "  --getspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
@@ -4170,6 +4284,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"pciehaltlinktraining",        required_argument,      &flag,  77},
 		{"getsvi3vrtempbyrail",			required_argument,      &flag,  78},
 		{"getsupportingerrortypes",	no_argument,		&flag,	79},
+		{"getrasmcaruntimerrinfo", no_argument, 		&flag, 80},
+		{"getrasdrameccruntimerrinfo", no_argument, 		&flag, 81},
+		{"getraspcieruntimerrinfo", no_argument, 		&flag, 82},
 		{0,			0,			0,	0},
 	};
 
@@ -4943,6 +5060,18 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 79) {
 			/* Get supporting error types */
 			apml_get_supporting_error_types(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 80) {
+			/* Get BMC RAS MCA Runtime error info */
+			apml_get_bmc_ras_run_time_error_info_all_offsets(soc_die_num, MCA_ERR_CATEGORY);
+			break;
+		} else if (*(long_options[long_index].flag) == 81) {
+			/* Get BMC RAS DRAM ECC Runtime error info */
+			apml_get_bmc_ras_run_time_error_info_all_offsets(soc_die_num, DRAM_ECC_ERR_CATEGORY);
+			break;
+		} else if (*(long_options[long_index].flag) == 82) {
+			/* Get BMC RAS PCIE Runtime error info */
+			apml_get_bmc_ras_run_time_error_info_all_offsets(soc_die_num, PCIE_ERR_CATEGORY);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
