@@ -401,6 +401,19 @@ oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
  */
 oob_status_t clear_sw_async_alert_status(uint8_t soc_die_num);
 
+/**
+ * @brief Clears the MP0 alert status for the specified SoC die.
+ *
+ * This function clears the MP0 (Management Processor 0) alert status
+ * for the given SoC die number. It is typically used to acknowledge
+ * and reset alert conditions reported by the MP0 subsystem.
+ *
+ * @param soc_die_num The index of the SoC die for which the MP0 alert status
+ *                    should be cleared.
+ * @return oob_status_t Status code indicating success or failure of the operation.
+ */
+oob_status_t clear_MP0_alert_status(uint8_t soc_die_num);
+
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 

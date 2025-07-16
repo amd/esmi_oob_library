@@ -426,3 +426,10 @@ oob_status_t clear_sw_async_alert_status(uint8_t soc_die_num)
 
 	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_STATUS, clear_alert_status);
 }
+
+oob_status_t clear_MP0_alert_status(uint8_t soc_die_num)
+{
+	uint8_t clear_mp0_alert_status = BIT(6);
+
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_STATUS, clear_mp0_alert_status);
+}
