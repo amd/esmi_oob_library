@@ -184,7 +184,8 @@ typedef enum {
 	SET_PCIE_LINK_TRAINING,
 	GET_CCD_POW_CONSUMPTION = 0x7A,
 	GET_T_DELTA,
-	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL
+	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL,
+	GET_SET_APML_FLOOR_LIMIT = 0x7E
 } esb_mailbox_commmands;
 
 /**
@@ -555,6 +556,22 @@ struct bmc_ras_runtime_din {
 					//!< instances and number of bytes per instance.
 					//!< Number of offsets will be number of bytes per
 					//!< instance / 4.
+};
+
+/**
+ * @brief Structure for APML floor core limit input.
+ *
+ * This structure is used to specify the core ID and the desired floor limit
+ * for APML mailbox operations related to floor core limit configuration.
+ *
+ * @var core_floor_limit_din::core_id
+ *   The core ID for which the floor limit is being set.
+ * @var core_floor_limit_din::floor_limit
+ *   The floor limit value to be set for the specified core.
+ */
+struct core_floor_limit_din {
+	uint16_t core_id;      //!< Core ID for which the floor limit is set
+	uint16_t floor_limit;  //!< Floor limit value for the specified core
 };
 
 /**
@@ -2743,6 +2760,59 @@ oob_status_t get_bmc_ras_pcie_run_time_error_info(uint8_t soc_die_num,
 						  struct bmc_ras_runtime_din din,
 						  struct ras_runtime_response *resp
 );
+
+/**
+ * @brief Retrieves the APML floor core limit for a specified core.
+ *
+ * This function queries the APML (Advanced Platform Management Link) mailbox to obtain
+ * the floor core limit value for a given core on a specified SoC die.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num       The SoC die number to query.
+ * @param[in]  core_id           The core ID for which the floor core
+				 limit is requested.
+ * @param[out] floor_core_limit  Pointer to a variable where the retrieved
+				 floor core limit will be stored.
+ *
+ * @retval OOB_SUCCESS           Operation successful.
+ * @retval Non-zero              Appropriate error code otherwise.
+ */
+oob_status_t get_floor_core_limit(uint8_t soc_die_num,
+				  uint16_t core_id,
+				  uint16_t *floor_core_limit);
+
+/**
+ * @brief Sets the APML floor core limit for a specified core.
+ *
+ * This function sets the floor core limit value for a given core
+ * on a specified SoC die.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num         The SoC die number to configure.
+ * @param[in]  d_in                Structure containing the core ID and
+ *				   desired floor limit.
+ *
+ * @retval OOB_SUCCESS             Operation successful.
+ * @retval Non-zero                Appropriate error code otherwise.
+ */
+oob_status_t set_core_floor_limit(uint8_t soc_die_num,
+				  struct core_floor_limit_din d_in);
+
+/**
+ * @brief Sets the APML floor limit for all cores in a specified SoC die.
+ *
+ * This function sets the floor limit value for all cores on a specified SoC
+ * die.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num         The SoC die number to configure.
+ * @param[in]  floor_limit         The floor limit value to be set for all cores.
+ *
+ * @retval OOB_SUCCESS             Operation successful.
+ * @retval Non-zero                Appropriate error code otherwise.
+ */
+oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num,
+					   uint16_t floor_limit);
 
 /* @}
  */  // end of MailboxMsg

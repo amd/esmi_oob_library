@@ -1735,3 +1735,43 @@ oob_status_t get_bmc_ras_pcie_run_time_error_info(uint8_t soc_die_num,
 	return get_bmc_ras_run_time_error_info_for_all_offset(soc_die_num,
 							      din, resp);
 }
+
+oob_status_t get_floor_core_limit(uint8_t soc_die_num, uint16_t core_id,
+				  uint16_t *floor_core_limit)
+{
+	uint32_t d_input = 0, resp = 0;
+	oob_status_t ret;
+
+	if (!floor_core_limit)
+		return OOB_ARG_PTR_NULL;
+
+	d_input = ((uint32_t)(BIT(1)) << 30) | ((uint32_t)((core_id & 0xFFF) << BIT(4)));
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_SET_APML_FLOOR_LIMIT,
+				    d_input, &resp);
+
+	if (!ret)
+		*floor_core_limit = resp;
+
+	return ret;
+}
+
+oob_status_t set_core_floor_limit(uint8_t soc_die_num, struct core_floor_limit_din d_in)
+{
+	uint32_t d_input = 0;
+
+	d_input = ((uint32_t)((d_in.core_id & 0xFFF)
+		    << BIT(4))) | (uint32_t)d_in.floor_limit;
+	return esmi_oob_write_mailbox(soc_die_num,
+				      GET_SET_APML_FLOOR_LIMIT,
+				      d_input);
+}
+
+oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num, uint16_t floor_limit)
+{
+	uint32_t d_input = 0;
+
+	d_input = ((uint32_t)(BIT(0)) << 30) | (uint32_t)(floor_limit);
+	return esmi_oob_write_mailbox(soc_die_num,
+				      GET_SET_APML_FLOOR_LIMIT,
+				      d_input);
+}
