@@ -2517,6 +2517,20 @@ static void apml_clear_ras_status_register(uint8_t soc_die_num, uint8_t value)
 	return;
 }
 
+static void apml_clear_sw_async_alert_status(uint8_t soc_die_num)
+{
+	oob_status_t ret;
+
+	ret = clear_sw_async_alert_status(soc_die_num);
+	if (ret) {
+		printf("Failed to clear sw async alert status"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("Software async alert status cleared successfully\n");
+}
+
 static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_die_num,
 						   struct ras_rt_err_req_type rt_err_category)
 {
@@ -3766,6 +3780,12 @@ static void get_recovery_commands(char *exe_name)
 	       " SBRMI, 1 -> SBTSI\n", exe_name);
 }
 
+static void fam_1A_mod_50_rmi_commands(void) {
+	printf("  --clearswasyncalertstatus\t\t\t\t\t\t Clear "
+	       "software async alert status\n");
+
+}
+
 static oob_status_t show_module_commands(char *exe_name, char *command)
 {
 	struct processor_info plat_info[1];
@@ -3813,7 +3833,16 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			break;
 		}
 	} else if (!strcmp(command, "sbrmi") || !strcmp(command, "2")) {
-		get_rmi_commands(exe_name);
+		ret = get_proc_type(soc_die_num, &p_type);
+		switch(p_type) {
+		case FAM_1A_MOD_50:
+			get_rmi_commands(exe_name);
+			fam_1A_mod_50_rmi_commands();
+			break;
+		default:
+			get_rmi_commands(exe_name);
+			break;
+		}
 	} else if (!strcmp(command, "sbtsi") || !strcmp(command, "3")) {
 
 		/* Read hbm max temp to verify whether the platform is mi300 or not */
@@ -4354,6 +4383,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getapmlcorefloorlimit",	required_argument,	&flag, 83},
 		{"setapmlcorefloorlimit", required_argument,	&flag, 84},
 		{"setapmlallcoresfloorlimit", required_argument, &flag, 85},
+		{"clearswasyncalertstatus", no_argument,	&flag,	86},
 		{0,			0,			0,	0},
 	};
 
@@ -5159,6 +5189,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Set apml floor limit for all cores*/
 			val1 = atoi(argv[optind - 1]);
 			apml_set_apml_floor_limit_for_all_cores(soc_die_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 86) {
+			/* clear_sw_async_alert_status */
+			apml_clear_sw_async_alert_status(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
