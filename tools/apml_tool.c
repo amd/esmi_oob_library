@@ -3276,6 +3276,51 @@ static void apml_get_bmc_ras_run_time_error_info_all_offsets(uint8_t soc_die_num
 	free(resp.buffer_data);
 }
 
+static void apml_get_apml_floor_core_limit(uint8_t soc_die_num, uint16_t core_id)
+{
+	uint16_t floor_core_limit = 0;
+	oob_status_t ret;
+
+	ret = get_floor_core_limit(soc_die_num, core_id, &floor_core_limit);
+	if (ret) {
+		printf("Failed to get APML floor core limit, Err[%d]: %s\n",
+			   ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("-----------------------------------------\n");
+	printf("| Floor Core Limit\t | %-8u MHz |\n", floor_core_limit);
+	printf("-----------------------------------------\n");
+}
+
+static void apml_set_apml_floor_core_limit(uint8_t soc_die_num,
+					   struct core_floor_limit_din d_in)
+{
+	oob_status_t ret;
+
+	ret = set_core_floor_limit(soc_die_num, d_in);
+	if (ret) {
+		printf("Failed to set APML floor core limit, Err[%d]: %s\n",
+			   ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("APML floor core limit set successfully");
+}
+
+static void apml_set_apml_floor_limit_for_all_cores(uint8_t soc_die_num,
+						    uint32_t floor_limit)
+{
+	oob_status_t ret;
+
+	ret = set_floor_limit_for_all_cores(soc_die_num,
+					    floor_limit);
+	if (ret) {
+		printf("Failed to set APML floor limit for all cores, "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("APML floor limit set successfully in all cores\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3345,6 +3390,12 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "\n\t\t\t\t\t\t\t\t\t\t Get SVI3 VR controller temperature by rail\n"
 	       "  --getsupportingerrortypes\t\t\t  \t\t\t\t "
 	       "Get supporting error types \n"
+	       "  --getapmlcorefloorlimit\t\t  [CORE_ID] \t\t\t\t "
+	       "Get apml core floor limit in MHz\n"
+	       "  --setapmlcorefloorlimit\t\t  [CORE_ID][FLOOR_LIMIT] \t\t "
+	       "Set apml core floor limit in MHz\n"
+	       "  --setapmlallcoresfloorlimit\t\t  [FLOOR_LIMIT] \t\t\t "
+	       "Set apml floor limit for all cores in MHz\n"
 			);
 }
 
@@ -4156,6 +4207,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_thermal dt_soc_die_num;
 	struct dimm_spd_d_in spd_in;
 	struct dimm_spd_write spd_w_din = {0};
+	struct core_floor_limit_din d_in_core_limit = {0};
 	uint8_t soc_die_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -4299,6 +4351,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getrasmcaruntimerrinfo", no_argument, 		&flag, 80},
 		{"getrasdrameccruntimerrinfo", no_argument, 		&flag, 81},
 		{"getraspcieruntimerrinfo", no_argument, 		&flag, 82},
+		{"getapmlcorefloorlimit",	required_argument,	&flag, 83},
+		{"setapmlcorefloorlimit", required_argument,	&flag, 84},
+		{"setapmlallcoresfloorlimit", required_argument, &flag, 85},
 		{0,			0,			0,	0},
 	};
 
@@ -4417,6 +4472,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 66 ||
 			 (*long_options[long_index].flag) == 73 ||
 			 (*long_options[long_index].flag) == 75 ||
+			 (*long_options[long_index].flag) == 83 ||
+			 (*long_options[long_index].flag) == 85 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -4495,8 +4552,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 47 ||
 	    *long_options[long_index].flag == 49 ||
 	    *long_options[long_index].flag == 58 ||
-	    *long_options[long_index].flag == 77 ||
-	    *long_options[long_index].flag == 78))) {
+		*long_options[long_index].flag == 77 ||
+		*long_options[long_index].flag == 78 ||
+	    *long_options[long_index].flag == 84))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '%s' require TWO arguments\n", argv[optind - 2]);
 			show_usage(argv[0]);
@@ -4512,7 +4570,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		       return OOB_SUCCESS;
 		}
 
-	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78)))
+	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78))
+				|| (opt ==  0 && (*long_options[long_index].flag == 84)))
 			    && validate_number(argv[optind - 1], 10)){
 			printf("Option '%s' require 1st argument as valid"
 			       " numeric value\n\n", argv[optind - 2]);
@@ -5084,6 +5143,22 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 82) {
 			/* Get BMC RAS PCIE Runtime error info */
 			apml_get_bmc_ras_run_time_error_info_all_offsets(soc_die_num, PCIE_ERR_CATEGORY);
+			break;
+		} else if (*(long_options[long_index].flag) == 83) {
+			/* Get core apml floor limit */
+			val1 = atoi(argv[optind - 1]);
+			apml_get_apml_floor_core_limit(soc_die_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 84) {
+			/* Set core apml floor limit*/
+			d_in_core_limit.core_id= atoi(argv[optind - 1]);
+			d_in_core_limit.floor_limit = atoi(argv[optind++]);
+			apml_set_apml_floor_core_limit(soc_die_num, d_in_core_limit);
+                        break;
+		} else if (*(long_options[long_index].flag) == 85) {
+			/* Set apml floor limit for all cores*/
+			val1 = atoi(argv[optind - 1]);
+			apml_set_apml_floor_limit_for_all_cores(soc_die_num, val1);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
