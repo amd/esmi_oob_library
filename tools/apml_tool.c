@@ -2531,6 +2531,20 @@ static void apml_clear_sw_async_alert_status(uint8_t soc_die_num)
 	printf("Software async alert status cleared successfully\n");
 }
 
+static void apml_clear_mp0_alert_status(uint8_t soc_die_num)
+{
+	oob_status_t ret;
+
+	ret = clear_MP0_alert_status(soc_die_num);
+	if (ret) {
+		printf("Failed to clear mp0 alert status"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("MP0 alert status cleared successfully\n");
+}
+
 static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_die_num,
 						   struct ras_rt_err_req_type rt_err_category)
 {
@@ -3693,8 +3707,11 @@ static void get_rmi_commands(char *exe_name)
 	       "\n< SB-RMI COMMANDS >:\n"
 	       "  --showrmiregisters\t\t\t\t\t\t Get "
 	       "values of SB-RMI reg commands for a given socket\n"
-	       "  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t "
-	       "Clear the RAS status register value\n", exe_name);
+	       "  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t\t "
+	       "Clear the RAS status register value\n"
+	       "  --clearmp0alertstatus\t\t\t\t\t\t\t Clear "
+	       "MP0 alert status\n"
+	       , exe_name);
 }
 
 static void get_tsi_commands(char *exe_name)
@@ -4384,6 +4401,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setapmlcorefloorlimit", required_argument,	&flag, 84},
 		{"setapmlallcoresfloorlimit", required_argument, &flag, 85},
 		{"clearswasyncalertstatus", no_argument,	&flag,	86},
+		{"clearmp0alertstatus",		no_argument, 	&flag,	87},
 		{0,			0,			0,	0},
 	};
 
@@ -5193,6 +5211,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 86) {
 			/* clear_sw_async_alert_status */
 			apml_clear_sw_async_alert_status(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 87) {
+			/* clear MP0 alert status */
+			apml_clear_mp0_alert_status(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
