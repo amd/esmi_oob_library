@@ -419,3 +419,10 @@ oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
 	*threads_per_socket = ((uint32_t)thread_num_hi << 8) | thread_num_low;
 	return ret;
 }
+
+oob_status_t clear_sw_async_alert_status(uint8_t soc_die_num)
+{
+	uint8_t clear_alert_status = BIT(3);
+
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_STATUS, clear_alert_status);
+}

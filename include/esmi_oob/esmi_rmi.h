@@ -387,6 +387,20 @@ oob_status_t clear_sbrmi_ras_status(uint8_t soc_die_num, uint8_t buffer);
  */
 oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
 					 uint32_t *threads_per_socket);
+
+/**
+ * @brief Clears the software asynchronous alert status for a specific SoC die.
+ *
+ * This function clears the asynchronous alert status that was set by software
+ * for the specified SoC die number.To clear the sw asynchrous alert status we need
+ * to write 1 to BIT-3 of status register 0x02.
+ *
+ * @param[in] soc_die_num  The SoC die number for which to clear the alert status.
+ *
+ * @return oob_status_t    Status code indicating success or failure of the operation.
+ */
+oob_status_t clear_sw_async_alert_status(uint8_t soc_die_num);
+
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 
