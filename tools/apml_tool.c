@@ -2545,6 +2545,20 @@ static void apml_clear_mp0_alert_status(uint8_t soc_die_num)
 	printf("MP0 alert status cleared successfully\n");
 }
 
+static void apml_set_sw_async_alert_mask(uint8_t soc_die_num, bool sw_async_alert_mask)
+{
+	oob_status_t ret;
+
+	ret = set_sw_async_alert_mask(soc_die_num, sw_async_alert_mask);
+	if (ret) {
+		printf("Failed to set sw async alert mask"
+			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("Alert_L signaling is %s successfully\n", sw_async_alert_mask ? "disabled" : "enabled");
+
+}
+
 static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_die_num,
 						   struct ras_rt_err_req_type rt_err_category)
 {
@@ -3799,7 +3813,9 @@ static void get_recovery_commands(char *exe_name)
 
 static void fam_1A_mod_50_rmi_commands(void) {
 	printf("  --clearswasyncalertstatus\t\t\t\t\t\t Clear "
-	       "software async alert status\n");
+	       "software async alert status\n"
+	       "  --setswasyncalertmask\t\t\t  [ALERT_MASK(0,1]\t\t Set "
+	       "to 0(Enable) or 1 (disable) Alert-L signaling\n");
 
 }
 
@@ -4276,6 +4292,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	oob_status_t ret;
 	bool is_sbrmi = false, is_sbtsi = false;
 	char *endptr;
+	bool sw_async_alert_mask = false;
 
 	//Specifying the expected options
 	static struct option long_options[] = {
@@ -4402,6 +4419,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setapmlallcoresfloorlimit", required_argument, &flag, 85},
 		{"clearswasyncalertstatus", no_argument,	&flag,	86},
 		{"clearmp0alertstatus",		no_argument, 	&flag,	87},
+		{"setswasyncalertmask",		required_argument, &flag, 88},
 		{0,			0,			0,	0},
 	};
 
@@ -4522,6 +4540,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 75 ||
 			 (*long_options[long_index].flag) == 83 ||
 			 (*long_options[long_index].flag) == 85 ||
+			 (*long_options[long_index].flag) == 88 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -5215,6 +5234,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 87) {
 			/* clear MP0 alert status */
 			apml_clear_mp0_alert_status(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 88) {
+			/* Set sw async alert mask */
+			sw_async_alert_mask = atoi(argv[optind - 1]);
+			apml_set_sw_async_alert_mask(soc_die_num, sw_async_alert_mask);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
