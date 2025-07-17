@@ -788,7 +788,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_num)
 					}
 				} else {
 					for (int j = 7; j >= 0; j--) {
-						printf("%3lu ", 16 * j + (256 + (i - sizeof(alert_mask))));
+						printf("%3u ", 16 * j + (256 + (i - sizeof(alert_mask))));
 					}
 				}
 				if (rev != 0x10)

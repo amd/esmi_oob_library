@@ -54,7 +54,6 @@
 #include <esmi_oob/esmi_cpuid_msr.h>
 #include <esmi_oob/esmi_tsi.h>
 #include <esmi_oob/rmi_mailbox_mi300.h>
-#include <esmi_oob/esmi_mailbox.h>
 #include <esmi_oob/tsi_mi300.h>
 
 static int flag;
