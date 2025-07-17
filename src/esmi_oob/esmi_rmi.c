@@ -433,3 +433,20 @@ oob_status_t clear_MP0_alert_status(uint8_t soc_die_num)
 
 	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_STATUS, clear_mp0_alert_status);
 }
+
+oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit)
+{
+	uint8_t control_data = 0;
+	oob_status_t ret;
+
+	ret = read_sbrmi_control(soc_die_num, &control_data);
+	if (ret)
+		return ret;
+
+	if (alert_mask_bit)
+		control_data |= BIT(6);
+	else
+		control_data &= ~BIT(6);
+
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_CONTROL, control_data);
+}

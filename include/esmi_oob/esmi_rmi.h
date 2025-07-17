@@ -414,6 +414,21 @@ oob_status_t clear_sw_async_alert_status(uint8_t soc_die_num);
  */
 oob_status_t clear_MP0_alert_status(uint8_t soc_die_num);
 
+/**
+ * @brief Set the software asynchronous alert mask for a specific SoC die.
+ *
+ * This function sets the software asynchronous alert mask bit for the specified SoC die.
+ * The alert_mask_bit parameter determines whether to set (true) or clear (false) the mask.
+ * Set alert_mask_bit to 0 to enable Alert-L signaling and set it 1 to disabled.
+ *
+ * @param[in] soc_die_num      The SoC die number for which to set the alert mask.
+ * @param[in] alert_mask_bit   Boolean value to set (true) to disable Alert-L signaling
+ * 			       else set to false to enable Alert-L signaling.
+ *
+ * @return oob_status_t        Status code indicating success or failure of the operation.
+ */
+oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit);
+
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 
