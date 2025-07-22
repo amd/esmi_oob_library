@@ -1947,6 +1947,7 @@ oob_status_t read_ppin_fuse(uint8_t soc_num, uint64_t *data);
  *  @brief Read RTC.
  *  @details Read RTC timer value. RTC time represents the year,
  *  month, day, hour, minute and seconds value in a 64b encoding.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
  *
  *  @param[in] soc_num Socket index.
  *
