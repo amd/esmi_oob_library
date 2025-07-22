@@ -4,6 +4,29 @@
 Thank you for using AMD APML Library.
 
 # Changes Notes
+## Highlights of major release v4.0.1
+
+* Add support for new mailbox messages:
+   - PCIE config write(0x68)
+   - xGMI_PSTATE RANGE(0x73),
+   - CPU_RAIL_ISO_FREQ_POLICY(0x74),
+   - DFC_ENABLE(0x76),
+   - Read DRAM Throttle enhanced version (0x78)
+   - Get SMU firmware version (0x1C)
+   - Get Public Serial number (0x22)
+   - DIMM spd register data (0x70)
+   - DIMM spd serial number
+* Add support for the new APML features on family 19h and model 90h ~ 9Fh
+   - New SBRMI mailbox messages including
+       - GetCurrentXGMIPState (0x85)
+       - MaxOperatingTemperature (0xA2)
+       - GetSlowdownTemperature (0xA3)
+       - HBMDeviceInformation (0xB7)
+       - GetPCIeStats (0XBA)
+* New mailbox error codes, 0x5 and 0xB
+* New Platform Support:
+   - Family:0x19, Model:0xA0~0xAF
+   - Family:0x1A, Model:0x10~0x1F
 
 ## Highlights of major release v3.2.0
 

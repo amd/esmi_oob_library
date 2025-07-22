@@ -28,9 +28,9 @@ set(INC_DIR "include/esmi_oob")
 # ABI breaks (update MAJOR and MINOR), and ABI/API additions (update MINOR).
 # Until ABI stabilizes VERSION_MAJOR will be 0. This should be over-ridden
 # by git tags (through "git describe") when they are present.
-set(APML_LIB_VERSION_MAJOR 0)
-set(APML_LIB_VERSION_MINOR 1)
-set(APML_LIB_VERSION_PATCH 2)
+set(APML_LIB_VERSION_MAJOR 4)
+set(APML_LIB_VERSION_MINOR 0)
+set(APML_LIB_VERSION_PATCH 1)
 
 ################# Determine the library version #########################
 ## Setup the package version based on git tags.
