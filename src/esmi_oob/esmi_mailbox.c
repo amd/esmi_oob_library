@@ -1513,7 +1513,7 @@ oob_status_t get_apb_state(uint8_t soc_die_num, uint8_t *apb_state, uint8_t *df_
 
 	ret = esmi_oob_read_mailbox(soc_die_num, WRITE_APB_DISABLE,
 				    input, &buffer);
-	if (ret) {
+	if (!ret) {
 		*apb_state = extract_val(buffer, BIT(3)) & BIT(0);
 		if ( *apb_state)
 			*df_pstate = buffer;
@@ -1538,7 +1538,7 @@ oob_status_t get_df_pstate_range(uint8_t soc_die_num,
 	ret = esmi_oob_read_mailbox(soc_die_num, WRITE_DF_PSTATE_RANGE,
 				    input, &buffer);
 
-	if (ret) {
+	if (!ret) {
 		*max_pstate = buffer;
 		*min_pstate = extract_val(buffer, BIT(3));
 	}
@@ -1558,7 +1558,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
 
 	ret = esmi_oob_read_mailbox(soc_die_num, SET_XGMI_PSTATE_RANGE,
 				    input, &buffer);
-	if (ret) {
+	if (!ret) {
 		*max_xgmi_pstate = buffer;
 		*min_xgmi_pstate = extract_val(buffer, BIT(3));
 	}
