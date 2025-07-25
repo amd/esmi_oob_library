@@ -2081,6 +2081,8 @@ static oob_status_t read_ccx_info(uint8_t soc_die_num,
 static void apml_get_iod_bist_status(uint8_t soc_die_num)
 {
 	uint32_t buffer;
+	uint8_t p_type = 0;
+	char *bist_status;
 	oob_status_t ret;
 
 	ret = read_iod_bist(soc_die_num, &buffer);
@@ -2090,10 +2092,42 @@ static void apml_get_iod_bist_status(uint8_t soc_die_num)
 		return;
 	}
 
-	printf("-------------------------------------------\n");
-	printf("| IOD/AID BIST STATUS | \t%s |\n",
-	       buffer == 0 ? "BIST PASS" : "BIST FAIL");
-	printf("-------------------------------------------\n");
+	ret = get_proc_type(soc_die_num, &p_type);
+	if (ret) {
+		printf("Failed to get processor type for soc_die_num %d,"
+		       "error: %d\n", soc_die_num, ret);
+		return;
+	}
+	if (p_type == FAM_1A_MOD_50) {
+		switch (buffer)
+		{
+		case 0:
+			bist_status = "BIST pass on both IOD 0 and 1";
+			break;
+		case 1:
+			bist_status = "BIST pass on IOD0";
+			break;
+		case 2:
+			bist_status = "BIST pass on IOD1";
+			break;
+		case 3:
+			bist_status = "BIST fail on both IOD 0 and 1";
+			break;
+		default:
+			bist_status = "Undefined response";
+			break;
+		}
+	} else {
+		bist_status = buffer == 0 ? "BIST PASS" : "BIST FAIL";
+	}
+	printf("-------------------------------------------"
+	       "---------------------\n");
+
+	printf("| IOD/AID BIST STATUS | \t%-30s |\n",
+	       bist_status);
+	printf("-------------------------------------------"
+	       "---------------------\n");
+
 }
 
 static void apml_get_ccd_bist_status(uint8_t soc_die_num, uint32_t instance)
@@ -3933,6 +3967,7 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_die_num)
 	uint16_t mclk;
 	uint8_t uclk, index, rev, p_type = 0;
 	char *source_type[ARRAY_SIZE(freqlimitsrcnames)] = {NULL};
+	char *bist_status;
 	bool is_mi300 = false;
 	oob_status_t ret;
 
@@ -4072,11 +4107,35 @@ static oob_status_t show_apml_mailbox_cmds(uint8_t soc_die_num)
 	usleep(APML_SLEEP);
 	printf("\n| IOD/AID_Bist_Result\t\t\t |");
 	ret = read_iod_bist(soc_die_num, &iod);
-	if (ret)
-		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
-	else
-		printf(" %-17s", iod ? "Bist fail" : "Bist pass");
 
+	if (ret) {
+		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
+	} else {
+		if (p_type == FAM_1A_MOD_50) {
+			switch (iod)
+			{
+			case 0:
+				bist_status = "BIST pass on both IOD 0 and 1";
+				break;
+			case 1:
+				bist_status = "Bist pass on IOD0";
+				break;
+			case 2:
+				bist_status = "Bist pass on IOD1";
+				break;
+			case 3:
+				bist_status = "Bist fail on both IOD 0 and 1";
+				break;
+			default:
+				bist_status = "Undefined response";
+				break;
+			}
+		} else {
+			bist_status = (iod == 0 ? "Bist pass" : "Bist fail");
+		}
+
+		printf(" %-30s", bist_status);
+	}
 	usleep(APML_SLEEP);
 	instance = 0x0;
 	printf("\n| CCD/XCD_Bist_Result [0x%x]\t\t |", instance);
