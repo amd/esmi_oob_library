@@ -2593,6 +2593,45 @@ static void apml_set_sw_async_alert_mask(uint8_t soc_die_num, bool sw_async_aler
 
 }
 
+static void apml_set_power_efficiency_mode_selection(uint8_t soc_die_num, struct pow_eff_mode d_in) {
+	struct pow_eff_mode d_out = {0};
+	oob_status_t ret;
+
+	ret = set_power_efficiency_mode_selection(soc_die_num, d_in, &d_out);
+	if (ret) {
+		printf("Failed to set power efficiency mode policy"
+			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------------\n");
+	printf("| Power Efficiency Mode  | %-10u |\n", d_out.mode);
+	if (d_out.mode == 4 || d_out.mode == 5) {
+		printf("| Utilization point \t | %-10u%%|\n", d_out.utilization_point);
+		printf("| PPT Mode (mW)\t\t | %-10u |\n", d_out.ppt_limit);
+	}
+	printf("---------------------------------------\n");
+}
+
+static void apml_get_power_efficiency_mode_selection(uint8_t soc_die_num)
+{
+	struct pow_eff_mode d_out = {0};
+	oob_status_t ret;
+
+	ret = get_power_efficiency_mode_selection(soc_die_num, &d_out);
+	if (ret) {
+		printf("Failed to get power efficiency mode policy"
+			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("---------------------------------------\n");
+	printf("| Power Efficiency Mode  | %-10u |\n", d_out.mode);
+	if (d_out.mode == 4 || d_out.mode == 5) {
+		printf("| Utilization point \t | %-10u%%|\n", d_out.utilization_point);
+		printf("| PPT Mode (mW)\t\t | %-10u |\n", d_out.ppt_limit);
+	}
+	printf("---------------------------------------\n");
+}
+
 static void apml_get_bmc_ras_rt_err_validity_check(uint8_t soc_die_num,
 						   struct ras_rt_err_req_type rt_err_category)
 {
@@ -3472,7 +3511,18 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "Set apml core floor limit in MHz\n"
 	       "  --setapmlallcoresfloorlimit\t\t  [FLOOR_LIMIT] \t\t\t "
 	       "Set apml floor limit for all cores in MHz\n"
-			);
+	       "  --setpwrefficiencyprofile\t\t  [MODE(0 - 5)]"
+	       "[UTILIZATIONPOINT(%%)][PPTLimit(mW)\n\t\t\t\t\t\t\t\t\t\t "
+	       "Set power efficiency profile policy mode, Utilization point(%%) "
+	       "and ppt\n\t\t\t\t\t\t\t\t\t\t limit(mW). Note : Utlization "
+	       "point and ppt modes are applicable only for \n\t\t\t\t"
+	       "\t\t\t\t\t\t modes 4 and 5.\n"
+	       "  --getpwrefficiencyprofile\t\t\t  \t\t\t\t "
+	       "Get power efficiency profile policy mode, Utilization point(%%) "
+	       "and ppt\n\t\t\t\t\t\t\t\t\t\t limit(mW). Note : Utlization "
+	       "point and ppt modes are applicable only for \n\t\t\t\t\t\t"
+	       "\t\t\t\t modes 4 and 5.\n"
+		);
 }
 
 static void fam_1A_mod_50_common_mailbox_commands(void)
@@ -3535,8 +3585,6 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "Show running average power on pkg\n"
                "  --showprocbasefreq\t\t\t  \t\t\t\t\t "
                "Show processor base frequency\n"
-               "  --setpwrefficiencymode\t\t  [MODE(0 - 5)]\t\t\t\t "
-               "Set power efficiency profile policy\n"
                "  --setdfpstaterange\t\t\t  [MAX_PSTATE]"
                "[MIN_PSTATE]\t\t Set data fabric pstate range, valid values\n"
                "\t\t\t\t\t\t\t\t\t\t from 0 - 2. max pstate <= min pstate\n"
@@ -4329,6 +4377,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_spd_d_in spd_in;
 	struct dimm_spd_write spd_w_din = {0};
 	struct core_floor_limit_din d_in_core_limit = {0};
+	struct pow_eff_mode din_mode = {0};
 	uint8_t soc_die_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -4479,6 +4528,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"clearswasyncalertstatus", no_argument,	&flag,	86},
 		{"clearmp0alertstatus",		no_argument, 	&flag,	87},
 		{"setswasyncalertmask",		required_argument, &flag, 88},
+		{"setpwrefficiencyprofile",	required_argument, &flag, 89},
+		{"getpwrefficiencyprofile", no_argument, 	&flag, 90},
 		{0,			0,			0,	0},
 	};
 
@@ -4600,6 +4651,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 83 ||
 			 (*long_options[long_index].flag) == 85 ||
 			 (*long_options[long_index].flag) == 88 ||
+			 (*long_options[long_index].flag) == 89 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -4793,6 +4845,34 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
+	if (opt == 0 && *long_options[long_index].flag == 89) {
+			if (validate_number(argv[optind - 1], 10)) {
+				printf("Option '-%c' requires 1st argument as "
+				       "valid numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
+			if (atoi(argv[optind - 1]) == 4 || atoi(argv[optind - 1]) == 5) {
+				if ((optind + 1) >= argc || *argv[optind] == '-'
+						|| *argv[optind + 1] == '-') {
+					printf("\nOption '-%c' requires 3 arguments\n", opt);
+					show_usage(argv[0]);
+					return OOB_SUCCESS;
+				}
+				if (validate_number(argv[optind], 10)) {
+					printf("Option '-%c' requires 2nd argument as "
+						"valid numeric value\n\n", opt);
+					show_usage(argv[0]);
+					return OOB_SUCCESS;
+				}
+				if (validate_number(argv[optind + 1], 10)) {
+					printf("Option '-%c' requires 3rd argument as valid"
+						" numeric value\n\n", opt);
+					show_usage(argv[0]);
+					return OOB_SUCCESS;
+				}
+			}
+	}
 	if (opt == 'P') {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
@@ -5298,6 +5378,20 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Set sw async alert mask */
 			sw_async_alert_mask = atoi(argv[optind - 1]);
 			apml_set_sw_async_alert_mask(soc_die_num, sw_async_alert_mask);
+			break;
+		} else if (*(long_options[long_index].flag) == 89) {
+			din_mode.mode = atoi(argv[optind - 1]);
+			if (din_mode.mode == 4 || din_mode.mode == 5) {
+				din_mode.utilization_point = atoi(argv[optind++]);
+				din_mode.ppt_limit = atoi(argv[optind++]);
+			} else {
+				din_mode.utilization_point = 0;
+				din_mode.ppt_limit = 0;
+			}
+			apml_set_power_efficiency_mode_selection(soc_die_num, din_mode);
+			break;
+		} else if (*(long_options[long_index].flag) == 90) {
+			apml_get_power_efficiency_mode_selection(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
