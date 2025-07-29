@@ -86,7 +86,12 @@
 /* FCLK Mask used in read current df-pstate frequency */
 #define FCLK_MASK               0xFFF
 /* Bandwidth Mask used in reading ddr bandwidth */
-#define BW_MASK                 0xFFF
+#define BW_MASK                 0xFFF		//!< Bandwidth mask
+/* Utilization Point mask */
+#define UTILIZATION_POINT_MASK	0x7F		//!< Utilization point mask
+/* PPT Limit mask */
+#define PPT_LIMIT_MASK		0x1FFFFF	//!< PPT Limit mask
+
 
 /**
  * @brief APML link ID encodings for legacy platforms and MI300A.

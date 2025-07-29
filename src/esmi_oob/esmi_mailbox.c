@@ -1775,3 +1775,58 @@ oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num, uint16_t floor_l
 				      GET_SET_APML_FLOOR_LIMIT,
 				      d_input);
 }
+
+oob_status_t set_power_efficiency_mode_selection(uint8_t soc_die_num,
+						 struct pow_eff_mode d_in,
+						 struct pow_eff_mode *d_out)
+{
+	uint32_t input = 0, resp = 0;
+	oob_status_t ret;
+
+	if (!d_out)
+		return OOB_ARG_PTR_NULL;
+
+	input = shift_left_op(0, 31) |
+			shift_left_op(d_in.ppt_limit, 10) |
+			shift_left_op(d_in.utilization_point, 3) |
+			((uint32_t)d_in.mode & 0x7);
+
+	ret = esmi_oob_read_mailbox(soc_die_num, WRITE_PWR_EFFICIENCY_MODE,
+				    input, &resp);
+	if (!ret) {
+		d_out->mode = resp & 0x7;
+		if (d_out->mode == 4 || d_out->mode == 5) {
+			d_out->utilization_point = (resp >> 3) & UTILIZATION_POINT_MASK;
+			d_out->ppt_limit = (resp >> 10) & PPT_LIMIT_MASK;
+		} else {
+			d_out->utilization_point = 0;
+			d_out->ppt_limit = 0;
+		}
+	}
+
+	return ret;
+}
+
+oob_status_t get_power_efficiency_mode_selection(uint8_t soc_die_num, struct pow_eff_mode *d_out)
+{
+	uint32_t input = shift_left_op(1, 31), resp = 0;
+	oob_status_t ret;
+
+	if (!d_out)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_die_num, WRITE_PWR_EFFICIENCY_MODE,
+				    input, &resp);
+	if (!ret) {
+		d_out->mode = resp;
+		if (d_out->mode == 4 || d_out->mode == 5) {
+			d_out->utilization_point = (resp >> 3) & UTILIZATION_POINT_MASK;
+			d_out->ppt_limit = (resp >> 10) & PPT_LIMIT_MASK;
+		} else {
+			d_out->utilization_point = 0;
+			d_out->ppt_limit = 0;
+		}
+	}
+
+	return ret;
+}

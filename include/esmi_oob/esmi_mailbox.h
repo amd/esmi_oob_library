@@ -575,6 +575,25 @@ struct core_floor_limit_din {
 };
 
 /**
+ * @brief Structure for Power Efficiency Mode selection.
+ *
+ * This structure is used to specify the power efficiency mode, utilization point,
+ * and PPT (Package Power Tracking) limit for balanced core modes.
+ *
+ * @var pow_eff_mode::mode
+ *   Power efficiency mode selection (3 bits).
+ * @var pow_eff_mode::utilization_point
+ *   Utilization point for balanced core modes.
+ * @var pow_eff_mode::ppt_limit
+ *   PPT limit for balanced core modes (21 bits).
+ */
+struct pow_eff_mode {
+	uint8_t  mode : 3;			//!< Power efficiency mode selection (3 bits)
+	uint8_t  utilization_point;		//!< Utilization point for balanced core modes
+	uint32_t ppt_limit : 21;		//!< PPT limit for balanced core modes (21 bits)
+};
+
+/**
  * @brief frequency limit source names
  */
 static char * const freqlimitsrcnames[] = {
@@ -2813,6 +2832,46 @@ oob_status_t set_core_floor_limit(uint8_t soc_die_num,
  */
 oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num,
 					   uint16_t floor_limit);
+
+/**
+ * @brief Sets the Power Efficiency Mode selection for a specified SoC die.
+ *
+ * This function configures the power efficiency mode, utilization point, and PPT limit
+ * for balanced core modes on the specified SoC die. Utilization point amd PPT limit
+ * are applicable only for the modes greater than 3.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num  The SoC die number to configure.
+ * @param[in]  d_in         Structure containing the desired power efficiency mode selection.
+ * @param[out] d_out        Pointer to a structure where the updated power efficiency mode will be stored.
+ *
+ * @retval OOB_SUCCESS      Operation successful.
+ * @retval Non-zero         Appropriate error code otherwise.
+ */
+oob_status_t set_power_efficiency_mode_selection(
+	uint8_t soc_die_num,
+	struct pow_eff_mode d_in,
+	struct pow_eff_mode *d_out
+);
+
+/**
+ * @brief Gets the Power Efficiency Mode selection for a specified SoC die.
+ *
+ * This function retrieves the current power efficiency mode, utilization point, and PPT limit
+ * for balanced core modes on the specified SoC die.Utilization point amd PPT limit
+ * are applicable only for the modes greater than 3.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num  The SoC die number to query.
+ * @param[out] d_out        Pointer to a structure where the current power efficiency mode will be stored.
+ *
+ * @retval OOB_SUCCESS      Operation successful.
+ * @retval Non-zero         Appropriate error code otherwise.
+ */
+oob_status_t get_power_efficiency_mode_selection(
+	uint8_t soc_die_num,
+	struct pow_eff_mode *d_out
+);
 
 /* @}
  */  // end of MailboxMsg
