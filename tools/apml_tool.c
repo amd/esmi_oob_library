@@ -87,6 +87,16 @@
 #define BIT_MASK		0x1
 /* DRAM CECC leak rate mask */
 #define DRAM_CECC_LEAK_RATE_MASK	0x1F
+
+static uint32_t clamp_val(int val, uint32_t lo, uint32_t hi) {
+    if (val < (int)lo)
+	return lo;
+    else if (val > (int)hi)
+	return hi;
+    else
+	return (uint32_t)val;
+}
+
 static int flag;
 
 static oob_status_t validate_apml_sbtsi_module(uint8_t soc_die_num)
@@ -1602,32 +1612,36 @@ static oob_status_t validate_bw_link_id(uint8_t soc_die_num, char *link_id,
 static void apml_set_pcie_link_training(uint8_t soc_die_num, char *link_id,
                                        uint8_t pcie_port)
 {
-       struct pcie_link_training d_in = {0};
-       uint32_t d_out = 0;
-       uint16_t link_id_val = 0;
-       oob_status_t ret;
+	struct pcie_link_training d_in = {0};
+	uint32_t d_out = 0;
+	uint16_t link_id_val = 0;
+	oob_status_t ret;
 
-       convert_to_upper_case(link_id);
-	   ret = validate_sp7_link_id(link_id, &link_id_val);
-       if (ret) {
-               printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
-                       ret, esmi_get_err_msg(ret));
-               return;
-       }
-
-       d_in.link_id = link_id_val;
-       d_in.pcie_port = pcie_port;
-       ret = set_pcie_link_training(soc_die_num, d_in, &d_out);
-        if (ret) {
-                printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
+	convert_to_upper_case(link_id);
+	ret = validate_sp7_link_id(link_id, &link_id_val);
+	if (ret) {
+		printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	d_in.link_id = link_id_val;
+	if (pcie_port >= BIT(4)) {
+		printf("\n Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
+			OOB_INVALID_INPUT, esmi_get_err_msg(OOB_INVALID_INPUT));
+		return;
+	}
+	d_in.pcie_port = pcie_port;
+	ret = set_pcie_link_training(soc_die_num, d_in, &d_out);
+	if (ret) {
+		printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
                         ret, esmi_get_err_msg(ret));
-                return;
-        }
+		return;
+	}
 
-       printf("------------------------------------------------------------\n");
-       printf("| Device Authentication Status | %-25s |\n", d_out ? "Not Authenticated"
+	printf("------------------------------------------------------------\n");
+	printf("| Device Authentication Status | %-25s |\n", d_out ? "Not Authenticated"
                : "Authentications Success");
-       printf("------------------------------------------------------------\n");
+	printf("------------------------------------------------------------\n");
 }
 
 static void apml_get_iobandwidth(uint8_t soc_die_num, char *link_id,
@@ -5322,17 +5336,17 @@ static oob_status_t parseesb_args(int argc, char **argv)
                         /* Get Temperature Delta */
                         apml_get_tdelta(soc_die_num);
                         break;
+		} else if (*(long_options[long_index].flag) == 77) {
+                        /* Link ID */
+			link_name = argv[optind - 1];
+			val1 = clamp_val(atoi(argv[optind++]), 0,UINT8_MAX);
+			apml_set_pcie_link_training(soc_die_num, link_name, val1);
+                        break;
 		} else if (*(long_options[long_index].flag) == 78) {
 			/* Get SVI3 vr controller temperature by rail */
 			svi3_d_in.rail_mode = atoi(argv[optind - 1]);
 			svi3_d_in.svi3_rail_index = atoi(argv[optind++]);
 			apml_get_svi3_vr_controller_temp_by_rail(soc_die_num, svi3_d_in);
-                        break;
-		} else if (*(long_options[long_index].flag) == 77) {
-                        /* Link ID */
-			link_name = argv[optind - 1];
-			val1 = atoi(argv[optind++]);
-			apml_set_pcie_link_training(soc_die_num, link_name, val1);
                         break;
 		} else if (*(long_options[long_index].flag) == 79) {
 			/* Get supporting error types */
