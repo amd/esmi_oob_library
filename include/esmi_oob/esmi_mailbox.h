@@ -185,8 +185,9 @@ typedef enum {
 	GET_CCD_POW_CONSUMPTION = 0x7A,
 	GET_T_DELTA,
 	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL,
-	GET_SET_APML_FLOOR_LIMIT = 0x7E,
-	GET_SET_SOC_DIMM_POWER_LIMIT = 0x7F
+	ENABLED_HSMP_COMMANDS,
+	GET_SET_APML_FLOOR_LIMIT,
+	GET_SET_SOC_DIMM_POWER_LIMIT
 } esb_mailbox_commmands;
 
 /**
@@ -592,6 +593,44 @@ struct pow_eff_mode {
 	uint8_t  mode : 3;			//!< Power efficiency mode selection (3 bits)
 	uint8_t  utilization_point;		//!< Utilization point for balanced core modes
 	uint32_t ppt_limit : 21;		//!< PPT limit for balanced core modes (21 bits)
+};
+
+/**
+ * @brief Data in for set enabled HSMP commands.
+ * structure contains:
+ * rmask (read mask indicator : 1 = for read commands, 0 = for write commands),
+ * offset for the 24-bitmask segment.
+ * bitmask (24-bit bitmask in hexa decimal).
+ *
+ */
+struct set_hsmp_cmds_din {
+	uint8_t rmask : 1;         // 1 = for read commands, 0 = for write commands
+	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+	uint32_t bitmask : 24;     // 24-bit bit mask segment in hex
+};
+
+/**
+ * @brief Data in for get enabled HSMP commands.
+ * structure contains:
+ * rmask (read mask indicator : 1 = for read commands, 0 = for write commands),
+ * offset for the 24-bitmask segment.
+ *
+ */
+struct get_hsmp_cmds_din {
+	uint8_t rmask : 1;         // 1 = for read commands, 0 = for write commands.
+	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+};
+
+/**
+ * @brief Data out for get enabled HSMP commands.
+ * structure contains:
+ * offset for the 24-bitmask segment,
+ * bitmask (24-bit bitmask in hexa decimal)
+ *
+ */
+struct get_hsmp_cmds_dout {
+	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+	uint32_t bitmask : 24;     // 24-bit bit mask segment in hex
 };
 
 /**
@@ -2917,6 +2956,54 @@ oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
  *  @retval Non-zero is returned upon failure.
  */
 oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t *limit);
+
+ /**
+ *  @brief Get enabled HSMP commands.
+ *
+ *  @details This function retrieves the enabled HSMP commands for the specified offset.
+ *  HSMP read mask indicator (rmask): 1 = for read commands, 0 = for write commands.
+ *  Offset indicating the segment of the bitmask (0, 1, 2, 3, etc.).
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] d_in Struct get_hsmp_cmds_din containing the following fields:
+ *  rmask : read mask indicator (1 = for read commands, 0 = for write commands)
+ *  offset : Offset for the 24-bit bitmask segment.
+ *
+ *  @param[out] d_out Struct containing:
+ *  offset : Offset returned
+ *  bitmask : 24-bit bitmask segment of enabled commands.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t get_enabled_hsmp_commands(uint8_t soc_die_num, struct get_hsmp_cmds_din d_in,
+					struct get_hsmp_cmds_dout *d_out);
+
+ /**
+ *  @brief Set enabled HSMP commands.
+ *
+ *  @details This function sets the HSMP commands using a 24-bit bitmask segment.
+ *  The bitmask specifies which HSMP commands are enabled for the given offset.
+ *  The APML bitmask can override the BIOS-provided bitmask for runtime reconfigurability.
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] d_in Struct containing the following fields:
+ *  rmask: read mask indicator (1 = for read commands, 0 = for write commands)
+ *  offset: Offset for the 24-bit bitmask segment
+ *  bitmask: 24-bit bitmask specifying enabled commands.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+ oob_status_t set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_cmds_din d_in);
 
 /* @}
  */  // end of MailboxMsg

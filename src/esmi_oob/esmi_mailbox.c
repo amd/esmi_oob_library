@@ -73,6 +73,9 @@
 /* SV3_RAIL_INDEX_OFFSET */
 #define SV3_RAIL_INDEX_OFFSET 0x1C
 
+/* HSMP commands mask type (read mask/write mask) */
+#define HSMP_COMMANDS_MASK 0x1c
+
 float esu_multiplier;
 struct processor_info plat_info[1];
 
@@ -1875,4 +1878,34 @@ oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
 
 	return ret;
 
+}
+
+oob_status_t get_enabled_hsmp_commands(uint8_t soc_die_num, struct get_hsmp_cmds_din d_in,
+					struct get_hsmp_cmds_dout *d_out)
+{
+	uint32_t input = BIT(31);		//Get range of HSMP Commands
+	oob_status_t ret;
+	uint32_t resp = 0;
+
+	if (!d_out)
+		return OOB_ARG_PTR_NULL;
+
+	input |= shift_left_op (d_in.rmask, HSMP_COMMANDS_MASK) | d_in.offset;
+
+	ret = esmi_oob_read_mailbox(soc_die_num, ENABLED_HSMP_COMMANDS, input, &resp);
+	if (!ret) {
+		d_out->offset = resp;
+		d_out->bitmask = extract_val(resp, BIT(2));
+	}
+	return ret;
+}
+
+oob_status_t set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_cmds_din d_in)
+{
+	uint32_t input = 0;			//Set range of HSMP Commands
+
+	input = shift_left_op (d_in.rmask, HSMP_COMMANDS_MASK) |
+				shift_left_op (d_in.bitmask, BIT(2)) | d_in.offset;
+
+	return esmi_oob_write_mailbox(soc_die_num, ENABLED_HSMP_COMMANDS, input);
 }
