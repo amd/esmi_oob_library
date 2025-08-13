@@ -92,6 +92,7 @@ typedef enum {
 	SBRMI_THREADNUMBER,
 	SBRMI_THREAD128CS = 0x4B,
 	SBRMI_RASSTATUS,
+	SBRMI_CONTROL2,
 	SBRMI_THREADNUMBERLOW = 0x4E,
 	SBRMI_THREADNUMBERHIGH = 0x4F,
 	SBRMI_ALERTSTATUS16 = 0x50,
@@ -428,6 +429,21 @@ oob_status_t clear_MP0_alert_status(uint8_t soc_die_num);
  * @return oob_status_t        Status code indicating success or failure of the operation.
  */
 oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit);
+
+/**
+ * @brief Reads the SBRMI ready status for a specified SoC die.
+ *
+ * This function checks the ready status of the SBRMI (Sideband Remote Management Interface)
+ * for the given SoC die number and stores the result in the provided buffer.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ * @param[in] soc_die_num The SoC die number to query.
+ * @param[out] buffer Pointer to a boolean variable where the ready status will be stored.
+ *                    True indicates ready, false indicates not ready.
+ *
+ * @return oob_status_t Status code indicating success or type of failure.
+ */
+oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer);
 
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/

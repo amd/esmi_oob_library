@@ -450,3 +450,15 @@ oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit)
 
 	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_CONTROL, control_data);
 }
+
+oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer)
+{
+	uint8_t status_data = 0;
+	oob_status_t ret;
+
+	ret = esmi_oob_rmi_read_byte(soc_die_num, SBRMI_CONTROL2,  &status_data);
+	if (!ret)
+		*buffer = (status_data & BIT(0)) ? true : false;
+
+	return ret;
+}
