@@ -1129,12 +1129,19 @@ oob_status_t read_ccd_bist_result(uint8_t soc_die_num, uint32_t input,
  *  @details Given a socket bus number, address, Logical CCX instance number
  *  as @p input, this function will read CCXBistResult.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-5Fh.
+ *  For \ref Fam-1Ah_Mod-50h-5Fh the Bit[31] of input will be 1 (to get the L3 bist)
+ *  or 0 (to get core bist), Bits[8 - 30] are reserved and Bits [0 - 7] will be
+ *  logical ccx instance. For the rest of the platforms the input is only CCX instance
+ *  number.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
- *  @param[in] value is a Logical CCX instance number. Valid values [0, (k -1)]
- *  where k is the number of logical CCX instances.
+ *  @param[in] value For \ref Fam-1Ah_Mod-50h-5Fh the Bit[31] of input will be
+ *  1 ( to get the L3 bist) or 0 (to get core bist), Bits[8 - 30] are reserved and
+ *  Bits [0 - 7] will be logical ccx instance number. For the rest of the platforms
+ *  value is only CCX instance number. Valid values [0, (k -1)] where k is the
+ *  number of logical CCX instances.
  *
  *  @param[out] ccx_bist result is concatenation of bist results for all cores[31:16]
  *  in the complex(n:0) L3 bist[15:0], where n num of cores in CCX.
