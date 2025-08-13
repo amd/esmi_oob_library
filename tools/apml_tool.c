@@ -2164,7 +2164,7 @@ static void apml_get_ccd_bist_status(uint8_t soc_die_num, uint32_t instance)
 
 static void apml_get_ccx_bist_status(uint8_t soc_die_num, uint32_t instance)
 {
-	uint32_t bist_res;
+	uint32_t bist_res = 0, d_in = 0;
 	uint16_t max_cores_per_ccx, ccx_instances;
 	uint8_t index = 0, p_type = 0;
 	bool status = false;
@@ -2212,7 +2212,27 @@ static void apml_get_ccx_bist_status(uint8_t soc_die_num, uint32_t instance)
 			       ((bist_res >> (index + 16)) & 1)
 			       ? "Bist pass": "Bist fail");
 		break;
+	case FAM_1A_MOD_50:
+				for (index = 0; index < 32; index++) {
+					printf("| CORE[%d] \t| %s\t|\n", index,
+							((bist_res >> index) & 1)
+							? "Bist pass": "Bist fail");
+				}
+				// Get L3 BIST result
+				d_in = shift_left_op(1, 31) | instance;
+				ret = read_ccx_bist_result(soc_die_num, d_in, &bist_res);
+				if (ret != OOB_SUCCESS) {
+					printf("Failed to get the L3 bist status, Err[%d]:%s\n",
+						ret, esmi_get_err_msg(ret));
+					return;
+				}
+				printf("| L3 BIST \t| %s\t|\n",
+						bist_res & 1 ? "Bist pass": "Bist fail");
+				printf("| L3 X3D  \t| %s\t|\n",
+				       ((bist_res & BIT(1)) >> 1) ? "Bist pass": "Bist fail");
+		break;
 	default:
+		printf("| CCX BIST RESULT | \t0x%-8x|\n", bist_res);
 		break;
 	}
 	printf("---------------------------------\n");
