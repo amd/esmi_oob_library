@@ -3470,6 +3470,23 @@ static void apml_set_apml_floor_limit_for_all_cores(uint8_t soc_die_num,
 	printf("APML floor limit set successfully in all cores\n");
 }
 
+static void apml_get_sbrmi_ready_status(uint8_t soc_die_num)
+{
+	bool status = false;
+	oob_status_t ret;
+
+	ret = read_sbrmi_ready_status(soc_die_num, &status);
+	if (ret) {
+		printf("Failed to read sbrmi ready status, Err[%d]: %s\n",
+			    ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------\n");
+	printf("| SBRMI ready status | %16u |\n", status);
+	printf("-----------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3931,7 +3948,9 @@ static void fam_1A_mod_50_rmi_commands(void) {
 	printf("  --clearswasyncalertstatus\t\t\t\t\t\t Clear "
 	       "software async alert status\n"
 	       "  --setswasyncalertmask\t\t\t  [ALERT_MASK(0,1]\t\t Set "
-	       "to 0(Enable) or 1 (disable) Alert-L signaling\n");
+	       "to 0(Enable) or 1 (disable) Alert-L signaling\n"
+		   "  --getsbrmireadystatus\t\t\t\t\t\t\t Get "
+		   " SBRMI ready status\n");
 
 }
 
@@ -4564,6 +4583,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setswasyncalertmask",		required_argument, &flag, 88},
 		{"setpwrefficiencyprofile",	required_argument, &flag, 89},
 		{"getpwrefficiencyprofile", no_argument, 	&flag, 90},
+		{"getsbrmireadystatus",	no_argument,		&flag,	93},
 		{0,			0,			0,	0},
 	};
 
@@ -5426,6 +5446,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			break;
 		} else if (*(long_options[long_index].flag) == 90) {
 			apml_get_power_efficiency_mode_selection(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 93) {
+			apml_get_sbrmi_ready_status(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
