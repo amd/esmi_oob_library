@@ -3487,6 +3487,26 @@ static void apml_get_sbrmi_ready_status(uint8_t soc_die_num)
 	printf("-----------------------------------------\n");
 }
 
+static void apml_get_effective_floor_freq_per_core(uint8_t soc_die_num,
+						   uint16_t core_id)
+{
+	uint16_t eff_core_limit = 0;
+	oob_status_t ret;
+
+	ret = get_effective_floor_freq_per_core(soc_die_num,
+						core_id,
+						&eff_core_limit);
+	if (ret) {
+		printf("Failed to get APML floor core limit, i"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("------------------------------------------------\n");
+	printf("| Effective Floor Core Limit\t | %-8u MHz |\n",
+		eff_core_limit);
+	printf("------------------------------------------------\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3558,6 +3578,8 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "Get supporting error types \n"
 	       "  --getapmlcorefloorlimit\t\t  [CORE_ID] \t\t\t\t "
 	       "Get apml core floor limit in MHz\n"
+	       "  --getapmleffectivecorefloorlimit\t  [CORE_ID] \t\t\t\t "
+	       "Get apml effective core floor limit in MHz\n"
 	       "  --setapmlcorefloorlimit\t\t  [CORE_ID][FLOOR_LIMIT] \t\t "
 	       "Set apml core floor limit in MHz\n"
 	       "  --setapmlallcoresfloorlimit\t\t  [FLOOR_LIMIT] \t\t\t "
@@ -4584,6 +4606,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setpwrefficiencyprofile",	required_argument, &flag, 89},
 		{"getpwrefficiencyprofile", no_argument, 	&flag, 90},
 		{"getsbrmireadystatus",	no_argument,		&flag,	93},
+		{"getapmleffectivecorefloorlimit",	required_argument, &flag,	94},
 		{0,			0,			0,	0},
 	};
 
@@ -4706,6 +4729,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 85 ||
 			 (*long_options[long_index].flag) == 88 ||
 			 (*long_options[long_index].flag) == 89 ||
+			 (*long_options[long_index].flag) == 94 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -5449,6 +5473,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			break;
 		} else if (*(long_options[long_index].flag) == 93) {
 			apml_get_sbrmi_ready_status(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 94) {
+			val1 = atoi(argv[optind - 1]);
+			apml_get_effective_floor_freq_per_core(soc_die_num, val1);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
