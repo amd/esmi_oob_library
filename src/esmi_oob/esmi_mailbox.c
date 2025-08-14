@@ -1830,3 +1830,24 @@ oob_status_t get_power_efficiency_mode_selection(uint8_t soc_die_num, struct pow
 
 	return ret;
 }
+
+oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
+					       uint16_t core_id,
+					       uint16_t *eff_floor_freq)
+{
+	uint32_t d_input = 0, resp = 0;
+	oob_status_t ret;
+
+	if (!eff_floor_freq)
+		return OOB_ARG_PTR_NULL;
+
+	d_input = ((uint32_t)(3) << 30) | ((uint32_t)((core_id & 0xFFF)
+		    << BIT(4)));
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_SET_APML_FLOOR_LIMIT,
+				    d_input, &resp);
+	if (!ret)
+		*eff_floor_freq = resp;
+
+	return ret;
+
+}

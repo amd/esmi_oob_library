@@ -2880,6 +2880,26 @@ oob_status_t get_power_efficiency_mode_selection(
 	struct pow_eff_mode *d_out
 );
 
+/**
+ * @brief Retrieves the effective floor frequency for a specified core.
+ *
+ * This function queries the APML mailbox to obtain the effective floor frequency
+ * value for a given core on a specified SoC die.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ * @param[in]  soc_die_num      The SoC die number to query.
+ * @param[in]  core_id          The core ID for which the effective floor frequency
+				is requested.
+ * @param[out] eff_floor_freq   Pointer to a variable where the retrieved effective
+				floor frequency will be stored.
+ *
+ * @retval OOB_SUCCESS          Operation successful.
+ * @retval Non-zero             Appropriate error code otherwise.
+ */
+oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
+					       uint16_t core_id,
+					       uint16_t *eff_floor_freq);
+
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
