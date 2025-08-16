@@ -5001,7 +5001,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
         if (opt == 0 && *long_options[long_index].flag == 71) {
-                if ((optind + 2) >= argc || *argv[optind] == '-'
+                if ((optind + 3) >= argc || *argv[optind] == '-'
                      || *argv[optind + 1] == '-' || *argv[optind + 2] == '-'
                      || *argv[optind + 3] == '-') {
                         printf("\nOption '-%c' requires 5 arguments\n", opt);
