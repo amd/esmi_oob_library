@@ -2599,6 +2599,20 @@ static void apml_clear_sw_async_alert_status(uint8_t soc_die_num)
 	printf("Software async alert status cleared successfully\n");
 }
 
+static void apml_clear_shut_down_err(uint8_t soc_die_num)
+{
+	oob_status_t ret;
+
+	ret = clear_shut_down_err(soc_die_num);
+	if (ret) {
+		printf("Failed to clear shut down error"
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("CPU shut down status cleared successfully\n");
+}
+
 static void apml_clear_mp0_alert_status(uint8_t soc_die_num)
 {
 	oob_status_t ret;
@@ -3972,7 +3986,9 @@ static void fam_1A_mod_50_rmi_commands(void) {
 	       "  --setswasyncalertmask\t\t\t  [ALERT_MASK(0,1]\t\t Set "
 	       "to 0(Enable) or 1 (disable) Alert-L signaling\n"
 		   "  --getsbrmireadystatus\t\t\t\t\t\t\t Get "
-		   " SBRMI ready status\n");
+		   " SBRMI ready status\n"
+		   "  --clearcpushutdownerror\t\t\t\t\t\t Clear "
+		   "CPU shut down error\n");
 
 }
 
@@ -4607,6 +4623,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getpwrefficiencyprofile", no_argument, 	&flag, 90},
 		{"getsbrmireadystatus",	no_argument,		&flag,	93},
 		{"getapmleffectivecorefloorlimit",	required_argument, &flag,	94},
+		{"clearcpushutdownerror",	no_argument, 	&flag,	95},
 		{0,			0,			0,	0},
 	};
 
@@ -5477,6 +5494,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 94) {
 			val1 = atoi(argv[optind - 1]);
 			apml_get_effective_floor_freq_per_core(soc_die_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 95) {
+			apml_clear_shut_down_err(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
