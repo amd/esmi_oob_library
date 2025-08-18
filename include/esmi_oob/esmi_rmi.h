@@ -445,6 +445,18 @@ oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit);
  */
 oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer);
 
+/**
+ * @brief Clears the shutdown error for the specified SoC die.
+ *
+ * This function attempts to clear any shutdown error associated with the
+ * given SoC die number.Set 1 to BIT-6 of status register 0x4C to clear the shutdown error.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ * @param soc_die_num The number identifying the SoC die to clear the shutdown error for.
+ * @return oob_status_t Status of the operation.
+ */
+oob_status_t clear_shut_down_err(uint8_t soc_die_num);
+
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 

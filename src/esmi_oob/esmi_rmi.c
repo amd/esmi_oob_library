@@ -462,3 +462,10 @@ oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer)
 
 	return ret;
 }
+
+oob_status_t clear_shut_down_err(uint8_t soc_die_num)
+{
+	uint8_t clear_shut_down_err = BIT(6);
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_RASSTATUS,
+				       clear_shut_down_err);
+}
