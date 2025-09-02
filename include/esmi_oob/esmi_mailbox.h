@@ -1870,7 +1870,10 @@ oob_status_t read_ras_df_err_dump(uint8_t soc_die_num,
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
  *  and \ref Fam-19h_Mod-90h-9Fh.
  *
- *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index. At present, only P0 handles this request.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *  Only Socket0 is valid for this request. In multi-socket systems,
+ *  the command must be executed on Socket0; requests to other sockets will be ignored.
+ *  In 2x1P systems, command should be executed at individual node.
  *
  *  @param[out] ack_resp acknowledgement response.
  *
@@ -1888,7 +1891,10 @@ oob_status_t reset_on_sync_flood(uint8_t soc_die_num, uint32_t *ack_resp);
  *  after reboot.Number of override requests is limited to 5 per boot instance.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh.
  *
- *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index. At present, only P0 handles this request.
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *  Only Socket0 is valid for this request. In multi-socket systems,
+ *  the command must be executed on Socket0; requests to other sockets will be ignored.
+ *  In 2x1P systems, command should be executed at individual node.
  *
  *  @param[in] data_in struct ras_override_delay_d_in containing delay value
  *  override [5 - 120 mins], disable delay counter bit and stop delay counter

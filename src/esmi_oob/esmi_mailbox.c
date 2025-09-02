@@ -1090,8 +1090,6 @@ oob_status_t read_ucode_revision(uint8_t soc_die_num, uint32_t *ucode_rev)
 
 oob_status_t reset_on_sync_flood(uint8_t soc_die_num, uint32_t *ack_resp)
 {
-	/* At present, Only P0 handles this request */
-	soc_die_num = 0;
 	return esmi_oob_read_mailbox(soc_die_num, READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
 				     0, ack_resp);
 }
@@ -1102,8 +1100,6 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_die_num,
 {
 	uint32_t input = 0, d_out = 0;
 	oob_status_t ret;
-	/* At present, Only P0 handles this request */
-	soc_die_num = 0;
 
 	input = data_in.delay_val_override;
 	if (data_in.disable_delay_counter)
