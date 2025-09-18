@@ -3566,6 +3566,37 @@ static void apml_get_effective_floor_freq_per_core(uint8_t soc_die_num,
 	printf("------------------------------------------------\n");
 }
 
+static void apml_get_enabled_hsmp_commands(uint8_t soc_die_num, struct get_hsmp_cmds_din d_in)
+{
+	struct get_hsmp_cmds_dout d_out;
+	oob_status_t ret;
+
+	ret = get_enabled_hsmp_commands(soc_die_num, d_in, &d_out);
+	if (ret) {
+		printf("Failed to get enabled HSMP commands, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("-------------------------------------------------");
+	printf("\n| HSMP Commands Offset Id\t| %-6d\t|", d_out.offset);
+	printf("\n| HSMP Commands BitMask\t\t| 0x%06X\t|", d_out.bitmask);
+	printf("\n| HSMP Commands Mask Type\t| %s\t|\n", (d_in.rmask == 1) ? "Read Mask" : "Write Mask");
+	printf("-------------------------------------------------\n");
+}
+
+static void apml_set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_cmds_din d_in)
+{
+	oob_status_t ret;
+
+	ret = set_enabled_hsmp_commands(soc_die_num, d_in);
+	if (ret) {
+		printf("Failed to set enabled HSMP commands, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("HSMP commands enabled successfully\n");
+}
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3658,6 +3689,10 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "Get SOC+DIMM combined power limit in Watts\n"
 	       "  --setsocdimmpowerlimit\t\t  [POWER]\t\t\t\t "
 	       "Set SOC+DIMM combined power limit in mWatts (0=disable)\n"
+	       "  --getenabledHSMPcommands\t\t  [RMASK(0-1)][OFFSET(0-15)]"
+	       "\n\t\t\t\t\t\t\t\t\t\t Get enabled HSMP commands\n"
+	       "  --setenabledHSMPcommands\t\t  [RMASK(0-1)][OFFSET(0-15)][BITMASK(HEX)]"
+	       "\n\t\t\t\t\t\t\t\t\t\t Set enabled HSMP commands\n"
 		);
 }
 
@@ -4502,6 +4537,8 @@ static void validate_modules(uint8_t soc_die_num, bool *is_sbrmi,
  */
 static oob_status_t parseesb_args(int argc, char **argv)
 {
+	struct get_hsmp_cmds_din get_hsmp_cmds_d_in = {0};
+	struct set_hsmp_cmds_din set_hsmp_cmds_d_in = {0};
 	union ras_df_err_dump df_err = {0};
 	struct svi3_vr_cont_data_in svi3_d_in = {0};
 	struct ras_rt_err_req_type err_category = {0};
@@ -4670,6 +4707,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setswasyncalertmask",		required_argument, &flag, 88},
 		{"setpwrefficiencyprofile",	required_argument, &flag, 89},
 		{"getpwrefficiencyprofile", no_argument, 	&flag, 90},
+		{"getenabledHSMPcommands",	required_argument,	&flag,	91},
+		{"setenabledHSMPcommands",	required_argument,	&flag,	92},
 		{"getsbrmireadystatus",	no_argument,		&flag,	93},
 		{"getapmleffectivecorefloorlimit",	required_argument, &flag,	94},
 		{"clearcpushutdownerror",	no_argument, 	&flag,	95},
@@ -4878,7 +4917,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 58 ||
 		*long_options[long_index].flag == 77 ||
 		*long_options[long_index].flag == 78 ||
-	    *long_options[long_index].flag == 84))) {
+	    *long_options[long_index].flag == 84 ||
+	    *long_options[long_index].flag == 91))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '%s' require TWO arguments\n", argv[optind - 2]);
 			show_usage(argv[0]);
@@ -4895,7 +4935,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 
 	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78))
-				|| (opt ==  0 && (*long_options[long_index].flag == 84)))
+				|| (opt ==  0 && (*long_options[long_index].flag == 84
+				|| *long_options[long_index].flag == 91)))
 			    && validate_number(argv[optind - 1], 10)){
 			printf("Option '%s' require 1st argument as valid"
 			       " numeric value\n\n", argv[optind - 2]);
@@ -4910,6 +4951,13 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
+		if ((opt ==  0 && (*long_options[long_index].flag == 91))
+                    && validate_number(argv[optind], 10)){
+                        printf("Option '%s' require 2nd argument as valid"
+                               " numeric value\n\n", argv[optind - 2]);
+                        show_usage(argv[0]);
+                        return OOB_SUCCESS;
+                }
 	}
 
 	if ((opt == 0 && *(long_options[long_index].flag) == 20)) {
@@ -4920,24 +4968,25 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
-	if (opt == 'N' || (opt == 0 && *(long_options[long_index].flag) == 14)) {
+	if (opt == 'N' || (opt == 0 && *(long_options[long_index].flag) == 14)
+		       || (opt == 0 && *(long_options[long_index].flag) == 92)) {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
-			printf("\nOption '-%c' requires 3 arguments\n", opt);
+			printf("\nOption '-%s' requires 3 arguments\n", long_options[long_index].name);
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
 
-		if (opt == 'N') {
+		if (opt == 'N' || (opt == 0 && *(long_options[long_index].flag) == 92)) {
 			if (validate_number(argv[optind - 1], 10)) {
-				printf("Option '-%c' requires 1st argument as valid"
-				       " numeric value\n\n", opt);
+				printf("Option '-%s' requires 1st argument as valid"
+				       " numeric value\n\n", long_options[long_index].name);
 				show_usage(argv[0]);
 				return OOB_SUCCESS;
 			}
 			if (validate_number(argv[optind], 10)) {
-				printf("Option '-%c' requires 2nd argument as valid"
-				       " numeric value\n\n", opt);
+				printf("Option '-%s' requires 2nd argument as valid"
+				       " numeric value\n\n", long_options[long_index].name);
 				show_usage(argv[0]);
 				return OOB_SUCCESS;
 			}
@@ -4949,12 +4998,21 @@ static oob_status_t parseesb_args(int argc, char **argv)
 				return OOB_SUCCESS;
 			}
 		}
-
-		if (validate_number(argv[optind + 1], 10)) {
-			printf("Option '-%c' requires 3rd argument as valid"
-			       " numeric value\n\n", opt);
-			show_usage(argv[0]);
-			return OOB_SUCCESS;
+		if (opt == 'N' || (opt == 0 && *(long_options[long_index].flag) == 14)) {
+			if (validate_number(argv[optind + 1], 10)) {
+				printf("Option '-%c' requires 3rd argument as valid"
+					" numeric value\n\n", opt);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
+		}
+		if (opt == 0 && *(long_options[long_index].flag) == 92) {
+			if (validate_number(argv[optind + 1], 16)) {
+				printf("Option '-%s' requires 3rd argument as valid"
+					" hex value\n\n", long_options[long_index].name);
+				show_usage(argv[0]);
+				return OOB_SUCCESS;
+			}
 		}
 	}
 
@@ -5555,6 +5613,19 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			break;
 		} else if (*(long_options[long_index].flag) == 95) {
 			apml_clear_shut_down_err(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 91) {
+			/* Get Enabled HSMP commands */
+			get_hsmp_cmds_d_in.rmask = atoi(argv[optind - 1]);
+			get_hsmp_cmds_d_in.offset = atoi(argv[optind++]);
+			apml_get_enabled_hsmp_commands(soc_die_num, get_hsmp_cmds_d_in);
+			break;
+		} else if (*(long_options[long_index].flag) == 92) {
+			/* Set Enabled HSMP commands */
+			set_hsmp_cmds_d_in.rmask = atoi(argv[optind - 1]);
+			set_hsmp_cmds_d_in.offset = atoi(argv[optind++]);
+			set_hsmp_cmds_d_in.bitmask = strtoul(argv[optind++], &end, 16);
+			apml_set_enabled_hsmp_commands(soc_die_num, set_hsmp_cmds_d_in);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
