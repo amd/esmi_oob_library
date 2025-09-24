@@ -289,6 +289,51 @@ static oob_status_t apml_setpower_limit(uint8_t soc_die_num,
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_soc_dimm_power_limit(uint8_t soc_die_num)
+{
+	uint32_t limit = 0;
+	oob_status_t ret;
+
+	ret = soc_dimm_power_limit(soc_die_num, 1, &limit);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get SOC+DIMM power limit, Err[%d]: %s\n",
+			ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+
+	printf("---------------------------------------------");
+	printf("\n| SOC+DIMM Power Limit (Watts) |");
+	if (limit == 0) {
+		printf(" %-17s|", "Disabled");
+	} else {
+		printf(" %-17.3f|", (double)limit/1000);
+	}
+	printf("\n---------------------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
+static oob_status_t apml_set_soc_dimm_power_limit(uint8_t soc_die_num, uint32_t power)
+{
+	oob_status_t ret;
+
+	ret = soc_dimm_power_limit(soc_die_num, 0, &power);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to set SOC+DIMM power limit, Err[%d]:%s\n",
+			ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+
+	if (power == 0) {
+		printf("\nSOC+DIMM power limit disabled successfully\n");
+	} else {
+		printf("\nSet SOC+DIMM power limit: %16.03f Watts successfully\n",
+			(double)power/1000);
+	}
+
+	return OOB_SUCCESS;
+}
+
 static void apml_get_ddr_bandwidth(uint8_t soc_die_num)
 {
 	struct max_ddr_bw max_ddr;
@@ -3609,6 +3654,10 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "and ppt\n\t\t\t\t\t\t\t\t\t\t limit(mW). Note : Utlization "
 	       "point and ppt modes are applicable only for \n\t\t\t\t\t\t"
 	       "\t\t\t\t modes 4 and 5.\n"
+	       "  --showsocdimmpowerlimit\t\t\t\t\t\t\t "
+	       "Get SOC+DIMM combined power limit in Watts\n"
+	       "  --setsocdimmpowerlimit\t\t  [POWER]\t\t\t\t "
+	       "Set SOC+DIMM combined power limit in mWatts (0=disable)\n"
 		);
 }
 
@@ -4624,6 +4673,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getsbrmireadystatus",	no_argument,		&flag,	93},
 		{"getapmleffectivecorefloorlimit",	required_argument, &flag,	94},
 		{"clearcpushutdownerror",	no_argument, 	&flag,	95},
+		{"showsocdimmpowerlimit", no_argument,	&flag,	96},
+		{"setsocdimmpowerlimit", required_argument,	&flag,	97},
 		{0,			0,			0,	0},
 	};
 
@@ -5296,6 +5347,13 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = strtoul(argv[optind - 1], &end, 16);
 			val2 = atoi(argv[optind++]);
 			write_tsi_register(soc_die_num, val1, val2);
+		} else if (*(long_options[long_index].flag) == 96) {
+			/* Get SOC+DIMM combined power limit */
+			apml_get_soc_dimm_power_limit(soc_die_num);
+		} else if (*(long_options[long_index].flag) == 97) {
+			/* Set SOC+DIMM combined power limit */
+			power = atoi(argv[optind - 1]);
+			apml_set_soc_dimm_power_limit(soc_die_num, power);
 		} else if (*(long_options[long_index].flag) == 48) {
 			/* read rmi register */
 			val1 = strtoul(argv[optind - 1], &end, 16);
