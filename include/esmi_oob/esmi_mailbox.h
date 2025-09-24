@@ -185,7 +185,8 @@ typedef enum {
 	GET_CCD_POW_CONSUMPTION = 0x7A,
 	GET_T_DELTA,
 	GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL,
-	GET_SET_APML_FLOOR_LIMIT = 0x7E
+	GET_SET_APML_FLOOR_LIMIT = 0x7E,
+	GET_SET_SOC_DIMM_POWER_LIMIT = 0x7F
 } esb_mailbox_commmands;
 
 /**
@@ -2899,6 +2900,23 @@ oob_status_t get_power_efficiency_mode_selection(
 oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
 					       uint16_t core_id,
 					       uint16_t *eff_floor_freq);
+
+/**
+ *  @brief Set or Get SOC+DIMM combined power limit (mWatts).
+ *
+ *  @details This function sets or gets the combined power limit for the socket and DIMM.
+ *  If is_get is 0, sets the power limit to the value pointed by limit (in mWatts).
+ *  If is_get is 1, retrieves the current power limit into the value pointed by limit (in mWatts).
+ *  A value of 0 disables the SOC+DIMM power limit.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *  @param[in] is_get 0 = Set Power Limit, 1 = Get Power Limit
+ *  @param[in,out] limit Pointer to power limit value (mWatts). Input for set, output for get.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ */
+oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t *limit);
 
 /* @}
  */  // end of MailboxMsg

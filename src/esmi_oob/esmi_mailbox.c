@@ -144,6 +144,31 @@ oob_status_t write_socket_power_limit(uint8_t soc_die_num, uint32_t limit)
 				      WRITE_PACKAGE_POWER_LIMIT, limit);
 }
 
+oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t *limit)
+{
+	uint32_t data;
+	oob_status_t ret;
+
+	if (!limit)
+		return OOB_ARG_PTR_NULL;
+
+	if (is_get) {
+		/* Get Power Limit: bit 31 = 1, bits 30:0 = reserved */
+		data = BIT(31);
+		ret = esmi_oob_read_mailbox(soc_die_num, GET_SET_SOC_DIMM_POWER_LIMIT,
+					    data, limit);
+		if (ret == OOB_SUCCESS)
+			*limit &= (BIT(31) - 1);
+	} else {
+		/* Set Power Limit: bit 31 = 0, bits 30:0 = limit value */
+		data = *limit & (BIT(31) - 1);
+		ret = esmi_oob_write_mailbox(soc_die_num, GET_SET_SOC_DIMM_POWER_LIMIT,
+					     data);
+	}
+
+	return ret;
+}
+
 oob_status_t read_bios_boost_fmax(uint8_t soc_die_num,
 				  uint32_t value, uint32_t *buffer)
 {
