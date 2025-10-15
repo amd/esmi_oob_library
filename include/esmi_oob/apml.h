@@ -58,8 +58,8 @@
  *  The Error codes returned by the API.
  */
 
- /**
- * @brief SBRMI outbound messages defined in the APML library
+/**
+ * @brief SBRMI outband messages
  */
 typedef enum {
 	SBRMI_OUTBNDMSG0 = 0x30,
@@ -80,6 +80,9 @@ typedef enum {
  • SBRMI::InBndMsg_inst[4:1] are 32 bit data
  • SBRMI::InBndMsg_inst[6:5] are reserved.
  • SBRMI::InBndMsg_inst7: [7] Must be 1'b1 to send message to firmware
+ */
+/**
+ * @brief SBRMI inband messages
  */
 typedef enum {
 	SBRMI_INBNDMSG0 = 0x38,
@@ -357,4 +360,5 @@ oob_status_t validate_sbrmi_module(uint8_t soc_die_num, bool *is_sbrmi);
  */
 oob_status_t validate_apml_dependency(uint8_t soc_die_num, bool *is_sbrmi,
 				      bool *is_sbtsi);
+
 #endif  // INCLUDE_APML_H_

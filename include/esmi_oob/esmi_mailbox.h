@@ -516,8 +516,6 @@ struct svi3_vr_cont_data_out {
  * @var ras_runtime_response::op_buffer_size
  *   Total size of the operation buffer. On successful operation, this is equal to
  *   num_of_instances multiplied by buffer_size_per_instance.
- * @var ras_runtime_response::op_status
- *   Status of the operation. 0 indicates success, non-zero indicates an error code.
  */
 struct ras_runtime_response {
 	uint32_t **buffer_data;			//!< buffer data for all the instances
@@ -565,11 +563,6 @@ struct bmc_ras_runtime_din {
  *
  * This structure is used to specify the core ID and the desired floor limit
  * for APML mailbox operations related to floor core limit configuration.
- *
- * @var core_floor_limit_din::core_id
- *   The core ID for which the floor limit is being set.
- * @var core_floor_limit_din::floor_limit
- *   The floor limit value to be set for the specified core.
  */
 struct core_floor_limit_din {
 	uint16_t core_id;      //!< Core ID for which the floor limit is set
@@ -581,13 +574,6 @@ struct core_floor_limit_din {
  *
  * This structure is used to specify the power efficiency mode, utilization point,
  * and PPT (Package Power Tracking) limit for balanced core modes.
- *
- * @var pow_eff_mode::mode
- *   Power efficiency mode selection (3 bits).
- * @var pow_eff_mode::utilization_point
- *   Utilization point for balanced core modes.
- * @var pow_eff_mode::ppt_limit
- *   PPT limit for balanced core modes (21 bits).
  */
 struct pow_eff_mode {
 	uint8_t  mode : 3;			//!< Power efficiency mode selection (3 bits)
@@ -604,9 +590,9 @@ struct pow_eff_mode {
  *
  */
 struct set_hsmp_cmds_din {
-	uint8_t rmask : 1;         // 1 = for read commands, 0 = for write commands
-	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
-	uint32_t bitmask : 24;     // 24-bit bit mask segment in hex
+	uint8_t rmask : 1;         //!< 1 = for read commands, 0 = for write commands
+	uint8_t offset : 4;        //!< Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+	uint32_t bitmask : 24;     //!< 24-bit bit mask segment in hex
 };
 
 /**
@@ -617,8 +603,8 @@ struct set_hsmp_cmds_din {
  *
  */
 struct get_hsmp_cmds_din {
-	uint8_t rmask : 1;         // 1 = for read commands, 0 = for write commands.
-	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+	uint8_t rmask : 1;         //!< 1 = for read commands, 0 = for write commands.
+	uint8_t offset : 4;        //!< Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
 };
 
 /**
@@ -629,8 +615,8 @@ struct get_hsmp_cmds_din {
  *
  */
 struct get_hsmp_cmds_dout {
-	uint8_t offset : 4;        // Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
-	uint32_t bitmask : 24;     // 24-bit bit mask segment in hex
+	uint8_t offset : 4;        //!< Offset id for the 24-bit bitmask segment, starting from 0, 1, 2, 3, etc.
+	uint32_t bitmask : 24;     //!< 24-bit bit mask segment in hex
 };
 
 /**
@@ -2269,7 +2255,6 @@ oob_status_t read_dimm_spd_register(uint8_t soc_die_num,
  *  DIMM address, LID, register offset, register space
  *  and write data.
  *
- *  @param[out] spd_data containing spd data as per input
  */
 oob_status_t write_dimm_spd_register(uint8_t soc_die_num,
 				     struct dimm_spd_write d_in);
