@@ -42,6 +42,7 @@
 #ifndef INCLUDE_APML_H_
 #define INCLUDE_APML_H_
 
+#include <inttypes.h>
 #include <stdbool.h>
 
 #include <linux/amd-apml.h>
