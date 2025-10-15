@@ -846,7 +846,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_die_num)
 					}
 				} else {
 					for (int j = 7; j >= 0; j--) {
-						printf("%3u ", 16 * j + (256 + (i - sizeof(alert_mask))));
+						printf("%3" PRIu64 " ", (uint64_t)(16 * j + (256 + (i - sizeof(alert_mask)))));
 					}
 				}
 				if (rev != 0x10)
@@ -2076,7 +2076,7 @@ static void read_msr_register(uint8_t soc_die_num, uint32_t addr,
 	printf("-----------------------------------------\n");
 	printf("| MSR register \t| Value\t\t\t|\n");
 	printf("-----------------------------------------\n");
-	printf("| [0x%08x]  | 0x%-17llx\t|\n", addr, buffer);
+	printf("| [0x%08x]  | 0x%-17" PRIx64"\t|\n", addr, buffer);
 	printf("-----------------------------------------\n");
 }
 
@@ -2901,7 +2901,7 @@ static oob_status_t apml_get_ppin_fuse(uint8_t soc_die_num)
 
 	printf("------------------------------------------------------------"
 	       "---------------------\n");
-	printf("| PPIN Fuse | 0x%-64llx |\n", data);
+	printf("| PPIN Fuse | 0x%-64" PRIx64 " |\n", data);
 	printf("------------------------------------------------------------"
 	       "---------------------\n");
 
@@ -2957,7 +2957,7 @@ static oob_status_t apml_get_rtc(uint8_t soc_die_num)
 	}
 	printf("------------------------------------------------------------"
 	       "-------\n");
-	printf("| RTC timer (YYYYMMDDhhmmss)  |  %-32llx |\n", rtc_val);
+	printf("| RTC timer (YYYYMMDDhhmmss)  |  %-32" PRIx64 " |\n", rtc_val);
 	printf("------------------------------------------------------------"
 	       "-------\n");
 

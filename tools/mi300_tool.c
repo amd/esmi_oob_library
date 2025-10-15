@@ -224,7 +224,7 @@ static void apml_get_psn(uint8_t soc_die_num, uint32_t die_index)
 	}
 
 	printf("----------------------------------------------\n");
-	printf("| PSN \t| 0x%-32llx |\n", buffer);
+	printf("| PSN \t| 0x%-32" PRIx64 " |\n", buffer);
 	printf("----------------------------------------------\n");
 }
 
@@ -944,7 +944,7 @@ void get_mi_300_mailbox_cmds_summary(uint8_t soc_die_num)
 	if (ret)
 		printf(" Err[%d]:%s", ret, esmi_get_err_msg(ret));
 	else
-		printf(" 0x%-llx", psn);
+		printf(" 0x%-" PRIx64, psn);
 	printf("\n| Link Info \t\t\t\t |");
 	ret = get_link_info(soc_die_num, &link_config, &module_id);
 	if (ret) {
