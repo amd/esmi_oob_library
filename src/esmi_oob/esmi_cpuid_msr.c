@@ -72,7 +72,7 @@
 
 static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 {
-	int i;
+	int i, ret_resp = 0;
 	char id_l[REG_SIZE + 1];
 	oob_status_t ret;
 
@@ -83,9 +83,9 @@ static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 
 	id_l[i] = '\0';
 
-	ret = snprintf(id, sizeof(id_l), "%s", id_l);
-	if (ret < 0)
-		return ret;
+	ret_resp = snprintf(id, sizeof(id_l), "%s", id_l);
+	if (ret_resp < 0)
+		return OOB_FORMATTING_ERROR;
 
 	return 0;
 
@@ -94,6 +94,7 @@ static oob_status_t esmi_convert_reg_val(uint32_t reg, char *id)
 oob_status_t esmi_get_vendor_id(uint8_t soc_die_num,
 				char *vendor_id)
 {
+	int ret_resp = 0;
 	uint32_t eax = 0, ebx = 0, ecx = 0, edx = 0;
 	uint32_t core_id = 0;
 	char ebx_id[REG_SIZE + 1], ecx_id[REG_SIZE + 1], edx_id[REG_SIZE + 1];
@@ -121,10 +122,10 @@ oob_status_t esmi_get_vendor_id(uint8_t soc_die_num,
 	if (ret)
 		return ret;
 
-	ret = snprintf(vendor_id, 4 * REG_SIZE + 1, "%s%s%s",
+	ret_resp = snprintf(vendor_id, 4 * REG_SIZE + 1, "%s%s%s",
 			     ebx_id, edx_id, ecx_id);
-	if (ret < 0)
-		return ret;
+	if (ret_resp < 0)
+		return OOB_FORMATTING_ERROR;
 
 	return 0;
 }

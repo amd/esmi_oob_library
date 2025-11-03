@@ -79,6 +79,7 @@ typedef enum {
 	OOB_INVALID_INPUT,			//!< Input value is invalid
 	OOB_CMD_TIMEOUT,			//!< Command timed out
 	OOB_INVALID_MSGSIZE,			//!< Mesg size too long
+	OOB_FORMATTING_ERROR,			//!< Formatting or encoding error
 	OOB_CPUID_MSR_ERR_START =
 		OOB_CPUID_MSR_ERR_BASE,
 	OOB_CPUID_MSR_CMD_TIMEOUT =

@@ -78,6 +78,8 @@ char *esmi_get_err_msg(oob_status_t oob_err)
 		return "Input value is invalid";
 	case OOB_CMD_TIMEOUT:
 		return "Command is timed out";
+	case OOB_FORMATTING_ERROR:
+		return "Formatting or encoding error";
 	case OOB_CPUID_MSR_ERR_START...OOB_CPUID_MSR_ERR_END:
 		switch (oob_err) {
 		case OOB_CPUID_MSR_CMD_TIMEOUT:
