@@ -57,25 +57,35 @@
 #include <esmi_oob/tsi_mi300.h>
 
 static int flag;
+#define HBM_LOW_TEMP_ALERT_BIT   5
+#define HBM_HIGH_TEMP_ALERT_BIT  6
 #define APML_SLEEP 10000
 
 oob_status_t get_hbm_temp_status(uint8_t soc_die_num)
 {
 	uint8_t reg_val;
+	uint8_t high_temp_alert = 0, low_temp_alert = 0;
 	oob_status_t ret;
 
 	ret = read_sbtsi_status(soc_die_num, &reg_val);
-	if (ret)
+	if (ret) {
+		printf("Failed: to get HBM temp alert, Err[%d]: %s\n",
+		       ret, esmi_get_err_msg(ret));
 		return ret;
+	}
+
+	high_temp_alert = (reg_val >> HBM_HIGH_TEMP_ALERT_BIT) & 1;
+	low_temp_alert = (reg_val >> HBM_LOW_TEMP_ALERT_BIT) & 1;
+
 	printf("\tMem Temp Alert  |\t\t|\t\t|");
-	if (reg_val >> 6 & 1)
+	if (high_temp_alert && low_temp_alert)
+		printf(" HBM High and Low Temp Alert\n");
+	else if (high_temp_alert)
 		printf(" HBM High Temp Alert\n");
-	else if (reg_val >> 5 & 1)
+	else if (low_temp_alert)
 		printf(" HBM Low Temp Alert\n");
-	else if (!(reg_val >> 6 & 1) && !(reg_val >> 5 & 1))
-		printf(" No HBM Temp Alert\n");
 	else
-		printf("HBM High and Low Temp Alert\n");
+		printf(" No HBM Temp Alert\n");
 
 	return ret;
 }
