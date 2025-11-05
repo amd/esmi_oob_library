@@ -77,6 +77,8 @@
 #define NIBBLE_MASK		0xF
 /* Channel number position */
 #define CH_NUM_POS		16
+/* MAX PCIE PORT */
+#define MAX_PCIE_PORT		16
 /* Sub channel number position */
 #define SUB_CH_POS		20
 /* Chip select number position */
@@ -664,6 +666,7 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_die_num)
 {
 	struct processor_info plat_info;
 	int i, range;
+	uint64_t alert_mask_offset = 0;
 	uint8_t buf, rev;
 	uint8_t *buffer;
 	oob_status_t ret;
@@ -846,7 +849,9 @@ static oob_status_t get_apml_rmi_access(uint8_t soc_die_num)
 					}
 				} else {
 					for (int j = 7; j >= 0; j--) {
-						printf("%3" PRIu64 " ", (uint64_t)(16 * j + (256 + (i - sizeof(alert_mask)))));
+						/* Calculate the alert mask offset for extended range */
+						alert_mask_offset = 16 * j + (256 + (i - sizeof(alert_mask)));
+						printf("%3" PRIu64 " ", alert_mask_offset);
 					}
 				}
 				if (rev != 0x10)
@@ -1670,7 +1675,7 @@ static void apml_set_pcie_link_training(uint8_t soc_die_num, char *link_id,
 		return;
 	}
 	d_in.link_id = link_id_val;
-	if (pcie_port >= BIT(4)) {
+	if (pcie_port >= MAX_PCIE_PORT) {
 		printf("\n Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
 			OOB_INVALID_INPUT, esmi_get_err_msg(OOB_INVALID_INPUT));
 		return;
@@ -3556,7 +3561,7 @@ static void apml_get_effective_floor_freq_per_core(uint8_t soc_die_num,
 						core_id,
 						&eff_core_limit);
 	if (ret) {
-		printf("Failed to get APML floor core limit, i"
+		printf("Failed to get APML floor core limit, "
 		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
@@ -5536,7 +5541,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 77) {
                         /* Link ID */
 			link_name = argv[optind - 1];
-			val1 = clamp_val(atoi(argv[optind++]), 0,UINT8_MAX);
+			val1 = clamp_val(atoi(argv[optind++]), 0, UINT8_MAX);
 			apml_set_pcie_link_training(soc_die_num, link_name, val1);
                         break;
 		} else if (*(long_options[long_index].flag) == 78) {
@@ -5568,7 +5573,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			break;
 		} else if (*(long_options[long_index].flag) == 84) {
 			/* Set core apml floor limit*/
-			d_in_core_limit.core_id= atoi(argv[optind - 1]);
+			d_in_core_limit.core_id = atoi(argv[optind - 1]);
 			d_in_core_limit.floor_limit = atoi(argv[optind++]);
 			apml_set_apml_floor_core_limit(soc_die_num, d_in_core_limit);
                         break;
