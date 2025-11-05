@@ -2869,7 +2869,7 @@ oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num,
  * @brief Sets the Power Efficiency Mode selection for a specified SoC die.
  *
  * This function configures the power efficiency mode, utilization point, and PPT limit
- * for balanced core modes on the specified SoC die. Utilization point amd PPT limit
+ * for balanced core modes on the specified SoC die. Utilization point and PPT limit
  * are applicable only for the modes greater than 3.
  * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
  *
@@ -2890,7 +2890,7 @@ oob_status_t set_power_efficiency_mode_selection(
  * @brief Gets the Power Efficiency Mode selection for a specified SoC die.
  *
  * This function retrieves the current power efficiency mode, utilization point, and PPT limit
- * for balanced core modes on the specified SoC die.Utilization point amd PPT limit
+ * for balanced core modes on the specified SoC die.Utilization point and PPT limit
  * are applicable only for the modes greater than 3.
  * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
  *

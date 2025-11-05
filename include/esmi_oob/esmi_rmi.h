@@ -393,7 +393,7 @@ oob_status_t esmi_get_threads_per_socket(uint8_t soc_die_num,
  * @brief Clears the software asynchronous alert status for a specific SoC die.
  *
  * This function clears the asynchronous alert status that was set by software
- * for the specified SoC die number.To clear the sw asynchrous alert status we need
+ * for the specified SoC die number.To clear the sw asynchronous alert status we need
  * to write 1 to BIT-3 of status register 0x02.
  *
  * @param[in] soc_die_num  The SoC die number for which to clear the alert status.
