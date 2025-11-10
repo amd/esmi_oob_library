@@ -2641,7 +2641,7 @@ static void apml_clear_sw_async_alert_status(uint8_t soc_die_num)
 
 	ret = clear_sw_async_alert_status(soc_die_num);
 	if (ret) {
-		printf("Failed to clear sw async alert status"
+		printf("Failed to clear sw async alert status, "
 		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
@@ -2655,7 +2655,7 @@ static void apml_clear_shut_down_err(uint8_t soc_die_num)
 
 	ret = clear_shut_down_err(soc_die_num);
 	if (ret) {
-		printf("Failed to clear shut down error"
+		printf("Failed to clear shut down error, "
 		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
@@ -2669,7 +2669,7 @@ static void apml_clear_mp0_alert_status(uint8_t soc_die_num)
 
 	ret = clear_MP0_alert_status(soc_die_num);
 	if (ret) {
-		printf("Failed to clear mp0 alert status"
+		printf("Failed to clear mp0 alert status, "
 		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
@@ -2683,8 +2683,8 @@ static void apml_set_sw_async_alert_mask(uint8_t soc_die_num, bool sw_async_aler
 
 	ret = set_sw_async_alert_mask(soc_die_num, sw_async_alert_mask);
 	if (ret) {
-		printf("Failed to set sw async alert mask"
-			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		printf("Failed to set sw async alert mask, "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 	printf("Alert_L signaling is %s successfully\n", sw_async_alert_mask ? "disabled" : "enabled");
@@ -2697,8 +2697,8 @@ static void apml_set_power_efficiency_mode_selection(uint8_t soc_die_num, struct
 
 	ret = set_power_efficiency_mode_selection(soc_die_num, d_in, &d_out);
 	if (ret) {
-		printf("Failed to set power efficiency mode policy"
-			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		printf("Failed to set power efficiency mode policy, "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 	printf("---------------------------------------\n");
@@ -2717,8 +2717,8 @@ static void apml_get_power_efficiency_mode_selection(uint8_t soc_die_num)
 
 	ret = get_power_efficiency_mode_selection(soc_die_num, &d_out);
 	if (ret) {
-		printf("Failed to get power efficiency mode policy"
-			   "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		printf("Failed to get power efficiency mode policy, "
+		       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
 		return;
 	}
 	printf("---------------------------------------\n");
@@ -3516,7 +3516,7 @@ static void apml_set_apml_floor_core_limit(uint8_t soc_die_num,
 			   ret, esmi_get_err_msg(ret));
 		return;
 	}
-	printf("APML floor core limit set successfully");
+	printf("APML floor core limit set successfully\n");
 }
 
 static void apml_set_apml_floor_limit_for_all_cores(uint8_t soc_die_num,
