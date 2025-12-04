@@ -56,11 +56,19 @@
 /* Default data for input */
 #define DEFAULT_DATA            0
 #define BIT_LEN			1	//!< Bit length //
+#define HI_POW_DIMM_REPORT_FLAG	1	//!< Highest power consuming
+					//!< DIMM reporting flag //
 #define SEMI_NIBBLE_BITS	2	//!< Half nibble bits //
+#define ALL_DIMM_REPORTING_FLAG	2	//!< All dimm reporting flag
 #define TRIBBLE_BITS		3	//!< 3 bits //
 #define NIBBLE_BITS		4	//!< Nibble bits //
 #define BYTE_BITS		8	//!< Byte bits //
 #define WORD_BITS		16	//!< word bits //
+#define DIMM_POW		17	//!< Dimm power bits
+#define DIMM_POW_MULT_FACTOR	20	//!< DIMM power multiplication factor
+#define DIMM_TEMP		21	//!< Dimm Temperature bits
+#define POWER_REPORTING_FLAG	30	//!< Power reporting flag bits
+#define TEMP_REPORTING_FLAG	31	//!< Thermal sensor reporting flag bits
 #define D_WORD_BITS		32	//!< Double word bits //
 #define LO_WORD_REG             0	//!< Low word register //
 #define HI_WORD_REG             1	//!< High word register //

@@ -1909,3 +1909,58 @@ oob_status_t set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_cmds
 
 	return esmi_oob_write_mailbox(soc_die_num, ENABLED_HSMP_COMMANDS, input);
 }
+
+oob_status_t get_dimm_pow_data(uint8_t soc_die_num, struct dimm_pow_din d_in,
+			       struct dimm_pow_dout *d_out)
+{
+	uint32_t input = 0, resp = 0;
+	oob_status_t ret = 0;
+
+	if (!d_out)
+		return OOB_ARG_PTR_NULL;
+
+	if (d_in.pow_reporting_flag == 1 || d_in.pow_reporting_flag == 2)
+		d_in.dimm_addr = 0;
+
+	input = (uint32_t)(d_in.pow_reporting_flag << POWER_REPORTING_FLAG)
+		 | d_in.dimm_addr;
+	ret = esmi_oob_read_mailbox(soc_die_num, READ_DIMM_POWER_CONSUMPTION,
+				    input, &resp);
+	if (ret)
+		return ret;
+
+	d_out->update_rate = resp >> BYTE_BITS;
+	d_out->dimm_addr = resp & ONE_BYTE_MASK;
+
+	d_out->power = (d_in.pow_reporting_flag == ALL_DIMM_REPORTING_FLAG ?
+		       ((resp >> DIMM_POW) * DIMM_POW_MULT_FACTOR) : resp >> DIMM_POW);
+
+	return ret;
+}
+
+oob_status_t get_dimm_thermal_sensor_data(uint8_t soc_die_num,
+					  struct dimm_thermal_din din,
+					  struct dimm_thermal *dimm_temp)
+{
+	uint32_t input = 0, resp = 0;
+	oob_status_t ret;
+
+	if (!dimm_temp)
+		return OOB_ARG_PTR_NULL;
+
+	if (din.thermal_flag)
+		din.dimm_addr = 0;
+
+	input = (uint32_t)din.thermal_flag << TEMP_REPORTING_FLAG
+		 | (uint32_t)din.dimm_addr;
+	ret = esmi_oob_read_mailbox(soc_die_num, READ_DIMM_THERMAL_SENSOR,
+				    input, &resp);
+	if (ret)
+		return ret;
+
+	dimm_temp->dimm_addr = resp;
+	dimm_temp->update_rate = resp >> BYTE_BITS;
+	dimm_temp->sensor = resp >> DIMM_TEMP;
+
+	return ret;
+}

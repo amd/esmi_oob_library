@@ -223,6 +223,40 @@ struct dimm_power {
 };
 
 /**
+ * @brief Input for DIMM power, DIMM address and power reporting flag.
+ * pow_reporting_flag: Valid values are 0, 1, 2
+ *  - 0: Power consumption of the given DIMM address.
+ *  - 1: DIMM consumping highest power and corresponding address
+ *  - 2: Total power consumption of all populated and enabled DIMM's
+ * dimm_addr: Valid only if pow_reporting_flag is 0, else reserved.
+ */
+struct dimm_pow_din {
+	uint8_t	dimm_addr;		//!< Dimm address
+	uint8_t pow_reporting_flag : 2;	//!< Power reporting flag.
+};
+
+/**
+ * @brief DIMM power(mW), update rate(ms) and DIMM address
+ */
+struct dimm_pow_dout {
+        uint32_t power;			//!< DiMM power consumption
+        uint16_t update_rate : 9;	//!< update rate in ms
+        uint8_t dimm_addr;		//!< DIMM address
+};
+
+/**
+ * @brief DIMM address and thermal sensor reporting flag.
+ * thermal_flag: Valid values are 0 and 1
+ *  - 0: Temperature for the provided DIMM
+ *  - 1: Temperature of hottest DIMM
+ * dimm_addr: Valid only if the thermal_flag is 0, else reserved.
+ */
+struct dimm_thermal_din {
+	uint8_t thermal_flag : 1;	//!< Thermal sensor reporting flag
+	uint8_t dimm_addr;		//!< DIMM address
+};
+
+/**
  * @brief DIMM thermal sensor (degree C), update rate
  * and dimm address
  */
@@ -2990,6 +3024,66 @@ oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t 
  */
  oob_status_t set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_cmds_din d_in);
 
+/**
+ *  @brief Read DIMM power consumption.
+ *
+ *  @details This function returns the DIMM power consumption
+ *  when bmc does not own the SPD side band bus.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] d_in struct dimm_pow_din contains pow_reporting_flag and dimm_addr.
+ *  pow_reporting_flag: Valid values are 0, 1, 2
+ *   - 0: Power consumption of the given DIMM address.
+ *   - 1: DIMM consumping highest power and corresponding address
+ *   - 2: Total power consumption of all populated and enabled DIMM's
+ *  dimm_addr: Valid only if pow_reporting_flag is 0, else reserved.
+ *  @param[out] d_out struct dimm_pow_dout contains
+ *  updaterate(ms): Time since last update (0-511ms).
+ *  0 means last update was < 1ms, and 511 means update was >= 511ms
+ *  power consumption(mw): power consumption is reported at 1 mw/s
+ *  (range from 0 - 655340 for reporting_flag is 2 else the range is
+ *  from 0 - 32767)
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_dimm_pow_data(uint8_t soc_die_num, struct dimm_pow_din d_in,
+			       struct dimm_pow_dout *d_out);
+
+/**
+ *  @brief Read DIMM thermal sensor.
+ *
+ *  @details This function returns the DIMM thermal sensor
+ *  (2 sensors per DIMM) when bmc does not own the SPD side band bus.
+ *  thermal_flag: Valid values are 0 and 1
+ *   - 0: API returns temperature for the provided DIMM
+ *   - 1: API returns temperature of hottest DIMM
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] din struct dimm_thermal_din containing dimm address
+ *  and thermal sensor reporting flag.
+ *  thermal_flag: Valid values are 0 and 1
+ *   - 0: API returns temperature for the provided DIMM
+ *   - 1: API returns temperature of hottest DIMM
+ *  dimm_addr: Valid only if the thermal_flag is 0, else reserved
+ *
+ *  @param[out] dimm_temp struct dimm_thermal struct contains
+ *  updaterate(ms): Time since last update (0-511ms).
+ *  0 means last update was < 1ms, and 511 means update was >= 511ms
+ *  temperature (Degrees C): Temperature (-256 - 255.75 degree C)
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_dimm_thermal_sensor_data(uint8_t soc_die_num,
+					  struct dimm_thermal_din din,
+					  struct dimm_thermal *dimm_temp);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
