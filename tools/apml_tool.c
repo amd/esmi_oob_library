@@ -1408,12 +1408,72 @@ static void apml_get_dimm_power(uint8_t soc_die_num, uint8_t dimm_addr)
 	printf("----------------------------------------------\n");
 }
 
+static void apml_get_per_dimm_power(uint8_t soc_die_num, struct dimm_pow_din d_in)
+{
+	struct dimm_pow_dout d_out = {0};
+	char *dimm_str;
+	oob_status_t ret;
+
+	ret = get_dimm_pow_data(soc_die_num, d_in, &d_out);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get DIMM power, Err[%d]:%s\n",
+			ret, esmi_get_err_msg(ret));
+		return;
+	}
+	/* data */
+	switch (d_in.pow_reporting_flag) {
+		case 0:
+			dimm_str = " DIMM Power (mW)";
+			break;
+		case 1:
+			dimm_str = " DIMM Power Highest (mW)";
+			break;
+		case 2:
+			dimm_str = " Total Power consumption (mW)";
+			break;
+		default:
+			dimm_str = " Invalid Flag";
+			break;
+	}
+	printf("------------------------------------------------------\n");
+	printf("|%-30s\t | %-17u |\n", dimm_str, d_out.power);
+	printf("| Update rate (ms)\t\t | %-17u |\n", d_out.update_rate);
+	if (d_in.pow_reporting_flag != ALL_DIMM_REPORTING_FLAG)
+		printf("| %-18s \t\t | 0x%-15x |\n", "DIMM ADDR", d_out.dimm_addr);
+	printf("------------------------------------------------------\n");
+}
+
 static void decode_dimm_temp(uint16_t raw, float *temp)
 {
 	if (raw <= 0x3FF)
 		*temp = raw * SCALING_FACTOR;
 	else
 		*temp = (raw - 0x800) * SCALING_FACTOR;
+}
+
+static void apml_get_hottest_dimm_temp(uint8_t soc_die_num)
+{
+	struct dimm_thermal d_sensor = {0};
+	struct dimm_thermal_din d_in = {0};
+	oob_status_t ret;
+	float temp;
+
+	d_in.dimm_addr = 0;
+	d_in.thermal_flag = 1;
+	ret = get_dimm_thermal_sensor_data(soc_die_num, d_in, &d_sensor);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get hottest DIMM temp, Err[%d]:%s\n",
+			ret, esmi_get_err_msg(ret));
+		return;
+	}
+	decode_dimm_temp(d_sensor.sensor, &temp);
+
+	printf("-------------------------------------------------------\n");
+	printf("| Hottest Dimm Temp (ºC)(raw)\t | %-10.3f(0x%-4x) |\n", temp,
+	       d_sensor.sensor);
+	printf("| Update rate (ms)\t\t | %-17u  |\n", d_sensor.update_rate);
+	printf("| DIMM Addr      \t\t | 0x%-17x|\n", d_sensor.dimm_addr);
+	printf("-------------------------------------------------------\n");
 }
 
 static void apml_get_dimm_temp(uint8_t soc_die_num, uint8_t dimm_addr)
@@ -3726,8 +3786,14 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "\t\t\t\t Show per dimm temp range and refresh rate\n"
                "  --showdimmpower\t\t\t  [DIMM_ADDR]\t\t\t\t "
                "Show per dimm power consumption\n"
+               "  --showhipowerdimm\t\t\t\t\t\t\t\t "
+               "Show highest power consumption and dimm address.\n"
+               "  --showalldimmpower\t\t\t\t\t\t\t\t "
+               "Show all dimm power consumption.\n"
                "  --showdimmthermalsensor\t\t  [DIMM_ADDR]\t\t\t"
                "\t Show per dimm thermal sensor\n"
+               "  --showhottestdimmthermalsensor\t\t  \t\t\t"
+               "\t Show hottest dimm thermal sensor\n"
                "  --showsktfreqlimit\t\t\t\t\t\t\t\t "
                "Show per socket current active freq limit\n"
                "  --showcclklimit\t\t\t  [THREAD]\t\t\t\t "
@@ -4560,6 +4626,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_spd_write spd_w_din = {0};
 	struct core_floor_limit_din d_in_core_limit = {0};
 	struct pow_eff_mode din_mode = {0};
+	struct dimm_pow_din dimm_din = {0};
 	uint8_t soc_die_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -4719,6 +4786,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"clearcpushutdownerror",	no_argument, 	&flag,	95},
 		{"showsocdimmpowerlimit", no_argument,	&flag,	96},
 		{"setsocdimmpowerlimit", required_argument,	&flag,	97},
+		{"showhipowerdimm", no_argument,	&flag,	98},
+		{"showhottestdimmthermalsensor", no_argument,	&flag,	99},
+		{"showalldimmpower", no_argument,	&flag,	100},
 		{0,			0,			0,	0},
 	};
 
@@ -4956,8 +5026,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-		if ((opt ==  0 && (*long_options[long_index].flag == 91))
-                    && validate_number(argv[optind], 10)){
+		if (opt ==  0 && (*long_options[long_index].flag == 91)
+                    && validate_number(argv[optind], 10)) {
                         printf("Option '%s' require 2nd argument as valid"
                                " numeric value\n\n", argv[optind - 2]);
                         show_usage(argv[0]);
@@ -5417,6 +5487,19 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Set SOC+DIMM combined power limit */
 			power = atoi(argv[optind - 1]);
 			apml_set_soc_dimm_power_limit(soc_die_num, power);
+		} else if (*(long_options[long_index].flag) == 98) {
+			/* Get highest DIMM  Power Consumption */
+			dimm_din.dimm_addr = 0;
+			dimm_din.pow_reporting_flag = HI_POW_DIMM_REPORT_FLAG;
+			apml_get_per_dimm_power(soc_die_num, dimm_din);
+		} else if (*(long_options[long_index].flag) == 99) {
+			/* Get hottest DIMM thermal sensor */
+			apml_get_hottest_dimm_temp(soc_die_num);
+		} else if (*(long_options[long_index].flag) == 100) {
+			/* Get all DIMM Power Consumption */
+			dimm_din.dimm_addr = 0;
+			dimm_din.pow_reporting_flag = ALL_DIMM_REPORTING_FLAG;
+			apml_get_per_dimm_power(soc_die_num, dimm_din);
 		} else if (*(long_options[long_index].flag) == 48) {
 			/* read rmi register */
 			val1 = strtoul(argv[optind - 1], &end, 16);
