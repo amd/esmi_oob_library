@@ -3843,7 +3843,51 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
                "  --showrasdferrvaliditycheck\t\t  [DF_BLOCK_ID]\t\t\t\t "
                "Show RAS DF error validity check for a given blockID\n"
                "  --showrasdferrdump\t\t\t  [OFFSET][BLK_ID][BLK_INST]\t\t "
-               "Show RAS DF error dump\n");
+               "Show RAS DF error dump\n"
+	       "  --showrtc\t\t\t\t\t\t\t\t	 Show RTC timer value\n"
+	       "  --showrasrterrvalidityck\t\t  [ERR_CATEGORY(0-2)][REQ_TYPE(0-1)]\t "
+	       "BMC RAS runtime error validity check\n"
+	       "  --showrasrterrinfo\t\t\t  [OFFSET][CATEGORY][VALID_INST]\t "
+	       "BMC RAS runtime error Info\n"
+	       "  --setraserrthreshold\t\t\t  [CATEGORY(0-3)][ERR_CT][MAX_INTR_RATE] "
+	       "BMC RAS error threshold. Valid category values are 0: MCA, 1: DRAM CECC, "
+	       "\n\t\t\t\t\t\t\t\t\t\t 2: PCIE, 3: UMC MCA\n"
+	       "  --setrasoobconfig\t\t\t  [MCA_MISC0_ERR_CNTR_EN(0,1)]"
+	       "\n\t\t\t\t\t  [DRAM_ERR_CNTR_MD(0 - 2)]"
+	       "\n\t\t\t\t\t  [DRAM_LEAK_RATE(0 - 31)]"
+	       "\n\t\t\t\t\t  [PCIE_ERR_RPRT_EN(0,1)]"
+	       "\n\t\t\t\t\t  [MCA_ERR_RPRT_EN]"
+	       "\t\t\t Configures OOB state infrastructure in SoC\n"
+	       "  --getrasoobconfig\t\t\t  \t\t\t\t\t "
+	       "Show BMC ras oob configuration\n"
+	       "  --getrasmcaruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras mca runtime error info\n"
+	       "  --getraspcieruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras pcie runtime error info\n"
+	       "  --getrasdrameccruntimerrinfo\t\t  \t\t\t\t\t "
+	       "Show BMC ras dram ecc runtime error info\n"
+	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR(HEX)]\t\t\t"
+	       " Show DIMM serial number\n"
+	       "  --getspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
+	       "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE] \t\t"
+	       " Show DIMM SPD register data\n"
+	       "  --getsmufwversion\t\t\t  \t\t\t\t\t "
+	       "Show SMC FW version\n"
+	       "  --setxgmiminmaxpstates\t\t  [MIN_PSTATE][MAX_PSTATE]\t\t"
+	       " Set xgmi pstate range.Valid values are 0 -1. Max value \n"
+	       "\t\t\t\t\t\t\t\t\t\t must be <= min value\n"
+	       "  --setcpurailfreqpolicy\t\t  [POLICY(0-1)] \t\t\t"
+	       " Set CPU rail frequency Policy. Valid values are 0 - 1\n"
+	       "  --getcpurailfreqpolicy\t\t\t  \t\t\t\t "
+	       "Show CPU rail frequency policy\n"
+	       "  --setdfcenable\t\t\t  [STATE(0-1)] \t\t\t\t"
+	       " Set DFC enable \n"
+	       "  --getdfcenable\t\t\t  \t\t\t\t\t "
+	       "Show dfc enable state \n"
+	       "  --getavgdramthrottle\t\t\t  \t\t\t\t\t "
+	       "Show avg dram throttle for all channels \n"
+	       "  --getchdramthrottle\t\t\t  [DIMM_ADDR(HEX)] \t\t\t "
+	       "Show channel dram throttle \n");
 }
 
 static void fam_19_mod_10_mailbox_commands(void)
@@ -3951,7 +3995,7 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "REQ_TYPE(0-1)]\t BMC RAS runtime error validity check\n"
 	       "  --showrasrterrinfo\t\t\t  [OFFSET][CATEGORY][VALID_INST]\t "
 	       "BMC RAS runtime error Info\n"
-	       "  --setraserrthreshold\t\t\t  [CATEGORY][ERR_CT][MAX_INTR_RATE]\t "
+	       "  --setraserrthreshold\t\t\t  [CATEGORY(0-2)][ERR_CT][MAX_INTR_RATE] "
 	       "BMC RAS error threshold\n"
 	       "  --setrasoobconfig\t\t\t  [MCA_MISC0_ERR_CNTR_EN(0,1)]"
 	       "\n\t\t\t\t\t  [DRAM_ERR_CNTR_MD(0 - 2)]"
@@ -4182,7 +4226,6 @@ static oob_status_t show_module_commands(char *exe_name, char *command)
 			get_common_mailbox_commands(exe_name);
 			fam_1A_mod_50_common_mailbox_commands();
 			fam_1A_mod_50_mailbox_commands();
-			fam_1A_mod_00_mailbox_commands();
 			break;
 		default:
 			get_common_mailbox_commands(exe_name);
