@@ -1502,11 +1502,11 @@ static void display_freq_limit_src_names(char **source_type)
 	uint8_t index = 0;
 
 	while (source_type[index]) {
-		printf(" %-22s ", source_type[index]);
+		printf(" %-24s ", source_type[index]);
 		index++;
 	}
 	if (index == 0)
-		printf(" %-22s ", "Reserved");
+		printf(" %-24s ", "Reserved");
 }
 
 static void apml_get_freq_limit(uint8_t soc_die_num)
