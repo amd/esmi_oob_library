@@ -680,7 +680,8 @@ static char * const freqlimitsrcnames_VER1[] = {
         "APML Agent",
         "HSMP Agent",
 	"VRHOT",
-	"TDC_Limit_VDD_MEM_S3Rail"
+	"TDC_Limit_VDD_MEM_S3Rail",
+	"SOC_and_DIMM_Power_Limit"
 };
 
 /**
