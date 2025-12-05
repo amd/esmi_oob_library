@@ -2162,13 +2162,17 @@ oob_status_t get_bmc_ras_run_time_error_info(uint8_t soc_die_num,
  *
  *  @details This function will configure thresholding counters for MCA,
  *  DRAM CECC or PCIE.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh, \ref Fam-1Ah_Mod-50h-5Fh
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
- *  @param[in] th struct run_time_threshold containing error type [00(MCA),
- *  01(DRAM CECC), 10(PCIE_UE), 11(PCIE_CE)], error count threshold and
- *  max interrupt rate.
+ *  @param[in] th struct run_time_threshold containing error type,
+ *  error count threshold and max interrupt rate.
+ *  error type :
+ *   - b00: MCA
+ *   - b01: DRAM CECC
+ *   - b10: PCIE
+ *   - b11: UMC MCA (applicable only for \ref Fam-1Ah_Mod-50h-5Fh and for
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
