@@ -173,8 +173,10 @@ typedef enum {
 	SET_BMC_PCIE_CONFIG = 0x68,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
-	GET_DIMM_SPD	= 0x70,
-	SET_DIMM_SPD,
+	GET_DIMM_SPD	= 0x70,	//!< Initially it was supported for SPD only and later
+				//!< its extended to PMIC, TS0 and TS1
+	SET_DIMM_SPD,		//!< Initially it was supported for SPD only and later
+				//!< its extended to PMIC, TS0 and TS1
 	SET_XGMI_PSTATE_RANGE = 0x73,
 	CPU_RAIL_ISO_FREQ_POLICY,
 	PC6_ENABLE,
@@ -499,12 +501,39 @@ struct dimm_spd_d_in {
 };
 
 /**
+ * @brief dimm_sb_reg_d_in:
+ * structure contains following members to be passed as
+ * input, to get 4 byte DIMM sb register data
+ */
+struct dimm_sb_reg_d_in {
+	uint8_t dimm_addr;		//!< DIMM address
+	uint8_t lid : 4;		//!< local identifier of device
+	uint16_t reg_offset : 11;	//!< Register offset in given register space
+	uint8_t reg_space : 1;		//!< Register space, Volatile:0, NVM:1
+	uint8_t rsvd;			//!< reserved
+};
+
+/**
  * @brief SPD side band write:
  * strucutre contains dimm address, LID of device, Register offset, Register space,
  * and data to write
  *
  */
 struct dimm_spd_write {
+	uint8_t dimm_addr;		//!< DIMM address
+	uint8_t lid : 4;		//!< local identifier of device
+	uint16_t reg_offset : 11;	//!< Register offset in given register space
+	uint8_t reg_space : 1;		//!< Register space, Volatile:0, NVM:1
+	uint8_t w_data;			//!< Write data
+};
+
+/**
+ * @brief Dimm side band register write:
+ * strucutre contains dimm address, LID of device, Register offset, Register space,
+ * and data to write
+ *
+ */
+struct dimm_sb_reg_write {
 	uint8_t dimm_addr;		//!< DIMM address
 	uint8_t lid : 4;		//!< local identifier of device
 	uint16_t reg_offset : 11;	//!< Register offset in given register space
@@ -2284,6 +2313,25 @@ oob_status_t read_dimm_spd_register(uint8_t soc_die_num,
 				    uint32_t *spd_data);
 
 /**
+ *  @brief Get dimm SB register data.
+ *  @details This function will read dimm sb register data.
+ *  For \ref Fam-1Ah_Mod-50h-5Fh, valid LID codes are
+ *  1001(PMIC0), 1010 (SPD Hub), 0010 (TS0), 0110 (TS1)
+ *
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] d_in struct dimm_sb_reg_d_in containing
+ *  DIMM address, LID, register offset, register space.
+ *
+ *  @param[out] reg_data containing spd data as per input
+ */
+oob_status_t get_dimm_sb_register(uint8_t soc_die_num,
+				  struct dimm_sb_reg_d_in d_in,
+				  uint32_t *reg_data);
+
+/**
  *  @brief Set SPD SB data
  *
  *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
@@ -2297,6 +2345,22 @@ oob_status_t read_dimm_spd_register(uint8_t soc_die_num,
  */
 oob_status_t write_dimm_spd_register(uint8_t soc_die_num,
 				     struct dimm_spd_write d_in);
+
+/**
+ *  @brief Set dimm SB data
+ *  @details This function will write dimm sb register data.
+ *  For \ref Fam-1Ah_Mod-50h-5Fh, valid LID codes are
+ *  1001(PMIC0), 1010 (SPD Hub), 0010 (TS0), 0110 (TS1)
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] d_in struct dimm_sb_reg_write containing
+ *  DIMM address, LID, register offset, register space
+ *  and write data.
+ */
+oob_status_t set_dimm_sb_register_data(uint8_t soc_die_num,
+				       struct dimm_sb_reg_write d_in);
 
 /**
  *  @brief Get DIMM serial number

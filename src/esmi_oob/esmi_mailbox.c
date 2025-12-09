@@ -1964,3 +1964,32 @@ oob_status_t get_dimm_thermal_sensor_data(uint8_t soc_die_num,
 
 	return ret;
 }
+
+oob_status_t get_dimm_sb_register(uint8_t soc_die_num,
+				  struct dimm_sb_reg_d_in d_in,
+				  uint32_t *reg_data)
+{
+	uint32_t input = 0;
+
+	if (!reg_data)
+		return OOB_ARG_PTR_NULL;
+
+	input = (uint32_t)d_in.dimm_addr | shift_left_op(d_in.lid, BYTE_BITS)
+			| shift_left_op(d_in.reg_offset, THREE_NIBBLE_BITS)
+			| shift_left_op(d_in.reg_space, DIMM_REG_SPACE_BITS);
+
+	return esmi_oob_read_mailbox(soc_die_num, GET_DIMM_SPD, input, reg_data);
+}
+
+oob_status_t set_dimm_sb_register_data(uint8_t soc_die_num,
+					 struct dimm_sb_reg_write d_in)
+{
+	uint32_t input = 0;
+
+	input = (uint32_t)d_in.dimm_addr | shift_left_op(d_in.lid, BYTE_BITS)
+			 | shift_left_op(d_in.reg_offset, THREE_NIBBLE_BITS)
+			 | shift_left_op(d_in.reg_space, DIMM_REG_SPACE_BITS)
+			 | shift_left_op(d_in.w_data, THREE_BYTES);
+
+	return esmi_oob_write_mailbox(soc_die_num, SET_DIMM_SPD, input);
+}

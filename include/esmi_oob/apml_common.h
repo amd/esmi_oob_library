@@ -63,10 +63,14 @@
 #define TRIBBLE_BITS		3	//!< 3 bits //
 #define NIBBLE_BITS		4	//!< Nibble bits //
 #define BYTE_BITS		8	//!< Byte bits //
+#define THREE_NIBBLE_BITS	12	//!< Three nibble bits //
 #define WORD_BITS		16	//!< word bits //
 #define DIMM_POW		17	//!< Dimm power bits
 #define DIMM_POW_MULT_FACTOR	20	//!< DIMM power multiplication factor
 #define DIMM_TEMP		21	//!< Dimm Temperature bits
+#define DIMM_REG_SPACE_BITS	23	//!< DIMM Register space bits for
+					//!< mailbox command ID 0x70 and 0x71
+#define THREE_BYTES		24	//!< Three bytes bits
 #define POWER_REPORTING_FLAG	30	//!< Power reporting flag bits
 #define TEMP_REPORTING_FLAG	31	//!< Thermal sensor reporting flag bits
 #define D_WORD_BITS		32	//!< Double word bits //
