@@ -3067,6 +3067,24 @@ static oob_status_t apml_get_spd_sb_data(uint8_t soc_die_num, struct dimm_spd_d_
 	return OOB_SUCCESS;
 }
 
+static oob_status_t apml_get_dimm_sb_data(uint8_t soc_die_num, struct dimm_sb_reg_d_in d_in)
+{
+	oob_status_t ret = OOB_SUCCESS;
+	uint32_t dimm_data = 0x0;
+
+	ret = get_dimm_sb_register(soc_die_num, d_in, &dimm_data);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get DIMM register data, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return ret;
+	}
+	printf("------------------------------\n");
+	printf("| DIMM reg data | 0x%-8x |\n", dimm_data);
+	printf("------------------------------\n");
+
+	return OOB_SUCCESS;
+}
+
 static void apml_get_smu_fw_version(uint8_t soc_die_num)
 {
 	uint32_t fw_ver = 0;
@@ -3274,6 +3292,20 @@ static void apml_get_df_pstate_range(uint8_t soc_die_num)
         printf("| Min p-state\t | %-16d |\n", min_pstate);
         printf("| Max p-state\t | %-16d |\n", max_pstate);
         printf("-------------------------------------\n");
+}
+
+static void apml_set_dimm_register_data(uint8_t soc_die_num, struct dimm_sb_reg_write d_in)
+{
+        oob_status_t ret;
+
+        ret = set_dimm_sb_register_data(soc_die_num, d_in);
+        if (ret) {
+                printf("Failed to set DIMM register data"
+                       "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+                return;
+        }
+
+        printf("DIMM register data set successfully\n");
 }
 
 static void apml_set_dimm_spd_register(uint8_t soc_die_num, struct dimm_spd_write d_in)
@@ -3709,10 +3741,11 @@ static void fam_1A_mod_50_mailbox_commands()
                "Show df p-state range\n"
                "  --getxgmipstaterange\t\t\t  \t\t\t\t\t "
                "Show xgmi p-state range\n"
-               "  --setspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
+               "  --setdimmregdata\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
                "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE]"
                "\n\t\t\t\t\t  [DATA(HEX)] \t\t\t\t"
-               " Set DIMM SPD register data\n"
+               " Set DIMM register data.Valid LID codes are SPDHub(0xA),\n"
+	       "\t\t\t\t\t\t\t\t\t\t PMIC0(0x9), TS0(0x2), TS1(0x6)\n"
                "  --getpc6control\t\t\t  \t\t\t\t\t "
                "Show PC6 enable state \n"
                "  --setpc6control\t\t\t  [STATE(0-1)] \t\t\t\t"
@@ -3868,9 +3901,10 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
 	       "Show BMC ras dram ecc runtime error info\n"
 	       "  --getdimmserialnum\t\t\t  [DIMM_ADDR(HEX)]\t\t\t"
 	       " Show DIMM serial number\n"
-	       "  --getspddata\t\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
+	       "  --getdimmregdata\t\t\t  [DIMM_ADDR(HEX)][LID(HEX)]"
 	       "\n\t\t\t\t\t  [REG_OFFSET(HEX)][REG_SPACE] \t\t"
-	       " Show DIMM SPD register data\n"
+	       " Show DIMM register data.Valid LID codes are SPDHub(0xA),\n"
+	       "\t\t\t\t\t\t\t\t\t\t PMIC0(0x9), TS0(0x2), TS1(0x6)\n"
 	       "  --getsmufwversion\t\t\t  \t\t\t\t\t "
 	       "Show SMC FW version\n"
 	       "  --setxgmiminmaxpstates\t\t  [MIN_PSTATE][MAX_PSTATE]\t\t"
@@ -4670,6 +4704,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct core_floor_limit_din d_in_core_limit = {0};
 	struct pow_eff_mode din_mode = {0};
 	struct dimm_pow_din dimm_din = {0};
+	struct dimm_sb_reg_d_in dimm_reg_din = {0};
+	struct dimm_sb_reg_write dimm_reg_write = {0};
 	uint8_t soc_die_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -4832,6 +4868,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showhipowerdimm", no_argument,	&flag,	98},
 		{"showhottestdimmthermalsensor", no_argument,	&flag,	99},
 		{"showalldimmpower", no_argument,	&flag,	100},
+		{"getdimmregdata",			required_argument,	&flag,	101},
+		{"setdimmregdata",			required_argument,	&flag,  102},
 		{0,			0,			0,	0},
 	};
 
@@ -5226,7 +5264,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		}
 	}
 
-	if (opt == 0 && *long_options[long_index].flag == 54) {
+	if (opt == 0 && (*long_options[long_index].flag == 54
+		|| *long_options[long_index].flag == 101)) {
 		if ((optind + 2) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-' || *argv[optind + 2] == '-') {
 			printf("\nOption '-%c' requires 4 arguments\n", opt);
@@ -5238,13 +5277,14 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		    validate_number(argv[optind + 1], 16) ||
 		    validate_number(argv[optind + 2], 16)) {
 			printf("\nOption '%c' requires all arguments as "
-			       "valid numeric value\n", opt);
+			       "valid hex value\n", opt);
 			return OOB_SUCCESS;
 		}
 
 	}
 
-        if (opt == 0 && *long_options[long_index].flag == 71) {
+        if (opt == 0 && (*long_options[long_index].flag == 71
+			|| *long_options[long_index].flag == 102)) {
                 if ((optind + 3) >= argc || *argv[optind] == '-'
                      || *argv[optind + 1] == '-' || *argv[optind + 2] == '-'
                      || *argv[optind + 3] == '-') {
@@ -5758,6 +5798,21 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			set_hsmp_cmds_d_in.bitmask = strtoul(argv[optind++], &end, 16);
 			apml_set_enabled_hsmp_commands(soc_die_num, set_hsmp_cmds_d_in);
 			break;
+		} else if (*(long_options[long_index].flag) == 101) {
+			/* Get DIMM sb register data */
+			dimm_reg_din.dimm_addr = strtoul(argv[optind - 1], &end, 16);
+			dimm_reg_din.lid = strtoul(argv[optind++], &end, 16);
+			dimm_reg_din.reg_offset = strtoul(argv[optind++], &end, 16);
+			dimm_reg_din.reg_space = strtoul(argv[optind++], &end, 16);
+			apml_get_dimm_sb_data(soc_die_num, dimm_reg_din);
+		} else if (*(long_options[long_index].flag) == 102) {
+			/* APML set dimm sb register data */
+			dimm_reg_write.dimm_addr = strtoul(argv[optind - 1], &end, 16);
+			dimm_reg_write.lid = strtoul(argv[optind++], &end, 16);
+			dimm_reg_write.reg_offset = strtoul(argv[optind++], &end, 16);
+			dimm_reg_write.reg_space = atoi(argv[optind++]);
+			dimm_reg_write.w_data = strtoul(argv[optind++], &end, 16);
+			apml_set_dimm_register_data(soc_die_num, dimm_reg_write);
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_die_num, uprate);
