@@ -4993,6 +4993,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 88 ||
 			 (*long_options[long_index].flag) == 89 ||
 			 (*long_options[long_index].flag) == 94 ||
+			 (*long_options[long_index].flag) == 97 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
