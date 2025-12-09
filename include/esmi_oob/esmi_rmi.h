@@ -435,7 +435,7 @@ oob_status_t set_sw_async_alert_mask(uint8_t soc_die_num, bool alert_mask_bit);
  *
  * This function checks the ready status of the SBRMI (Sideband Remote Management Interface)
  * for the given SoC die number and stores the result in the provided buffer.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  * @param[in] soc_die_num The SoC die number to query.
  * @param[out] buffer Pointer to a boolean variable where the ready status will be stored.
@@ -450,7 +450,7 @@ oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer);
  *
  * This function attempts to clear any shutdown error associated with the
  * given SoC die number.Set 1 to BIT-6 of status register 0x4C to clear the shutdown error.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  * @param soc_die_num The number identifying the SoC die to clear the shutdown error for.
  * @return oob_status_t Status of the operation.

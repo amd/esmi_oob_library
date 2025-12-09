@@ -756,7 +756,7 @@ extern float esu_multiplier;
  *  \ref Fam-19h_Mod-10h-1Fh
  *  \ref Fam-19h_Mod-90h-9Fh
  *  \ref Fam-1Ah_Mod-00h-0Fh
- *  \ref Fam-1Ah_Mod-50h-5Fh
+ *  \ref Fam-1Ah_Mod-50h-57h
  *  \section Fam-19h_Mod-00h-0Fh
  *  Platform with Family 19h and model in range 00h - 0Fh
  *  \section Fam-19h_Mod-10h-1Fh
@@ -765,7 +765,7 @@ extern float esu_multiplier;
  *  Platform with Family 19h and model in range 90h - 9Fh
  *  \section Fam-1Ah_Mod-00h-0Fh
  *  Platform with Family 1Ah and model in range 00h - 0Fh
- *  \section Fam-1Ah_Mod-50h-5Fh
+ *  \section Fam-1Ah_Mod-50h-57h
  *  Platform with Family 1Ah and model in range 50h - 5Fh
  *
  */
@@ -783,7 +783,8 @@ static struct apml_encodings sp7_encodings[SP7_ENCODING_SIZE] = {{1, "P0"}, {2, 
  *  @p buffer, this function will get the current power consumption
  *  (in watts) to the uint32_t pointed to by @p buffer.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -802,7 +803,8 @@ oob_status_t read_socket_power(uint8_t soc_die_num, uint32_t *buffer);
  *  @details This function will return the valid power cap @p buffer for a given
  *  socket, this value will be used for the system to limit the power.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -821,7 +823,8 @@ oob_status_t read_socket_power_limit(uint8_t soc_die_num, uint32_t *buffer);
  *
  *  @details This function will return the maximum possible valid power cap/limit
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -847,7 +850,8 @@ oob_status_t read_max_socket_power_limit(uint8_t soc_die_num, uint32_t *buffer);
  *
  *  @details This function will set the power cap/limit
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -876,7 +880,8 @@ oob_status_t write_socket_power_limit(uint8_t soc_die_num, uint32_t limit);
  *  boost limit
  *  @p buffer for a particular @p value
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -898,7 +903,8 @@ oob_status_t read_esb_boost_limit(uint8_t soc_die_num, uint32_t value,
  *  @details This function will return the core's current maximum In-band
  *  boost limit @p buffer for a particular @p value is cpu_ind
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -931,7 +937,8 @@ oob_status_t read_bios_boost_fmax(uint8_t soc_die_num,
  *  NOTE: Currently the limit is setting for all the cores instead of a
  *  particular cpu. Testing in Progress.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -953,7 +960,8 @@ oob_status_t write_esb_boost_limit(uint8_t soc_die_num,
  *  @details This function will set the boostlimit to the provided value @p
  *  boostlimit for the socket.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -983,7 +991,8 @@ oob_status_t write_esb_boost_limit_allcores(uint8_t soc_die_num, uint32_t limit)
  *  @details Given a socket and a pointer to a uint32_t @p buffer, this function
  *  will get the current TDP (in milliwatts)
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1003,7 +1012,8 @@ oob_status_t read_tdp(uint8_t soc_die_num, uint32_t *buffer);
  *  @details Given a socket and a pointer, this function will get the Maximum
  *  TDP (watts)
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1022,7 +1032,8 @@ oob_status_t read_max_tdp(uint8_t soc_die_num, uint32_t *buffer);
  *  @details Given a socket and a pointer to a uint32_t, this function will
  *  get the Minimum  TDP (watts)
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1051,7 +1062,8 @@ oob_status_t read_min_tdp(uint8_t soc_die_num, uint32_t *buffer);
  *  this function will get the Prochot status as active/1 or
  *  inactive/0
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1071,7 +1083,8 @@ oob_status_t read_prochot_status(uint8_t soc_die_num, uint32_t *buffer);
  *  @details Given a socket and a pointer to a uint32_t,
  *  this function will get the Prochot residency as a percentage
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1096,8 +1109,8 @@ oob_status_t read_prochot_residency(uint8_t soc_die_num, float *buffer);
  *
  *  @details This function will always read the highest percentage value
  *  as represented by PROCHOT throttle or write dram throttle.
- *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh
- *  and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1114,8 +1127,8 @@ oob_status_t read_dram_throttle(uint8_t soc_die_num, uint32_t *buffer);
  *
  *  @details This function will set the dram throttle of the provided value
  *  limit for the given socket.
- *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh
- *  and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
+ *  \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1173,7 +1186,8 @@ read_nbio_error_logging_register(uint8_t soc_die_num,
  *
  *  @details This function will read IOD Bist result for the given socket.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *   \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1194,7 +1208,8 @@ oob_status_t read_iod_bist(uint8_t soc_die_num, uint32_t *buffer);
  *  @details Given a socket bus number and address, Logical CCD instance
  *  number as @p input, this function will read CCDBistResult.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *   \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1219,15 +1234,16 @@ oob_status_t read_ccd_bist_result(uint8_t soc_die_num, uint32_t input,
  *  @details Given a socket bus number, address, Logical CCX instance number
  *  as @p input, this function will read CCXBistResult.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-5Fh.
- *  For \ref Fam-1Ah_Mod-50h-5Fh the Bit[31] of input will be 1 (to get the L3 bist)
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh, \ref Fam-1Ah_Mod-50h-57h
+ *  and \ref Fam-1Ah_Mod-50h-57h.
+ *  For \ref Fam-1Ah_Mod-50h-57h the Bit[31] of input will be 1 (to get the L3 bist)
  *  or 0 (to get core bist), Bits[8 - 30] are reserved and Bits [0 - 7] will be
  *  logical ccx instance. For the rest of the platforms the input is only CCX instance
  *  number.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
- *  @param[in] value For \ref Fam-1Ah_Mod-50h-5Fh the Bit[31] of input will be
+ *  @param[in] value For \ref Fam-1Ah_Mod-50h-57h the Bit[31] of input will be
  *  1 ( to get the L3 bist) or 0 (to get core bist), Bits[8 - 30] are reserved and
  *  Bits [0 - 7] will be logical ccx instance number. For the rest of the platforms
  *  value is only CCX instance number. Valid values [0, (k -1)] where k is the
@@ -1249,7 +1265,8 @@ oob_status_t read_ccx_bist_result(uint8_t soc_die_num, uint32_t value,
  *  @details This function will read CPU core clock frequency limit
  *  for the given socket.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *   \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1267,7 +1284,8 @@ oob_status_t read_cclk_freq_limit(uint8_t soc_die_num, uint32_t *cclk_freq);
  *  @details This function will provides average C0 residency across all cores
  *  in the socket. 100% specifies that all enabled cores in the socket are runningin C0.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh,
- *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh, \ref Fam-1Ah_Mod-00h-0Fh and
+ *  \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1284,7 +1302,7 @@ oob_status_t read_socket_c0_residency(uint8_t soc_die_num, uint32_t *c0_res);
  *  Current utilized DDR Bandwidth (Read + Write) in GB/s and
  *  Current utilized DDR Bandwidth as a percentage of theoretical maximum.
  *  Supported platforms: \ref Fam-19h_Mod-00h-0Fh, \ref Fam-19h_Mod-10h-1Fh
- *  and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1351,7 +1369,7 @@ oob_status_t write_bmc_report_dimm_thermal_sensor(uint8_t soc_die_num,
  *  device(4 bit) bus(8 bit), offset(12 bit), segment(4 bit).
  *  SEGMENT:0 BUS 0:DEVICE 18 and SEGMENT:0 BUS 0:DEVICE 19 are inaccessable.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[out] out_buf 32 bit data from offset in PCI config space.
  *
@@ -1413,7 +1431,7 @@ oob_status_t read_bmc_ras_mca_msr_dump(uint8_t soc_die_num,
  *  @details This function reads the FCH reason code from the previous
  *  reset.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  and \ref Fam-19h_Mod-90h-9Fh and and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1434,7 +1452,8 @@ oob_status_t read_bmc_ras_fch_reset_reason(uint8_t soc_die_num,
  *
  *  @details This function returns the per DIMM temperature range and
  *  refresh rate from the MR4 register, per JEDEC spec.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1458,7 +1477,8 @@ oob_status_t read_dimm_temp_range_and_refresh_rate(uint8_t soc_die_num,
  *
  *  @details This function returns the DIMM power consumption
  *  when bmc does not own the SPD side band bus.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1482,7 +1502,8 @@ oob_status_t read_dimm_power_consumption(uint8_t soc_die_num,
  *
  *  @details This function returns the DIMM thermal sensor
  *  (2 sensors per DIMM) when bmc does not own the SPD side band bus.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1507,7 +1528,7 @@ oob_status_t read_dimm_thermal_sensor(uint8_t soc_die_num,
  *  @details This function returns the current active frequency limit
  *  per socket.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1529,7 +1550,7 @@ oob_status_t read_pwr_current_active_freq_limit_socket(uint8_t soc_die_num,
  *  @details This function returns the current active frequency limit
  *  per core.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1551,7 +1572,7 @@ oob_status_t read_pwr_current_active_freq_limit_core(uint8_t soc_die_num,
  *  @details This function returns the SVR based telemetry (power and update rate)
  *  for all rails.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1570,7 +1591,7 @@ oob_status_t read_pwr_svi_telemetry_all_rails(uint8_t soc_die_num,
  *  @details This function returns the fmax and fmin frequency
  *  per socket.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1591,7 +1612,7 @@ oob_status_t read_socket_freq_range(uint8_t soc_die_num,
  *
  *  @details This function returns the current IO bandwidth.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1636,7 +1657,7 @@ oob_status_t read_current_io_bandwidth(uint8_t soc_die_num,
  *
  *  @details This function returns the current xGMI bandwidth.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1711,7 +1732,8 @@ oob_status_t write_gmi3_link_width_range(uint8_t soc_die_num,
  *  @details This function will set the max and min width of xGMI Link.
  *  If this API is called from both the master and the slave sockets,
  *  then the largest width values from either calls are used.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1742,7 +1764,8 @@ oob_status_t write_xgmi_link_width_range(uint8_t soc_die_num,
  *  DF(Data Fabric) P-state behavior. DF P-states specify the frequency
  *  of clock domains from the CPU core boundary through to and including
  *  system memory, where 0 is the highest DF P-state and 2 is the lowest.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1765,7 +1788,8 @@ oob_status_t write_apb_disable(uint8_t soc_die_num,
  *
  *  @details This function will enable the DF p-state performance
  *  boost algorithm.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1785,7 +1809,7 @@ oob_status_t write_apb_enable(uint8_t soc_die_num, bool *prochot_asserted);
  *  Returns the Fclck, DRAM memory clock(memclk),umc clock divider
  *  for the current socket DF P-state.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1829,7 +1853,7 @@ oob_status_t write_lclk_dpm_level_range(uint8_t soc_die_num,
  *  Units. Energy information (in Joules) is based on the multiplier: 1/(2^ESU).
  *  Time information (in Seconds) is based on the multiplier: 1/(2^TU).
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1850,7 +1874,7 @@ oob_status_t read_bmc_rapl_units(uint8_t soc_die_num,
  *
  *  @details This function returns the base frequency per CPU socket.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1892,8 +1916,8 @@ oob_status_t read_bmc_control_pcie_gen5_rate(uint8_t soc_die_num,
  *  @brief Read RAPL core energy counters.
  *
  *  @details This function returns the RAPL core energy counters.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num Soskcet index.
  *
@@ -1914,7 +1938,7 @@ oob_status_t read_rapl_core_energy_counters(uint8_t soc_die_num,
  *
  *  @details This function returns the RAPL package energy counters.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1932,7 +1956,7 @@ oob_status_t read_rapl_pckg_energy_counters(uint8_t soc_die_num,
  *
  *  @details This function writes power efficiency mode
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  and \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1962,7 +1986,8 @@ oob_status_t write_pwr_efficiency_mode(uint8_t soc_die_num,
  *  @brief Write df pstate range
  *
  *  @details This function writes df pstate range
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh and \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh,
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -1986,7 +2011,7 @@ oob_status_t write_df_pstate_range(uint8_t soc_die_num,
  *
  *  @details This function returns the LCLK Max and Min DPM level range.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2008,7 +2033,7 @@ oob_status_t read_lclk_dpm_level_range(uint8_t soc_die_num,
  *
  *  @details This function reads the micro code revision number.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  and \ref Fam-19h_Mod-90h-9Fh, and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2025,6 +2050,8 @@ oob_status_t read_ucode_revision(uint8_t soc_die_num, uint32_t *ucode_rev);
  *
  *  @details This function reads the number instance of DF blocks
  *  of type DF_BLOCK_ID that have an error log to report.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num Socket index.
  *
@@ -2046,6 +2073,8 @@ oob_status_t read_ras_df_err_validity_check(uint8_t soc_die_num,
  *
  *  @details This function reads 32 bits of data from the offset provided for
  *  DF block instance retported by  read_ras_df_err_validity_check.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num Socket index.
  *
@@ -2068,7 +2097,7 @@ oob_status_t read_ras_df_err_dump(uint8_t soc_die_num,
  *  @details This function requests reset after sync flood. Reset
  *  only works during sync flood condition
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *  Only Socket0 is valid for this request. In multi-socket systems,
@@ -2089,7 +2118,8 @@ oob_status_t reset_on_sync_flood(uint8_t soc_die_num, uint32_t *ack_resp);
  *  @details This function will override delay reset cpu on sync flood value
  *  for the current boot instance. Delay value reverts to BIOS config selection
  *  after reboot.Number of override requests is limited to 5 per boot instance.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *  Only Socket0 is valid for this request. In multi-socket systems,
@@ -2117,8 +2147,8 @@ oob_status_t override_delay_reset_on_sync_flood(uint8_t soc_die_num,
  *  input is 0 the SMU will refresh the cache before running the
  *  latest post code. Input as 0 refers to most recent post code
  *  and higher inputs refers to the older post code.
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh,
+ *  \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2139,7 +2169,7 @@ oob_status_t get_post_code(uint8_t soc_die_num, uint32_t offset, uint32_t *post_
  *  @details This function will read number of valid error instances per
  *  category. Valid categories are MCA[00], DRAM CECC[01], PCIE [10],
  *  RSVD[11].
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2167,7 +2197,7 @@ oob_status_t get_bmc_ras_run_time_err_validity_ck(uint8_t soc_die_num,
  *  corresponding from the valid DRAM ECC correctable error counter instance.
  *  If category is PCIE then it returns 32 bit PCIE error data from given
  *  offset of given instance.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2191,7 +2221,7 @@ oob_status_t get_bmc_ras_run_time_error_info(uint8_t soc_die_num,
  *
  *  @details This function will configure thresholding counters for MCA,
  *  DRAM CECC or PCIE.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh, \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh, \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2201,7 +2231,7 @@ oob_status_t get_bmc_ras_run_time_error_info(uint8_t soc_die_num,
  *   - b00: MCA
  *   - b01: DRAM CECC
  *   - b10: PCIE
- *   - b11: UMC MCA (applicable only for \ref Fam-1Ah_Mod-50h-5Fh and for
+ *   - b11: UMC MCA (applicable only for \ref Fam-1Ah_Mod-50h-57h
  *
  *  @retval ::OOB_SUCCESS is returned upon successful call.
  *  @retval Non-zero is returned upon failure.
@@ -2216,7 +2246,7 @@ oob_status_t set_bmc_ras_err_threshold(uint8_t soc_die_num,
  *
  *  @details This function will configure OOB state infrastructure in
  *  the SoC.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2239,7 +2269,7 @@ oob_status_t set_bmc_ras_oob_config(uint8_t soc_die_num,
  *
  *  @details This function will read the current status of OOB state
  *  configuration in the SoC.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2268,7 +2298,7 @@ oob_status_t get_bmc_ras_oob_config(uint8_t soc_die_num, uint32_t *oob_config);
  *  @details This function will read the 64 bit PPIN fuse available via OPN_PPIN
  *  fuse.
  *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
- *  and \ref Fam-19h_Mod-90h-9Fh.
+ *  and \ref Fam-19h_Mod-90h-9Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2281,7 +2311,7 @@ oob_status_t read_ppin_fuse(uint8_t soc_die_num, uint64_t *data);
  *  @brief Read RTC.
  *  @details Read RTC timer value. RTC time represents the year,
  *  month, day, hour, minute and seconds value in a 64b encoding.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2299,7 +2329,7 @@ oob_status_t read_rtc(uint8_t soc_die_num, uint64_t *rtc);
 /**
  *  @brief Get SPD SB data
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2315,10 +2345,10 @@ oob_status_t read_dimm_spd_register(uint8_t soc_die_num,
 /**
  *  @brief Get dimm SB register data.
  *  @details This function will read dimm sb register data.
- *  For \ref Fam-1Ah_Mod-50h-5Fh, valid LID codes are
+ *  For \ref Fam-1Ah_Mod-50h-57h, valid LID codes are
  *  1001(PMIC0), 1010 (SPD Hub), 0010 (TS0), 0110 (TS1)
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2334,7 +2364,7 @@ oob_status_t get_dimm_sb_register(uint8_t soc_die_num,
 /**
  *  @brief Set SPD SB data
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2349,9 +2379,9 @@ oob_status_t write_dimm_spd_register(uint8_t soc_die_num,
 /**
  *  @brief Set dimm SB data
  *  @details This function will write dimm sb register data.
- *  For \ref Fam-1Ah_Mod-50h-5Fh, valid LID codes are
+ *  For \ref Fam-1Ah_Mod-50h-57h, valid LID codes are
  *  1001(PMIC0), 1010 (SPD Hub), 0010 (TS0), 0110 (TS1)
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2360,12 +2390,12 @@ oob_status_t write_dimm_spd_register(uint8_t soc_die_num,
  *  and write data.
  */
 oob_status_t set_dimm_sb_register_data(uint8_t soc_die_num,
-				       struct dimm_sb_reg_write d_in);
+					 struct dimm_sb_reg_write d_in);
 
 /**
  *  @brief Get DIMM serial number
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num Socket index.
  *
@@ -2394,7 +2424,8 @@ oob_status_t read_smu_fw_ver(uint8_t soc_die_num, uint32_t *smu_fw_ver);
  *
  *  @details This function will write 32 bit data_in to extended PCI config space
  *  of target specified in previous READ_BMC_RAS_PCIE_CONFIG_ACCESS (cmd ID 0x42h).
- *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-19h_Mod-10h-1Fh, \ref Fam-1Ah_Mod-00h-0Fh
+ *  and \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2422,7 +2453,7 @@ oob_status_t write_bmc_pcie_config(uint8_t soc_die_num, struct pci_address pci_a
  *  (low performance). Max value must be less than or equal to
  *  min value. XGMI p-state can be set through either HSMP or APML
  *  and the value that was last set will be enforced.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2448,7 +2479,7 @@ oob_status_t set_xgmi_pstate_range(uint8_t soc_die_num,
  *  rail (VDDCR_CPU0 or VDDCR_CPU1).
  *  If a socket wide limit (e.g. PPT) is setting the core clock
  *  frequency, then this setting has no effect.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2468,7 +2499,7 @@ oob_status_t set_cpu_rail_iso_freq_policy(uint8_t soc_die_num, uint8_t policy);
  *  @details This function will get the cpu rail iso freq policy.
  *  The response 0 means both rails have same frequency limit and
  *  1 means each rail has independent frequency limit.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2487,7 +2518,7 @@ oob_status_t get_cpu_rail_iso_freq_policy(uint8_t soc_die_num, uint8_t *policy);
  *
  *  @details This function will set the DF C-state enabling control.
  *  DF C-state is a low power state for IOD.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2504,7 +2535,7 @@ oob_status_t set_dfc_enable(uint8_t soc_die_num, uint8_t state);
  *
  *  @details This function will get the DF C-state enabling control.
  *  DF C-state is a low power state for IOD.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2521,7 +2552,7 @@ oob_status_t get_dfc_enable(uint8_t soc_die_num, uint8_t *state);
  *
  *  @details This function will get the average DRAM throttle across
  *  all the channels
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2537,7 +2568,7 @@ oob_status_t get_avg_dram_throttle(uint8_t soc_die_num, uint32_t *dram_throttle)
  *  @brief Get the channel DRAM throttle.
  *
  *  @details This function will get the DRAM throttle for the given channel
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2559,7 +2590,7 @@ oob_status_t get_ch_dram_throttle(uint8_t soc_die_num, uint8_t dimm_addr,
  *  @details This function will get the PC6 enabling control.
  *  PC6 is low power state for the CCD's also known as package C6 state.
  *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2577,7 +2608,7 @@ oob_status_t get_pc6_enable(uint8_t soc_die_num, uint8_t *pc6_state);
  *  @details This function will set the PC6 enabling control.
  *  PC6 is low power state for the CCD's also known as package C6 state
  *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2600,7 +2631,7 @@ oob_status_t set_pc6_enable(uint8_t soc_die_num, uint8_t pc6_state,
  *  using the CC6_ENABLE corresponding APML or HSMP messages does not change
  *  the state of the cores.
  *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2620,7 +2651,7 @@ oob_status_t get_cc6_enable(uint8_t soc_die_num, uint8_t *cc6_state);
  *  using the CC6_ENABLE corresponding APML or HSMP messages does not change
  *  the state of the cores.
  *  Note: This feature cannot be enabled if not enabled by BIOS during POST.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2643,7 +2674,7 @@ oob_status_t set_cc6_enable(uint8_t soc_die_num, uint8_t cc6_state,
  *  result in a Failed response.
  *  Note2: If the API is called from both Primary and Secondary sockets, the
  *  largest Width values from either call are used.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2669,7 +2700,7 @@ oob_status_t get_xgmi_link_width_range(uint8_t soc_die_num,
  *
  *  @details This function will get the apb state and DF P-state
  *  locked value. It specifies DF (Infinity Fabric TM)
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2689,7 +2720,7 @@ oob_status_t get_apb_state(uint8_t soc_die_num, uint8_t *apb_state, uint8_t *df_
  *
  *  @details This function get df pstate range.
  *  Max pstate must be <= Min min pstate.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2712,7 +2743,7 @@ oob_status_t get_df_pstate_range(uint8_t soc_die_num,
  *  @details This function will halt PCIe link training for
  *  for OOB devie authentication. BMC communicates information of PCIe links/ports
  *  to be cleared for training to MP1 firmware over APML.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2736,7 +2767,7 @@ oob_status_t set_pcie_link_training(uint8_t soc_die_num, struct pcie_link_traini
  *  (low performance). Max value must be <= Min value. XGMI P-state
  *  can be set through APML or HSMP; the value that was last set is
  *  enforced.
- *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2757,7 +2788,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  *
  *  @details This function will get average power consumption
  *  by the CCD.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2778,7 +2809,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  *
  *  @details This function will get temperature delta to indicate behavior.
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2799,7 +2830,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  *  If rail mode is 0 then it will read the temperature of the hottest rail.
  *  IF rail mode is 1 it will read the temperature of given SVI3 rail index.
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2822,7 +2853,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  *  @details This function will get supporting error types from the
  *  OOB error injection and also the vendor specific error types.
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -2847,6 +2878,7 @@ oob_status_t get_xgmi_pstate_range(uint8_t soc_die_num,
  * will be number of MCA error instances and number of bytes per instance.
  * Number of MCA error instances will be din.number_of_instance and number of
  * bytes per instance / 4 will be assigned to din.number_of_offsets.
+ * Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  * @param[in] soc_die_num      The SoC die number to query.
  * @param[in] din              Structure containing input data for the runtime query.
@@ -2872,6 +2904,7 @@ oob_status_t get_bmc_ras_mca_run_time_error_info(uint8_t soc_die_num,
  * The response will be:
  * - Number of DRAM ECC error instances (assigned to din.number_of_instance)
  * - Number of bytes per instance / 4 (assigned to din.number_of_offsets)
+ * Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  * @param[in]  soc_die_num  The SoC die number to query.
  * @param[in]  din          Structure containing input data for the
@@ -2900,6 +2933,7 @@ oob_status_t get_bmc_ras_dram_ecc_run_time_error_info(uint8_t soc_die_num,
  * - Number of PCIe error instances (assigned to din.number_of_instance)
  * - Number of bytes per instance divided by 4
  *   (assigned to din.number_of_offsets)
+ * Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h
  *
  * @param[in]  soc_die_num  The SoC die number to query.
  * @param[in]  din          Structure containing input data for the runtime
@@ -2920,7 +2954,7 @@ oob_status_t get_bmc_ras_pcie_run_time_error_info(uint8_t soc_die_num,
  *
  * This function queries the APML (Advanced Platform Management Link) mailbox to obtain
  * the floor core limit value for a given core on a specified SoC die.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num       The SoC die number to query.
  * @param[in]  core_id           The core ID for which the floor core
@@ -2940,7 +2974,7 @@ oob_status_t get_floor_core_limit(uint8_t soc_die_num,
  *
  * This function sets the floor core limit value for a given core
  * on a specified SoC die.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num         The SoC die number to configure.
  * @param[in]  d_in                Structure containing the core ID and
@@ -2957,7 +2991,7 @@ oob_status_t set_core_floor_limit(uint8_t soc_die_num,
  *
  * This function sets the floor limit value for all cores on a specified SoC
  * die.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num         The SoC die number to configure.
  * @param[in]  floor_limit         The floor limit value to be set for all cores.
@@ -2974,7 +3008,7 @@ oob_status_t set_floor_limit_for_all_cores(uint8_t soc_die_num,
  * This function configures the power efficiency mode, utilization point, and PPT limit
  * for balanced core modes on the specified SoC die. Utilization point and PPT limit
  * are applicable only for the modes greater than 3.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num  The SoC die number to configure.
  * @param[in]  d_in         Structure containing the desired power efficiency mode selection.
@@ -2995,7 +3029,7 @@ oob_status_t set_power_efficiency_mode_selection(
  * This function retrieves the current power efficiency mode, utilization point, and PPT limit
  * for balanced core modes on the specified SoC die.Utilization point and PPT limit
  * are applicable only for the modes greater than 3.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num  The SoC die number to query.
  * @param[out] d_out        Pointer to a structure where the current power efficiency mode will be stored.
@@ -3013,7 +3047,7 @@ oob_status_t get_power_efficiency_mode_selection(
  *
  * This function queries the APML mailbox to obtain the effective floor frequency
  * value for a given core on a specified SoC die.
- * Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  * @param[in]  soc_die_num      The SoC die number to query.
  * @param[in]  core_id          The core ID for which the effective floor frequency
@@ -3035,6 +3069,7 @@ oob_status_t get_effective_floor_freq_per_core(uint8_t soc_die_num,
  *  If is_get is 0, sets the power limit to the value pointed by limit (in mWatts).
  *  If is_get is 1, retrieves the current power limit into the value pointed by limit (in mWatts).
  *  A value of 0 disables the SOC+DIMM power limit.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *  @param[in] is_get 0 = Set Power Limit, 1 = Get Power Limit
@@ -3052,7 +3087,7 @@ oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t 
  *  HSMP read mask indicator (rmask): 1 = for read commands, 0 = for write commands.
  *  Offset indicating the segment of the bitmask (0, 1, 2, 3, etc.).
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -3078,7 +3113,7 @@ oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t 
  *  The bitmask specifies which HSMP commands are enabled for the given offset.
  *  The APML bitmask can override the BIOS-provided bitmask for runtime reconfigurability.
  *
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -3098,7 +3133,7 @@ oob_status_t soc_dimm_power_limit(uint8_t soc_die_num, uint8_t is_get, uint32_t 
  *
  *  @details This function returns the DIMM power consumption
  *  when bmc does not own the SPD side band bus.
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
@@ -3130,7 +3165,7 @@ oob_status_t get_dimm_pow_data(uint8_t soc_die_num, struct dimm_pow_din d_in,
  *  thermal_flag: Valid values are 0 and 1
  *   - 0: API returns temperature for the provided DIMM
  *   - 1: API returns temperature of hottest DIMM
- *  Supported platforms: \ref Fam-1Ah_Mod-50h-5Fh.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h.
  *
  *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
  *
