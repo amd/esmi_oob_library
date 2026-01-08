@@ -35,7 +35,7 @@ set(APML_LIB_VERSION_PATCH 1)
 ################# Determine the library version #########################
 ## Setup the package version based on git tags.
 set(LIB_SO_VERSION_STR
-              "${APML_LIB_VERSION_MAJOR}.${APML_LIB_VERSION_MINOR}.0")
+              "${APML_LIB_VERSION_MAJOR}.${APML_LIB_VERSION_MINOR}.${APML_LIB_VERSION_PATCH}")
 get_version(${LIB_SO_VERSION_STR} "apml")
 
 # VERSION_* variables should be set by get_version
