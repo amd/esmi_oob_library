@@ -3217,6 +3217,47 @@ static void apml_get_ch_dram_throttle(uint8_t soc_die_num, uint8_t dimm_addr)
         printf("-------------------------------------------------\n");
 }
 
+static void apml_get_avg_dram_thr_with_status(uint8_t soc_die_num)
+{
+	struct dram_thr_with_status thr_info = {0};
+	oob_status_t ret;
+
+	ret = get_avg_dram_thr_with_status(soc_die_num, &thr_info);
+	if (ret) {
+		printf("Failed to get avg DRAM throttle with status Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("----------------------------------------------------\n");
+	printf("| Avg DRAM Throttle\t\t| %-3u %-12s |\n", thr_info.thr_pct, "%");
+	printf("| TSOD thermal throttle Status\t| %-16s |\n", thr_info.tsod_th_thr_stat ? "Active" : "Not Active");
+	printf("| TSOD Enable Status\t\t| %-16s |\n", thr_info.tsod_en_stat ? "Enabled" : "Disabled");
+	printf("| ODTS thermal throttle Status\t| %-16s |\n", thr_info.odts_th_thr_stat ? "Active" : "Not Active");
+	printf("| ODTS Enable Status\t\t| %-16s |\n", thr_info.odts_en_stat ? "Enabled" : "Disabled");
+	printf("----------------------------------------------------\n");
+}
+
+static void apml_get_dram_thr_with_status(uint8_t soc_die_num, uint8_t dimm_addr)
+{
+	struct dram_thr_with_status thr_info = {0};
+	oob_status_t ret;
+
+	ret = get_ch_dram_thr_with_status(soc_die_num, dimm_addr, &thr_info);
+	if (ret) {
+		printf("Failed to get channel DRAM throttle with status Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("-----------------------------------------------------\n");
+	printf("| Dimm Addr\t\t\t | 0x%-14x |\n", dimm_addr);
+	printf("| DRAM Throttle\t\t\t | %-3u %-12s |\n", thr_info.thr_pct, "%");
+	printf("| TSOD thermal throttle Status\t | %-16s |\n", thr_info.tsod_th_thr_stat ? "Active" : "Not Active");
+	printf("| TSOD Enable Status\t\t | %-16s |\n", thr_info.tsod_en_stat ? "Enabled" : "Disabled");
+	printf("| ODTS thermal throttle Status\t | %-16s |\n", thr_info.odts_th_thr_stat ? "Active" : "Not Active");
+	printf("| ODTS Enable Status\t\t | %-16s |\n", thr_info.odts_en_stat ? "Enabled" : "Disabled");
+	printf("-----------------------------------------------------\n");
+}
+
 static void apml_get_xgmi_pstate_range(uint8_t soc_die_num)
 {
         uint8_t min_xgmi_pstate = 0, max_xgmi_pstate = 0;
@@ -3921,7 +3962,13 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
 	       "  --getavgdramthrottle\t\t\t  \t\t\t\t\t "
 	       "Show avg dram throttle for all channels \n"
 	       "  --getchdramthrottle\t\t\t  [DIMM_ADDR(HEX)] \t\t\t "
-	       "Show channel dram throttle \n");
+	       "Show channel dram throttle \n"
+		"  --getavgdramthrwithstatus\t\t\t  \t\t\t\t "
+	       "Show avg dram throttle, ODTS enable status, ODTS thermal throttle status,\n"
+	       "\t\t\t\t\t\t\t\t\t\t TSOD enable status and TSOD thermal throttle status for all channels \n"
+	       "  --getchdramthrwithstatus\t\t  [DIMM_ADDR(HEX)] \t\t\t "
+	       "Show channel dram throttle, ODTS enable status, ODTS thermal throttle \n"
+	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n");
 }
 
 static void fam_19_mod_10_mailbox_commands(void)
@@ -4067,7 +4114,12 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "Show avg dram throttle for all channels \n"
 	       "  --getchdramthrottle\t\t\t  [DIMM_ADDR(HEX)] \t\t\t "
 	       "Show channel dram throttle \n"
-	       );
+		"  --getavgdramthrwithstatus\t\t\t  \t\t\t\t "
+	       "Show avg dram throttle, ODTS enable status, ODTS thermal throttle status,\n"
+	       "\t\t\t\t\t\t\t\t\t\t TSOD enable status and TSOD thermal throttle status for all channels \n"
+	       "  --getchdramthrwithstatus\t\t  [DIMM_ADDR(HEX)] \t\t\t "
+	       "Show channel dram throttle, ODTS enable status, ODTS thermal throttle \n"
+	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n");
 }
 
 static void get_common_mailbox_commands(char *exe_name)
@@ -4870,6 +4922,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"showalldimmpower", no_argument,	&flag,	100},
 		{"getdimmregdata",			required_argument,	&flag,	101},
 		{"setdimmregdata",			required_argument,	&flag,  102},
+		{"getavgdramthrwithstatus",		no_argument,		&flag,	103},
+		{"getchdramthrwithstatus",		required_argument,	&flag,	104},
 		{0,			0,			0,	0},
 	};
 
@@ -4994,6 +5048,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 89 ||
 			 (*long_options[long_index].flag) == 94 ||
 			 (*long_options[long_index].flag) == 97 ||
+			 (*long_options[long_index].flag) == 104 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -5024,6 +5079,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		     || *long_options[long_index].flag == 48
 		     || *long_options[long_index].flag == 53
 		     || *long_options[long_index].flag == 64
+		     || *long_options[long_index].flag == 104
 		     ||	*long_options[long_index].flag == 1214))
 		     && validate_number(argv[optind - 1], 16)) {
 			printf("Option  '-%c' requires argument as valid"
@@ -5049,6 +5105,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			    && (*long_options[long_index].flag) != 48
 			    && (*long_options[long_index].flag) != 53
 			    && (*long_options[long_index].flag) != 64
+			    && (*long_options[long_index].flag) != 104
 			    && (*long_options[long_index].flag) != 1214)
 			    && validate_number(argv[optind - 1], 10)) {
 				printf("\nOption '-%c' require argument as valid"
@@ -5814,6 +5871,15 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			dimm_reg_write.reg_space = atoi(argv[optind++]);
 			dimm_reg_write.w_data = strtoul(argv[optind++], &end, 16);
 			apml_set_dimm_register_data(soc_die_num, dimm_reg_write);
+		} else if (*(long_options[long_index].flag) == 103) {
+			/* Get average DRAM throttle information with ODTS/TSOD status */
+			apml_get_avg_dram_thr_with_status(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 104) {
+			/* Get DRAM throttle information with ODTS/TSOD status */
+			dimm_addr = strtoul(argv[optind - 1], &end, 16);
+			apml_get_dram_thr_with_status(soc_die_num, dimm_addr);
+			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_die_num, uprate);
