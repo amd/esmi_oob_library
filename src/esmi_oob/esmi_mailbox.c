@@ -1422,24 +1422,38 @@ oob_status_t get_dfc_enable(uint8_t soc_die_num, uint8_t *state)
 
 oob_status_t get_avg_dram_throttle(uint8_t soc_die_num, uint32_t *dram_throttle)
 {
-	uint32_t input = BIT(31);
+	uint32_t input = BIT(31), resp = 0;
+	oob_status_t ret;
 
 	if (!dram_throttle)
 		return OOB_ARG_PTR_NULL;
 
-	return esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
-				     input, dram_throttle);
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
+				     input, &resp);
+	if (ret)
+		return ret;
+
+	*dram_throttle = resp & DRAM_THROTTLE_MASK;
+	return ret;
 }
 
 
 oob_status_t get_ch_dram_throttle(uint8_t soc_die_num, uint8_t dimm_addr,
 				  uint32_t *dram_throttle)
 {
+	uint32_t resp = 0;
+	oob_status_t ret;
+
 	if (!dram_throttle)
 		return OOB_ARG_PTR_NULL;
 
-	return esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
-				     (uint32_t)dimm_addr, dram_throttle);
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
+				     (uint32_t)dimm_addr, &resp);
+	if (ret)
+		return ret;
+
+	*dram_throttle = resp & DRAM_THROTTLE_MASK;
+	return ret;
 }
 
 oob_status_t write_dimm_spd_register(uint8_t soc_die_num, struct dimm_spd_write d_in)
