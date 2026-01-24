@@ -683,6 +683,25 @@ struct get_hsmp_cmds_dout {
 };
 
 /**
+ * @brief Structure for dram throttle percentage with throttle status.
+ *
+ * This structure is used to specify the following:
+ * - DRAM Throttle percentage
+ * - TSOD thermal throttle status (1 means active and 0 means inactive)
+ * - TSOD enable/disable status (1 means enable and 0 means disable)
+ * - ODTS thermal throttle status (1 means active and 0 means inactive)
+ * - ODTS enable/disable status (1 means enable and 0 means disable)
+ *
+ */
+struct dram_thr_with_status {
+	uint8_t thr_pct;      //!< throttle percentage
+	uint8_t tsod_th_thr_stat : 1;	//!< TSOD thermal throttle status
+	uint8_t	tsod_en_stat : 1;	//!< TSOD enable/disable status
+	uint8_t	odts_th_thr_stat : 1;	//!< ODTS thermal throttle status
+	uint8_t	odts_en_stat : 1;	//!< ODTS enable/disable status
+};
+
+/**
  * @brief frequency limit source names
  */
 static char * const freqlimitsrcnames[] = {
@@ -2546,6 +2565,47 @@ oob_status_t set_dfc_enable(uint8_t soc_die_num, uint8_t state);
  *
  */
 oob_status_t get_dfc_enable(uint8_t soc_die_num, uint8_t *state);
+
+/**
+ *  @brief Get the channel DRAM throttle.
+ *
+ *  @details This function will get the DRAM throttle for the given channel
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] dimm_addr dimm address for Mode 1.
+ *
+ *  @param[out] thr_info struct dram_thr_with_status containing thr_pct,
+ *  tsod_th_thr_stat, tsod_en_stat, odts_th_thr_stat and odts_en_stat
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_ch_dram_thr_with_status(uint8_t soc_die_num, uint8_t dimm_addr,
+					 struct dram_thr_with_status *thr_info);
+
+/**
+ *  @brief Get the Avg DRAM throttle and throttle status across all the channels.
+ *
+ *  @details This function will get the average DRAM throttle, ODTS
+ *  enable/disable status, ODTS thermal throttle status, TSOD
+ *  enable/disable status, TSOD thermal throttle status across
+ *  all the channels
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[out] thr_info struct dram_thr_with_status containing average thr_pct,
+ *  tsod_th_thr_stat, tsod_en_stat, odts_th_thr_stat and odts_en_stat
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_avg_dram_thr_with_status(uint8_t soc_die_num,
+					  struct dram_thr_with_status *thr_info);
 
 /**
  *  @brief Get the Avg DRAM throttle across all the channels.

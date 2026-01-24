@@ -66,6 +66,16 @@
 #define MAX_DF_PSTATE_LIMIT	2
 /* LID to get DIMM serial Number */
 #define DIMM_SERIAL_NUM_LID	0xA
+/* DRAM THROTTLE MASK */
+#define DRAM_THROTTLE_MASK	0x7F
+/* TSOD_THROTTLE_STATUS_BIT */
+#define TSOD_THROTTLE_STATUS_BIT 28
+/* TSOD ENABLE STATUS BIT*/
+#define TSOD_ENABLE_STATUS_BIT 29
+/* ODTS THROTTLE STATUS BIT */
+#define ODTS_THROTTLE_STATUS_BIT 30
+/* ODTS ENABLE STATUS BIT */
+#define ODTS_ENABLE_STATUS_BIT 31
 /* Register offset to get DIMM serial Number */
 #define DIMM_SERIAL_NUM_REG_OFF	0x205
 /* Register space to get DIMM serial Number */
@@ -1992,4 +2002,50 @@ oob_status_t set_dimm_sb_register_data(uint8_t soc_die_num,
 			 | shift_left_op(d_in.w_data, THREE_BYTES);
 
 	return esmi_oob_write_mailbox(soc_die_num, SET_DIMM_SPD, input);
+}
+
+oob_status_t get_avg_dram_thr_with_status(uint8_t soc_die_num,
+					  struct dram_thr_with_status *thr_info)
+{
+	uint32_t input = BIT(31), resp = 0;
+	oob_status_t ret;
+
+	if (!thr_info)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
+				    input, &resp);
+	if (ret)
+		return ret;
+
+	thr_info->thr_pct = resp & DRAM_THROTTLE_MASK;
+	thr_info->tsod_th_thr_stat = (resp >> TSOD_THROTTLE_STATUS_BIT) & BIT(0);
+	thr_info->tsod_en_stat = (resp >> TSOD_ENABLE_STATUS_BIT) & BIT(0);
+	thr_info->odts_th_thr_stat = (resp >> ODTS_THROTTLE_STATUS_BIT) & BIT(0);
+	thr_info->odts_en_stat = (resp >> ODTS_ENABLE_STATUS_BIT) & BIT(0);
+
+	return ret;
+}
+
+oob_status_t get_ch_dram_thr_with_status(uint8_t soc_die_num, uint8_t dimm_addr,
+				      struct dram_thr_with_status *thr_info)
+{
+	uint32_t input = dimm_addr, resp = 0;
+	oob_status_t ret;
+
+	if (!thr_info)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_die_num, GET_DRAM_THROTTLE_CHANNELS,
+				    input, &resp);
+	if (ret)
+		return ret;
+
+	thr_info->thr_pct = resp & DRAM_THROTTLE_MASK;
+	thr_info->tsod_th_thr_stat = (resp >> TSOD_THROTTLE_STATUS_BIT) & BIT(0);
+	thr_info->tsod_en_stat = (resp >> TSOD_ENABLE_STATUS_BIT) & BIT(0);
+	thr_info->odts_th_thr_stat = (resp >> ODTS_THROTTLE_STATUS_BIT) & BIT(0);
+	thr_info->odts_en_stat = (resp >> ODTS_ENABLE_STATUS_BIT) & BIT(0);
+
+	return ret;
 }
