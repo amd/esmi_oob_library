@@ -3194,7 +3194,7 @@ static void apml_get_avg_dram_throttle(uint8_t soc_die_num)
         }
 
         printf("------------------------------------------\n");
-        printf("| Avg DRAM Throttle | %-3d %-14s |\n", dram_throttle, "%");
+        printf("| Avg DRAM Throttle | %-3u %-14s |\n", dram_throttle, "%");
         printf("------------------------------------------\n");
 }
 
@@ -3213,7 +3213,7 @@ static void apml_get_ch_dram_throttle(uint8_t soc_die_num, uint8_t dimm_addr)
         printf("-------------------------------------------------\n");
 	printf("| Dimm Addr\t\t | DRAM Throttle\t|\n");
         printf("-------------------------------------------------\n");
-        printf("| 0x%-16x\t | %-3d %-14s   |\n", dimm_addr, dram_throttle, "%");
+        printf("| 0x%-16x\t | %-3u %-14s   |\n", dimm_addr, dram_throttle, "%");
         printf("-------------------------------------------------\n");
 }
 
