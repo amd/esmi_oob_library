@@ -1389,6 +1389,24 @@ static void apml_get_temp_range_and_refresh_rate(uint8_t soc_die_num,
 	printf("----------------------------------------------\n");
 }
 
+static void apml_get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num)
+{
+	struct hottest_dimm_temp_refresh_rate rate = {0};
+	oob_status_t ret;
+
+	ret = get_hottest_dimm_temp_range_ref_rate(soc_die_num, &rate);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to get hottest dimm address, temp range and refresh rate, "
+			"Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+	printf("----------------------------------------------\n");
+	printf("| DIMM Addr\t\t | 0x%-15x |\n", rate.dimm_addr);
+	printf("| Range\t\t\t | %-17u |\n", rate.range);
+	printf("| Refresh rate\t\t | %-17u |\n", rate.ref_rate);
+	printf("----------------------------------------------\n");
+}
+
 static void apml_get_dimm_power(uint8_t soc_die_num, uint8_t dimm_addr)
 {
 	struct dimm_power d_power;
@@ -3968,7 +3986,9 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
 	       "\t\t\t\t\t\t\t\t\t\t TSOD enable status and TSOD thermal throttle status for all channels \n"
 	       "  --getchdramthrwithstatus\t\t  [DIMM_ADDR(HEX)] \t\t\t "
 	       "Show channel dram throttle, ODTS enable status, ODTS thermal throttle \n"
-	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n");
+	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n"
+	       "  --gethottestdimmtemprangeandrefreshrate\t\t"
+	       "\t\t\t Show hottest dimm address, temp range, refresh rate\n");
 }
 
 static void fam_19_mod_10_mailbox_commands(void)
@@ -4924,6 +4944,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"setdimmregdata",			required_argument,	&flag,  102},
 		{"getavgdramthrwithstatus",		no_argument,		&flag,	103},
 		{"getchdramthrwithstatus",		required_argument,	&flag,	104},
+		{"gethottestdimmtemprangeandrefreshrate",	no_argument,	&flag,	105},
 		{0,			0,			0,	0},
 	};
 
@@ -5879,6 +5900,10 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Get DRAM throttle information with ODTS/TSOD status */
 			dimm_addr = strtoul(argv[optind - 1], &end, 16);
 			apml_get_dram_thr_with_status(soc_die_num, dimm_addr);
+			break;
+		} else if (*(long_options[long_index].flag) == 105) {
+			/* Get hottest temperature range, refresh rate and dimm address */
+			apml_get_hottest_dimm_temp_range_ref_rate(soc_die_num);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
