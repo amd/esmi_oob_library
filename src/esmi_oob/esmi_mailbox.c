@@ -64,6 +64,10 @@
 #define MAX_XGMI_LINK		2
 /* Maximum value for df p-state limit */
 #define MAX_DF_PSTATE_LIMIT	2
+/* Refresh rate bit position */
+#define REFRESH_RATE_BIT	3
+/* Dimm Temp range Mask */
+#define DIMM_TEMP_RANGE_MASK	0x7
 /* LID to get DIMM serial Number */
 #define DIMM_SERIAL_NUM_LID	0xA
 /* DRAM THROTTLE MASK */
@@ -2060,6 +2064,28 @@ oob_status_t get_ch_dram_thr_with_status(uint8_t soc_die_num, uint8_t dimm_addr,
 	thr_info->tsod_en_stat = (resp >> TSOD_ENABLE_STATUS_BIT) & BIT(0);
 	thr_info->odts_th_thr_stat = (resp >> ODTS_THROTTLE_STATUS_BIT) & BIT(0);
 	thr_info->odts_en_stat = (resp >> ODTS_ENABLE_STATUS_BIT) & BIT(0);
+
+	return ret;
+}
+
+oob_status_t get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num,
+						  struct hottest_dimm_temp_refresh_rate *rate)
+{
+	uint32_t input = BIT(31), resp = 0;
+	oob_status_t ret;
+
+	if (!rate)
+		return OOB_ARG_PTR_NULL;
+
+	ret = esmi_oob_read_mailbox(soc_die_num, READ_DIMM_TEMP_RANGE_AND_REFRESH_RATE,
+				    input, &resp);
+
+	if (ret)
+		return ret;
+
+	rate->range = resp & DIMM_TEMP_RANGE_MASK;
+	rate->ref_rate = (resp >> REFRESH_RATE_BIT) & BIT(0);
+	rate->dimm_addr = (resp >> THREE_BYTES) & ONE_BYTE_MASK;
 
 	return ret;
 }

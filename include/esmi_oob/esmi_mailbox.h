@@ -749,6 +749,14 @@ struct oob_err_inj_types {
 };
 
 /**
+ * @brief Hottest DIMM address, temperature range and refresh rate
+ */
+struct hottest_dimm_temp_refresh_rate {
+	uint8_t dimm_addr;		//!< DIMM address
+	uint8_t range : 3;		//!< Temperature range (MR4[2:0]) (3-bit field)
+	uint8_t ref_rate : 1;		//!< Refresh rate (MR4[3]) (1-bit field, e.g., 1X/2X)
+};
+/**
  * @brief energy status multiplier
  * value is 1/2^ESU where ESU is
  * [12:8] bit of the mailbox command 0x55h.
@@ -3249,6 +3257,27 @@ oob_status_t get_dimm_pow_data(uint8_t soc_die_num, struct dimm_pow_din d_in,
 oob_status_t get_dimm_thermal_sensor_data(uint8_t soc_die_num,
 					  struct dimm_thermal_din din,
 					  struct dimm_thermal *dimm_temp);
+
+/**
+ *  @brief Read hottest DIMM address, temperature range and refresh rate.
+ *
+ *  @details This function returns the hottest DIMM address, temperature range and
+ *  refresh rate from the MR4 register, per JEDEC spec.
+ *  Supported platforms: \ref Fam-1Ah_Mod-50h-57h
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[out] rate temp_refresh_rate structure with hottest DIMM address and its
+ *  corresponding refresh rate (1 bit) and temperature range (3 bits).
+ *  refresh rate: 0 = 1X, 1 = 2X.
+ *  Temperature range: 3-bit MR4[2:0] temperature range code (see JEDEC MR4 specification).
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num,
+						  struct hottest_dimm_temp_refresh_rate *rate);
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/
