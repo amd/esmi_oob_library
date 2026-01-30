@@ -1461,6 +1461,21 @@ static void apml_get_per_dimm_power(uint8_t soc_die_num, struct dimm_pow_din d_i
 	printf("------------------------------------------------------\n");
 }
 
+static void apml_write_pcie_link_control(uint8_t soc_die_num, uint32_t pcie_link_control)
+{
+	oob_status_t ret;
+
+	ret = write_pcie_link_control(soc_die_num, pcie_link_control);
+	if (ret) {
+		printf("Failed to %s the PCIe link control "
+		       "Err[%d]:%s\n", pcie_link_control ? "disable" : "enable",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("PCIe link control %s successfully\n", pcie_link_control ? "disabled" : "enabled");
+}
+
 static void decode_dimm_temp(uint16_t raw, float *temp)
 {
 	if (raw <= 0x3FF)
@@ -3988,7 +4003,9 @@ static void fam_1A_mod_50_common_mailbox_commands(void)
 	       "Show channel dram throttle, ODTS enable status, ODTS thermal throttle \n"
 	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n"
 	       "  --gethottestdimmtemprangeandrefreshrate\t\t"
-	       "\t\t\t Show hottest dimm address, temp range, refresh rate\n");
+	       "\t\t\t Show hottest dimm address, temp range, refresh rate\n"
+	       "  --writepcielinkcontrol\t\t  [PCIE_LINK_CONTROL(0,1)] \t\t "
+	       "Enable(0)/Disable(1) PCIe link control\n");
 }
 
 static void fam_19_mod_10_mailbox_commands(void)
@@ -4139,7 +4156,9 @@ static void fam_1A_mod_00_mailbox_commands(void)
 	       "\t\t\t\t\t\t\t\t\t\t TSOD enable status and TSOD thermal throttle status for all channels \n"
 	       "  --getchdramthrwithstatus\t\t  [DIMM_ADDR(HEX)] \t\t\t "
 	       "Show channel dram throttle, ODTS enable status, ODTS thermal throttle \n"
-	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n");
+	       "\t\t\t\t\t\t\t\t\t\t status, TSOD enable status and TSOD thermal throttle status \n"
+	       "  --writepcielinkcontrol\t\t  [PCIE_LINK_CONTROL(0,1)] \t\t "
+	       "Enable(0)/Disable(1) PCIe link control\n");
 }
 
 static void get_common_mailbox_commands(char *exe_name)
@@ -4945,6 +4964,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getavgdramthrwithstatus",		no_argument,		&flag,	103},
 		{"getchdramthrwithstatus",		required_argument,	&flag,	104},
 		{"gethottestdimmtemprangeandrefreshrate",	no_argument,	&flag,	105},
+		{"writepcielinkcontrol", 		required_argument,	&flag,	106},
 		{0,			0,			0,	0},
 	};
 
@@ -5070,6 +5090,7 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 94 ||
 			 (*long_options[long_index].flag) == 97 ||
 			 (*long_options[long_index].flag) == 104 ||
+			 (*long_options[long_index].flag) == 106 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -5904,6 +5925,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 105) {
 			/* Get hottest temperature range, refresh rate and dimm address */
 			apml_get_hottest_dimm_temp_range_ref_rate(soc_die_num);
+			break;
+		} else if (*(long_options[long_index].flag) == 106) {
+			/* Enable/disable PCIe link control */
+			val1 = atoi(argv[optind - 1]);
+			apml_write_pcie_link_control(soc_die_num, val1);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
