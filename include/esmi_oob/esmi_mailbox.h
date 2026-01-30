@@ -177,7 +177,8 @@ typedef enum {
 				//!< its extended to PMIC, TS0 and TS1
 	SET_DIMM_SPD,		//!< Initially it was supported for SPD only and later
 				//!< its extended to PMIC, TS0 and TS1
-	SET_XGMI_PSTATE_RANGE = 0x73,
+	WRITE_PCIE_LINK_CONTROL, //!< Enable/Disable PCIe port Link Control
+	SET_XGMI_PSTATE_RANGE,
 	CPU_RAIL_ISO_FREQ_POLICY,
 	PC6_ENABLE,
 	DFC_ENABLE,
@@ -3278,6 +3279,26 @@ oob_status_t get_dimm_thermal_sensor_data(uint8_t soc_die_num,
  */
 oob_status_t get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num,
 						  struct hottest_dimm_temp_refresh_rate *rate);
+
+/**
+ *  @brief Write PCIe Link Control.
+ *
+ *  @details This function will Enable or Disable the PCIe port link behavior,
+ *  allowing dynamic switching between the CPU and port drives for link
+ *  establishment.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh and \ref Fam-1Ah_Mod-50h-57h.
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] pcie_link_control 0 for Normal Operation, 1 for Disable Link.
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t write_pcie_link_control(uint8_t soc_die_num,
+				     uint32_t pcie_link_control);
+
 /* @}
  */  // end of MailboxMsg
 /****************************************************************************/

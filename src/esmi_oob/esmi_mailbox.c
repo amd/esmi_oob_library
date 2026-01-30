@@ -2089,3 +2089,13 @@ oob_status_t get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num,
 
 	return ret;
 }
+
+oob_status_t write_pcie_link_control(uint8_t soc_die_num,
+				     uint32_t pcie_link_control)
+{
+	if (pcie_link_control > BIT(0))
+		return OOB_INVALID_INPUT;
+
+	return esmi_oob_write_mailbox(soc_die_num, WRITE_PCIE_LINK_CONTROL,
+				      pcie_link_control);
+}
