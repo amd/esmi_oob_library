@@ -71,6 +71,12 @@
 #define ZERO_OFFSET		0
 /* DRAM ECC error category */
 #define DRAM_ECC_ERR_CAT	1
+/* HSMP commands mask bits */
+#define HSMP_CMDS_MASK_BITS	1
+/* HSMP Commands Offset bits */
+#define HSMP_CMDS_OFFSET_BITS	4
+/* BIT Mask Segment bits */
+#define BIT_MASK_SEGMENT_BITS	24
 /* Rank Multiplier Mask */
 #define RANK_MUL_MASK		0x7
 /* Nibble mask */
@@ -97,6 +103,43 @@ static uint32_t clamp_val(int val, uint32_t lo, uint32_t hi) {
 	return hi;
     else
 	return (uint32_t)val;
+}
+
+/**
+ * @brief Validate that an integer value fits within the specified bit width
+ *
+ * @param[in] value The integer value to validate
+ * @param[in] max_bits The maximum number of bits for the field (e.g., 1 for bool, 4 for 4-bit field)
+ * @param[in] param_name The name of the parameter for error reporting
+ *
+ * @retval 0 on success (value is within valid range)
+ * @retval UNEXPECTED_SIZE on failure (value exceeds maximum allowed for the bit width)
+ *
+ * @details This function validates that the input value does not exceed the maximum
+ * value representable by the specified number of bits. For example:
+ * - 1-bit field: valid range is 0-1
+ * - 4-bit field: valid range is 0-15
+ * - 8-bit field: valid range is 0-255
+ * If validation fails, an error message is printed indicating the invalid input.
+ */
+static oob_status_t validate_bitfield_range(long value, uint8_t max_bits, const char *param_name)
+{
+	uint32_t max_value;
+	const char *parameter_name = (param_name != NULL) ? param_name : "parameter";
+
+	if (max_bits >= D_WORD_BITS)
+		max_value = UINT32_MAX;
+	else
+		max_value = ((uint32_t)1 << max_bits) - 1U;  /* Calculate max value: 2^max_bits - 1 */
+
+	/* Check if value is negative or exceeds maximum */
+	if (value < 0 || value > max_value) {
+		printf(RED "Invalid Input for %s. Value %ld is out of range [0-%u] for %u-bit field." RESET "\n",
+			parameter_name, value, max_value, max_bits);
+		return OOB_UNEXPECTED_SIZE;
+	}
+
+	return OOB_SUCCESS;
 }
 
 static int flag;
@@ -4776,6 +4819,7 @@ static void validate_modules(uint8_t soc_die_num, bool *is_sbrmi,
  */
 static oob_status_t parseesb_args(int argc, char **argv)
 {
+	long input_val1 = 0, input_val2 = 0, input_val3 = 0;
 	struct get_hsmp_cmds_din get_hsmp_cmds_d_in = {0};
 	struct set_hsmp_cmds_din set_hsmp_cmds_d_in = {0};
 	union ras_df_err_dump df_err = {0};
@@ -5887,15 +5931,52 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			break;
 		} else if (*(long_options[long_index].flag) == 91) {
 			/* Get Enabled HSMP commands */
-			get_hsmp_cmds_d_in.rmask = atoi(argv[optind - 1]);
-			get_hsmp_cmds_d_in.offset = atoi(argv[optind++]);
+			input_val1 = strtol(argv[optind - 1], &end, 10);
+			input_val2 = strtol(argv[optind++], &end, 10);
+
+			/* Validate rmask (1-bit field: 0 or 1 only) */
+			if (validate_bitfield_range(input_val1,
+						     HSMP_CMDS_MASK_BITS,
+						     "HSMP Commands Mask") != OOB_SUCCESS)
+				break;
+
+			/* Validate offset (4-bit field: 0-15) */
+			if (validate_bitfield_range(input_val2,
+						     HSMP_CMDS_OFFSET_BITS,
+						     "HSMP Commands Offset") != OOB_SUCCESS)
+				break;
+
+			get_hsmp_cmds_d_in.rmask = (uint8_t)input_val1;
+			get_hsmp_cmds_d_in.offset = (uint8_t)input_val2;
 			apml_get_enabled_hsmp_commands(soc_die_num, get_hsmp_cmds_d_in);
 			break;
 		} else if (*(long_options[long_index].flag) == 92) {
 			/* Set Enabled HSMP commands */
-			set_hsmp_cmds_d_in.rmask = atoi(argv[optind - 1]);
-			set_hsmp_cmds_d_in.offset = atoi(argv[optind++]);
-			set_hsmp_cmds_d_in.bitmask = strtoul(argv[optind++], &end, 16);
+			input_val1 = strtol(argv[optind - 1], &end, 10);
+			input_val2 = strtol(argv[optind++], &end, 10);
+			input_val3 = strtoul(argv[optind++], &end, 16);
+
+			/* Validate rmask (1-bit field: 0 or 1 only) */
+			if (validate_bitfield_range(input_val1,
+						     HSMP_CMDS_MASK_BITS,
+						     "HSMP Commands Mask") != OOB_SUCCESS)
+				break;
+
+			/* Validate offset (4-bit field: 0-15) */
+			if (validate_bitfield_range(input_val2,
+						     HSMP_CMDS_OFFSET_BITS,
+						     "HSMP Commands Offset") != OOB_SUCCESS)
+				break;
+
+			/* Validate bitmask (24-bit field: 0-0xFFFFFF) */
+			if (validate_bitfield_range(input_val3,
+						     BIT_MASK_SEGMENT_BITS,
+						     "HSMP Commands BitMask") != OOB_SUCCESS)
+				break;
+
+			set_hsmp_cmds_d_in.rmask = (uint8_t)input_val1;
+			set_hsmp_cmds_d_in.offset = (uint8_t)input_val2;
+			set_hsmp_cmds_d_in.bitmask = (uint32_t)input_val3;
 			apml_set_enabled_hsmp_commands(soc_die_num, set_hsmp_cmds_d_in);
 			break;
 		} else if (*(long_options[long_index].flag) == 101) {
