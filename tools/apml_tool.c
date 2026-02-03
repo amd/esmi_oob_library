@@ -71,6 +71,10 @@
 #define ZERO_OFFSET		0
 /* DRAM ECC error category */
 #define DRAM_ECC_ERR_CAT	1
+/* SVI3 Rail mode bits */
+#define SVI3_RAIL_MODE_BITS	1
+/* SVI3 Rail index bits */
+#define SVI3_RAIL_INDEX_BITS	3
 /* HSMP commands mask bits */
 #define HSMP_CMDS_MASK_BITS	1
 /* HSMP Commands Offset bits */
@@ -5856,8 +5860,19 @@ static oob_status_t parseesb_args(int argc, char **argv)
                         break;
 		} else if (*(long_options[long_index].flag) == 78) {
 			/* Get SVI3 vr controller temperature by rail */
-			svi3_d_in.rail_mode = atoi(argv[optind - 1]);
-			svi3_d_in.svi3_rail_index = atoi(argv[optind++]);
+			input_val1 = strtol(argv[optind - 1], &end, 10);
+			input_val2 = strtol(argv[optind++], &end, 10);
+			/* Validating SVI3 Rail mode */
+			if (validate_bitfield_range(input_val1, SVI3_RAIL_MODE_BITS,
+						     "SVI3 Rail Mode") != OOB_SUCCESS)
+				break;
+
+			/* Validating SVI3 Rail index */
+			if (validate_bitfield_range(input_val2, SVI3_RAIL_INDEX_BITS,
+						     "SVI3 Rail Index") != OOB_SUCCESS)
+				break;
+			svi3_d_in.rail_mode = (uint8_t)input_val1;
+			svi3_d_in.svi3_rail_index = (uint8_t)input_val2;
 			apml_get_svi3_vr_controller_temp_by_rail(soc_die_num, svi3_d_in);
                         break;
 		} else if (*(long_options[long_index].flag) == 79) {
