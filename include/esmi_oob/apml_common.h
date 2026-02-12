@@ -58,6 +58,7 @@
 /* Default data for input */
 #define DEFAULT_DATA            0
 #define BIT_LEN			1	//!< Bit length //
+#define MAX_ONE_BIT_DATA	1	//!< Max data for one bit //
 #define HI_POW_DIMM_REPORT_FLAG	1	//!< Highest power consuming
 					//!< DIMM reporting flag //
 #define SEMI_NIBBLE_BITS	2	//!< Half nibble bits //

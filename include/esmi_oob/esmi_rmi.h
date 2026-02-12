@@ -457,6 +457,45 @@ oob_status_t read_sbrmi_ready_status(uint8_t soc_die_num, bool *buffer);
  */
 oob_status_t clear_shut_down_err(uint8_t soc_die_num);
 
+/**
+ * @brief Controls enable/disable Alert_L assertion for mailbox for a specific SOC die.
+ *
+ * This function provides capability to enable/disable Alert_L assertion for mailbox
+ * for the specified SOC die number. ALERT_L signaling is enabled(0) when SBRMIx02[SwAlertSts] is set.
+ * ALERT_L signaling is disabled(1) when SBRMIx02[SwAlertSts] is set.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h
+ *
+ * @param[in] soc_die_num The SOC die number on which to assert GPIO.
+ * @param[in] dis_alert Flag to control alert_l signal behavior.
+ *				- 1: Disable the alert_l signal assertion
+ *				- 0: Enable the alert_l signal assertion
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t gpio_assertion_on_mailbox(uint8_t soc_die_num, uint8_t dis_alert);
+
+/**
+ * @brief Controls enable/disable Alert_L assertion for asynchronous alert signals.
+ *
+ * This function provides capability to enable/disable Alert_L assertion for asynchronous
+ * alerts on a specified SOC die. ALERT_L signaling is enabled(0) when SBRMIx02[SwAsyncAlertSts] is set.
+ * ALERT_L signaling is disabled(1) when SBRMIx02[SwAsyncAlertSts] is set.
+ * Supported platforms: \ref Fam-1Ah_Mod-50h-57h
+ *
+ * @param[in] soc_die_num The SOC die number to target for GPIO assertion control.
+ *                         This identifies which die instance should be configured.
+ * @param[in] dis_alert Flag to control the alert_l signal:
+ *				- 1 to disable the alert_l signal
+ *				- 0 to enable the alert_l signal
+ *
+ *  @retval ::OOB_SUCCESS is returned upon successful call.
+ *  @retval Non-zero is returned upon failure.
+ *
+ */
+oob_status_t gpio_assertion_for_async_alerts(uint8_t soc_die_num, uint8_t dis_alert);
+
 /** @} */  // end of SB-RMI Register access
 /*****************************************************************************/
 

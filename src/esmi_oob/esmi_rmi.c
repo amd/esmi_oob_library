@@ -469,3 +469,43 @@ oob_status_t clear_shut_down_err(uint8_t soc_die_num)
 	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_RASSTATUS,
 				       clear_shut_down_err);
 }
+
+oob_status_t gpio_assertion_on_mailbox(uint8_t soc_die_num, uint8_t dis_alert)
+{
+	uint8_t control_data = 0;
+	oob_status_t ret;
+
+	if (dis_alert > MAX_ONE_BIT_DATA)
+		return OOB_INVALID_INPUT;
+
+	ret = read_sbrmi_control(soc_die_num, &control_data);
+	if (ret)
+		return ret;
+
+	if (dis_alert)
+		control_data |= BIT(4);  /* Set bit-4 to 1 to disable Alert-L signaling */
+	else
+		control_data &= ~BIT(4); /* Set bit-4 to 0 to enable Alert-L signaling */
+
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_CONTROL, control_data);
+}
+
+oob_status_t gpio_assertion_for_async_alerts(uint8_t soc_die_num, uint8_t dis_alert)
+{
+	uint8_t control_data = 0;
+	oob_status_t ret;
+
+	if (dis_alert > MAX_ONE_BIT_DATA)
+		return OOB_INVALID_INPUT;
+
+	ret = read_sbrmi_control(soc_die_num, &control_data);
+	if (ret)
+		return ret;
+
+	if (dis_alert)
+		control_data |= BIT(6);  /* Set bit-6 to 1 to disable Alert-L signaling for asynchronous alerts */
+	else
+		control_data &= ~BIT(6); /* Set bit-6 to 0 to enable Alert-L signaling for asynchronous alerts */
+
+	return esmi_oob_rmi_write_byte(soc_die_num, SBRMI_CONTROL, control_data);
+}
