@@ -1353,6 +1353,34 @@ static void apml_get_ras_valid_mca_banks(uint8_t soc_die_num)
 	}
 }
 
+static void apml_gpio_assertion_on_mailbox(uint8_t soc_die_num, uint8_t disable_alert_l_signal)
+{
+	oob_status_t ret;
+
+	ret = gpio_assertion_on_mailbox(soc_die_num, disable_alert_l_signal);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to assert GPIO through mailbox, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("GPIO assertion through mailbox is %s successfully\n", disable_alert_l_signal ? "disabled" : "enabled");
+}
+
+static void apml_gpio_assertion_for_async_alerts(uint8_t soc_die_num, uint8_t dis_alert)
+{
+	oob_status_t ret;
+
+	ret = gpio_assertion_for_async_alerts(soc_die_num, dis_alert);
+	if (ret != OOB_SUCCESS) {
+		printf("Failed to assert GPIO for async alerts, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("GPIO assertion for async alerts is %s successfully\n", dis_alert ? "disabled" : "enabled");
+}
+
 static void apml_get_ras_mca_msr(uint8_t soc_die_num, struct mca_bank mca_dump)
 {
 	oob_status_t ret;
@@ -4359,7 +4387,11 @@ static void fam_1A_mod_50_rmi_commands(void) {
 		   "  --getsbrmireadystatus\t\t\t\t\t\t\t Get "
 		   " SBRMI ready status\n"
 		   "  --clearcpushutdownerror\t\t\t\t\t\t Clear "
-		   "CPU shut down error\n");
+		   "CPU shut down error\n"
+	       "  --gpioassertionforasyncalert\t\t  [CTRL_ALERTL(0,1)]\t\t GPIO Assertion for async alert\n"
+	       "\t\t\t\t\t\t\t\t\t Set to 0(Enable) or 1 (disable) Alert-L signaling\n"
+	       "  --gpioassertionformailbox\t\t  [CTRL_ALERTL(0,1)]\t\t GPIO Assertion for mailbox alert\n"
+	       "\t\t\t\t\t\t\t\t\t Set to 0(Enable) or 1 (disable) Alert-L signaling\n");
 
 }
 
@@ -5013,6 +5045,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"getchdramthrwithstatus",		required_argument,	&flag,	104},
 		{"gethottestdimmtemprangeandrefreshrate",	no_argument,	&flag,	105},
 		{"writepcielinkcontrol", 		required_argument,	&flag,	106},
+		{"gpioassertionforasyncalert", 		required_argument,	&flag,	107},
+		{"gpioassertionformailbox", 		required_argument,	&flag,	108},
 		{0,			0,			0,	0},
 	};
 
@@ -5139,6 +5173,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			 (*long_options[long_index].flag) == 97 ||
 			 (*long_options[long_index].flag) == 104 ||
 			 (*long_options[long_index].flag) == 106 ||
+			 (*long_options[long_index].flag) == 107 ||
+			 (*long_options[long_index].flag) == 108 ||
 			 (*long_options[long_index].flag) == 1201 ||
 			 (*long_options[long_index].flag) == 1202 ||
 			 (*long_options[long_index].flag) == 1203 ||
@@ -6026,6 +6062,26 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			/* Enable/disable PCIe link control */
 			val1 = atoi(argv[optind - 1]);
 			apml_write_pcie_link_control(soc_die_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 107) {
+			/* gpio assertion on async alerts */
+			input_val1 = strtol(argv[optind - 1], &end, 10);
+			/* Validate CTRL_ALERTL (1-bit field: 0 or 1 only) */
+			if (validate_bitfield_range(input_val1, BIT_LEN,
+						    "CTRL_ALERTL") != OOB_SUCCESS)
+				break;
+			val1 = input_val1;
+			apml_gpio_assertion_for_async_alerts(soc_die_num, val1);
+			break;
+		} else if (*(long_options[long_index].flag) == 108) {
+			/* gpio assertion on mailbox */
+			input_val1 = strtol(argv[optind - 1], &end, 10);
+			/* Validate CTRL_ALERTL (1-bit field: 0 or 1 only) */
+			if (validate_bitfield_range(input_val1, BIT_LEN,
+						    "CTRL_ALERTL") != OOB_SUCCESS)
+				break;
+			val1 = input_val1;
+			apml_gpio_assertion_on_mailbox(soc_die_num, val1);
 			break;
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
