@@ -290,12 +290,15 @@ struct pci_address {
 };
 
 /**
- * @brief PCIe Halt Link Training information. It includes 10 bit link ID,
- * 4 bit Pcie Port number range from 0 - 7.
+ * @brief PCIe Halt Link Training information. It includes a 10-bit link ID,
+ * an 8-bit PCIe port mask (each bit corresponds to a port; 1 = train that
+ * port), and a 1-bit End-of-Message (EOM) flag indicating the last link entry
+ * in a sequence (0 = more entries follow, 1 = last entry).
  */
  struct pcie_link_training {
 	uint16_t link_id : 10;	//!< Link ID
-	uint8_t pcie_port : 4;	//!< PCIe port
+	uint8_t pcie_port_mask;	//!< PCIe port mask (per-bit: 1 = train that port)
+	uint8_t eom : 1;	//!< End-of-Message flag (1 = last entry in sequence)
 };
 
 /**

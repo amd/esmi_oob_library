@@ -1631,7 +1631,7 @@ oob_status_t set_pcie_link_training(uint8_t soc_die_num, struct pcie_link_traini
 	if (!auth_status)
 		return OOB_ARG_PTR_NULL;
 
-	input = (uint32_t)d_in.link_id | shift_left_op(d_in.pcie_port, BIT(4));
+	input = (uint32_t)d_in.link_id | shift_left_op(d_in.pcie_port_mask, BIT(4)) | (d_in.eom << 31);
 
 	return esmi_oob_read_mailbox(soc_die_num, SET_PCIE_LINK_TRAINING,
 				     input, auth_status);
