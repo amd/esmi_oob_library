@@ -1828,38 +1828,47 @@ static oob_status_t validate_bw_link_id(uint8_t soc_die_num, char *link_id,
 }
 
 static void apml_set_pcie_link_training(uint8_t soc_die_num, char *link_id,
-                                       uint8_t pcie_port)
+					uint32_t pcie_port, uint32_t eom)
 {
 	struct pcie_link_training d_in = {0};
 	uint32_t d_out = 0;
 	uint16_t link_id_val = 0;
 	oob_status_t ret;
 
+	if (pcie_port > UINT8_MAX || eom > 1) {
+		printf("Err[%d]:%s\n", OOB_INVALID_INPUT, esmi_get_err_msg(OOB_INVALID_INPUT));
+		return;
+	}
+
 	convert_to_upper_case(link_id);
 	ret = validate_sp7_link_id(link_id, &link_id_val);
+	if (ret) {
+		printf("Not valid link ID, Err[%d]:%s\n", ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	d_in.link_id = link_id_val;
+	d_in.pcie_port_mask = pcie_port;
+	d_in.eom = eom;
+
+	ret = set_pcie_link_training(soc_die_num, d_in, &d_out);
 	if (ret) {
 		printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
 		       ret, esmi_get_err_msg(ret));
 		return;
 	}
-	d_in.link_id = link_id_val;
-	if (pcie_port >= MAX_PCIE_PORT) {
-		printf("\n Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
-			OOB_INVALID_INPUT, esmi_get_err_msg(OOB_INVALID_INPUT));
-		return;
-	}
-	d_in.pcie_port = pcie_port;
-	ret = set_pcie_link_training(soc_die_num, d_in, &d_out);
-	if (ret) {
-		printf("Failed to Halt PCIe Link Training for OOB device authentication, Err[%d]:%s\n",
-                        ret, esmi_get_err_msg(ret));
-		return;
-	}
 
-	printf("------------------------------------------------------------\n");
-	printf("| Device Authentication Status | %-25s |\n", d_out ? "Not Authenticated"
-               : "Authentications Success");
-	printf("------------------------------------------------------------\n");
+	if (eom) {
+		printf("------------------------------------------------------------\n");
+		printf("| Device Authentication Status | %-25s |\n", d_out ? "Not Authenticated"
+		       : "Authentications Success");
+		printf("------------------------------------------------------------\n");
+	} else {
+		printf("--------------------------------------------------------\n");
+		printf("| Device Acceptance Status | %-25s |\n", d_out ? "Rejected"
+		       : "Accepted");
+		printf("--------------------------------------------------------\n");
+	}
 }
 
 static void apml_get_iobandwidth(uint8_t soc_die_num, char *link_id,
@@ -3907,7 +3916,9 @@ static void fam_1A_mod_50_mailbox_commands()
 	       " Show CCD power consumption in Watts\n"
 	       "  --gettempdelta\t\t\t  \t\t\t\t\t "
 	       "Show thermal solution health\n"
-	       "  --pciehaltlinktraining\t\t  [LINK_ID(P0-P5, G0-G3)][PCIE_PORT(0-7)]"
+	       "  --pciehaltlinktraining\t\t  [LINK_ID(P0-P5, G0-G3)]"
+	       "\n\t\t\t\t\t  [MASK_PCIE_PORT(per bit, 1=Mask)]"
+	       "\n\t\t\t\t\t  [EOM]"
 	       "\n\t\t\t\t\t\t\t\t\t\t PCIE halt link training for OOB device authentication\n"
 	       "  --getsvi3vrtempbyrail\t\t\t  [TEMP_DATA_BIT(0-1)][RAIL_INDEX(0-4)]"
 	       "\n\t\t\t\t\t\t\t\t\t\t Get SVI3 VR controller temperature by rail\n"
@@ -5252,7 +5263,6 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 47 ||
 	    *long_options[long_index].flag == 49 ||
 	    *long_options[long_index].flag == 58 ||
-		*long_options[long_index].flag == 77 ||
 		*long_options[long_index].flag == 78 ||
 	    *long_options[long_index].flag == 84 ||
 	    *long_options[long_index].flag == 91))) {
@@ -5306,7 +5316,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	}
 
 	if (opt == 'N' || (opt == 0 && *(long_options[long_index].flag) == 14)
-		       || (opt == 0 && *(long_options[long_index].flag) == 92)) {
+		       || (opt == 0 && (*long_options[long_index].flag == 92 ||
+					 *long_options[long_index].flag == 77))) {
 		if ((optind + 1) >= argc || *argv[optind] == '-'
 		     || *argv[optind + 1] == '-') {
 			printf("\nOption '-%s' requires 3 arguments\n", long_options[long_index].name);
@@ -5888,8 +5899,9 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		} else if (*(long_options[long_index].flag) == 77) {
                         /* Link ID */
 			link_name = argv[optind - 1];
-			val1 = clamp_val(atoi(argv[optind++]), 0, UINT8_MAX);
-			apml_set_pcie_link_training(soc_die_num, link_name, val1);
+			val1 = strtoul(argv[optind++], &end, 0);
+			val2 = atoi(argv[optind++]);
+			apml_set_pcie_link_training(soc_die_num, link_name, val1, val2);
                         break;
 		} else if (*(long_options[long_index].flag) == 78) {
 			/* Get SVI3 vr controller temperature by rail */
