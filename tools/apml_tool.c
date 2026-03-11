@@ -146,33 +146,33 @@ static oob_status_t get_proc_type(uint8_t soc_num,  uint8_t *p_type)
 	}
 	/* Family 1A and Model in 00 - 0Fh */
 	if (plat_info->family == 0x1A) {
-	switch (plat_info->model) {
-	case 0x00 ... 0x0F:
-		*p_type = FAM_1A_MOD_00;
-		break;
-	case 0x10 ... 0x1F:
-		*p_type = FAM_1A_MOD_10;
-		break;
-	default:
-		*p_type = LEGACY_PLATFORMS;
-	}
+		switch (plat_info->model) {
+		case 0x00 ... 0x0F:
+			*p_type = FAM_1A_MOD_00;
+			break;
+		case 0x10 ... 0x1F:
+			*p_type = FAM_1A_MOD_10;
+			break;
+		default:
+			*p_type = LEGACY_PLATFORMS;
+		}
 	} else if (plat_info->family == 0x19) {
-	switch (plat_info->model) {
-	case 0x10 ... 0x1F:
-		*p_type = FAM_19_MOD_10;
-		break;
-	case 0x90 ... 0x9F:
-		*p_type = FAM_19_MOD_90;
-		break;
-	case 0xA0 ... 0xAF:
-		*p_type = FAM_19_MOD_A0;
-		break;
-	default:
-		*p_type = LEGACY_PLATFORMS;
-		break;
-	}
+		switch (plat_info->model) {
+		case 0x10 ... 0x1F:
+			*p_type = FAM_19_MOD_10;
+			break;
+		case 0x90 ... 0x9F:
+			*p_type = FAM_19_MOD_90;
+			break;
+		case 0xA0 ... 0xAF:
+			*p_type = FAM_19_MOD_A0;
+			break;
+		default:
+			*p_type = LEGACY_PLATFORMS;
+			break;
+		}
 	} else {
-	*p_type = LEGACY_PLATFORMS;
+		*p_type = LEGACY_PLATFORMS;
 	}
 	return ret;
 }
