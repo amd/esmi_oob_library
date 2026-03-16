@@ -4,6 +4,23 @@
 Thank you for using AMD APML Library.
 
 # Changes Notes
+## Highlights of major release v5.3.0
+
+* Add new platform support, Family:0x1A, Model:0x50~0x57
+  * New mailbox command support
+    - SET_DIMM_SPD (0x71)
+    - PC6_ENABLE (0x75)
+    - GET_DRAM_THROTTLE_CHANNELS (0x78)
+    - SET_PCIE_LINK_TRAINING (0x79)
+    - GET_CCD_POW_CONSUMPTION (0x7A)
+    - GET_T_DELTA (0x7B)
+    - GET_SVI3_VR_CONTROLLER_TEMP_BY_RAIL (0x7C)
+    - ENABLED_HSMP_COMMANDS (0x7D)
+    - GET_SET_APML_FLOOR_LIMIT (0x7E)
+    - GET_SET_SOC_DIMM_POWER_LIMIT (0x7F)
+  * New RMI registers APIs to control functionality
+* Bug fixes and cosmetic changes
+
 ## Highlights of major release v4.0.1
 
 * Add support for new mailbox messages:
