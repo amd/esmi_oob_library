@@ -3430,7 +3430,7 @@ static void apml_get_df_pstate_range(uint8_t soc_die_num)
         uint8_t min_pstate = 0, max_pstate = 0;
         oob_status_t ret;
 
-        ret = get_df_pstate_range(soc_die_num, &min_pstate, &max_pstate);
+        ret = get_df_pstate_range(soc_die_num, &max_pstate, &min_pstate);
         if (ret) {
                 printf("Failed to DF P-state range "
                        "Err[%d]: %s\n", ret, esmi_get_err_msg(ret));
