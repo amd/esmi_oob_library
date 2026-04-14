@@ -4295,7 +4295,7 @@ static void get_rmi_commands(char *exe_name)
 	printf("Usage: %s [SOC_DIE_NUM] [Option]"
 	       "\nOption:\n"
 	       "\n< SB-RMI COMMANDS >:\n"
-	       "  --showrmiregisters\t\t\t\t\t\t Get "
+	       "  --showrmiregisters\t\t\t\t\t\t\t Get "
 	       "values of SB-RMI reg commands for a given socket\n"
 	       "  --clearrasstatusregister\t\t  [RAS_STATUS_VALUE]\t\t "
 	       "Clear the RAS status register value\n"
