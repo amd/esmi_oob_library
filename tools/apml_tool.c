@@ -99,6 +99,7 @@
 #define BIT_MASK		0x1
 /* DRAM CECC leak rate mask */
 #define DRAM_CECC_LEAK_RATE_MASK	0x1F
+#define MAX_PERF_MODE		5
 
 static uint32_t clamp_val(int val, uint32_t lo, uint32_t hi) {
     if (val < (int)lo)
@@ -5966,6 +5967,11 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			apml_set_sw_async_alert_mask(soc_die_num, sw_async_alert_mask);
 			break;
 		} else if (*(long_options[long_index].flag) == 89) {
+			if (atoi(argv[optind - 1]) > MAX_PERF_MODE) {
+				printf("Err[%d]:%s\n", OOB_INVALID_INPUT,
+					esmi_get_err_msg(OOB_INVALID_INPUT));
+				break;
+			}
 			din_mode.mode = atoi(argv[optind - 1]);
 			if (din_mode.mode == 4 || din_mode.mode == 5) {
 				din_mode.utilization_point = atoi(argv[optind++]);
