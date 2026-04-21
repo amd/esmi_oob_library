@@ -170,7 +170,9 @@ typedef enum {
 	SET_BMC_RAS_ERR_THRESHOLD,
 	SET_BM_RAS_OOB_CONFIG,
 	GET_BMC_RAS_OOB_CONFIG,
-	SET_BMC_PCIE_CONFIG = 0x68,
+	SET_BMC_RAS_ACTION,
+	GET_BMC_RAS_ACTION_STATUS,
+	SET_BMC_PCIE_CONFIG,
 	BMC_RAS_DELAY_RESET_ON_SYNCFLOOD_OVERRIDE = 0x6A,
 	READ_BMC_RAS_RESET_ON_SYNC_FLOOD,
 	GET_DIMM_SPD	= 0x70,	//!< Initially it was supported for SPD only and later
@@ -760,6 +762,55 @@ struct hottest_dimm_temp_refresh_rate {
 	uint8_t range : 3;		//!< Temperature range (MR4[2:0]) (3-bit field)
 	uint8_t ref_rate : 1;		//!< Refresh rate (MR4[3]) (1-bit field, e.g., 1X/2X)
 };
+
+/**
+ * @brief data for status query payload.
+ * Members contain repair entry number.
+ */
+struct status_query_payload {
+	uint8_t repair_entry_num : 3;	//!< Repair entry number
+};
+
+/**
+ * @brief data input for the get BMC RAS action status.
+ * Members contain repair entry number and ras action id.
+ */
+struct get_ras_action_data_in {
+	struct status_query_payload pay_load;	//!< It contains repair entry number
+	uint8_t ras_action_id   : 4;    //!< RAS action id
+};
+
+/**
+ * @brief Output data for the get BMC RAS action status.
+ * Members contain repair result, repair entry number and ras action id.
+ */
+struct ras_action_status {
+	uint8_t repair_result;                  //!< Repair result for the requested entry number
+	uint8_t repair_entry_num : 3;		//!< Repair entry number
+	uint8_t ras_action_id : 4;		//!< RAS action ID
+};
+
+/**
+ * @brief data for the action payload.
+ * Members contain payload, offset, repair entry number.
+ */
+struct action_payload {
+	uint16_t pay_load;			//!< 2 byte data payload
+	uint8_t offset : 5;			//!< 2 byte offset
+	uint8_t repair_entry_num : 3;		//!< repair entry number
+};
+
+/**
+ * @brief data input for set ras action status.
+ * Members contain struct action_payload, ras action ID
+ * and eom flag.
+ */
+struct set_ras_action_data_in {
+	struct action_payload payload;		//!< It contains payload, offset and repair entry number
+	uint8_t ras_act_id : 4;                 //!< RAS action ID
+	bool eom_flag;                          //!< End of msg flag
+};
+
 /**
  * @brief energy status multiplier
  * value is 1/2^ESU where ESU is
@@ -3301,6 +3352,43 @@ oob_status_t get_hottest_dimm_temp_range_ref_rate(uint8_t soc_die_num,
  */
 oob_status_t write_pcie_link_control(uint8_t soc_die_num,
 				     uint32_t pcie_link_control);
+
+/**
+ *  @brief Set BMC RAS action status
+ *
+ *  @details This function will set BMC RAS action status for the
+ *  specified action ID.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh, Fam-1Ah_Mod-50h-57h
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] data_in struct set_ras_action_data_in containing
+ *  struct action_payload, ras action ID and eom flag.
+ *
+ *  @param[out] status response for ras action.
+ */
+oob_status_t set_bmc_ras_action_status(uint8_t soc_die_num,
+				       struct set_ras_action_data_in data_in,
+				       uint32_t *status);
+
+/**
+ *  @brief Get BMC RAS action status
+ *
+ *  @details This function will read BMC RAS action status for the
+ *  specified action ID.
+ *  Supported platforms: \ref Fam-1Ah_Mod-00h-0Fh, Fam-1Ah_Mod-50h-57h
+ *
+ *  @param[in] soc_die_num [3:0]Socket index, [7:4]Die index.
+ *
+ *  @param[in] data_in struct get_ras_action_data_in containing
+ *  struct status_query_payload and ras action id.
+ *
+ *  @param[out] status struct ras_action_status containing repair result
+ *  and struct get_ras_action_data_in.
+ */
+oob_status_t get_bmc_ras_action_status(uint8_t soc_die_num,
+				       struct get_ras_action_data_in data_in,
+				       struct ras_action_status *status);
 
 /* @}
  */  // end of MailboxMsg
