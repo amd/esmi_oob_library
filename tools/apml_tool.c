@@ -3853,6 +3853,46 @@ static void apml_set_enabled_hsmp_commands(uint8_t soc_die_num, struct set_hsmp_
 	printf("HSMP commands enabled successfully\n");
 }
 
+static void apml_get_ras_action_status(uint8_t soc_die_num,
+				       struct get_ras_action_data_in data_in)
+{
+	struct ras_action_status status = {0};
+	oob_status_t ret;
+
+	ret = get_bmc_ras_action_status(soc_die_num, data_in, &status);
+	if (ret) {
+		printf("Failed to get ras action status, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("---------------------------------------------\n");
+	printf("| Repair result \t | %-16u |\n", status.repair_result);
+	printf("| Repair entry num \t | %-16u |\n",
+	       status.repair_entry_num);
+	printf("| RAS action ID \t | %-16u |\n", status.ras_action_id);
+	printf("---------------------------------------------\n");
+}
+
+static void apml_set_ras_action(uint8_t soc_die_num,
+				struct set_ras_action_data_in data_in)
+{
+	uint32_t resp = 0;
+	oob_status_t ret;
+
+	ret = set_bmc_ras_action_status(soc_die_num, data_in, &resp);
+	if (ret) {
+		printf("Failed to set ras action, Err[%d]:%s\n",
+		       ret, esmi_get_err_msg(ret));
+		return;
+	}
+
+	printf("---------------------------------------------\n");
+	printf("| RAS action response\t | %-16u |\n", resp);
+	printf("---------------------------------------------\n");
+}
+
+
 static void show_usage(char *exe_name)
 {
 	printf("Usage: %s [soc_die_num] [Option<s> / [--help] "
@@ -3952,6 +3992,12 @@ static void fam_1A_mod_50_mailbox_commands()
 	       "\n\t\t\t\t\t\t\t\t\t\t Get enabled HSMP commands\n"
 	       "  --setenabledHSMPcommands\t\t  [RMASK(0-1)][OFFSET(0-15)][BITMASK(HEX)]"
 	       "\n\t\t\t\t\t\t\t\t\t\t Set enabled HSMP commands\n"
+	       "  --setbmcrasaction\t\t\t  [PAYLOAD(HEX)]"
+	       "[OFFSET]\n\t\t\t\t\t  [REPAIRENTRYNUMBER]"
+	       "[RASACTIONID][EOM]\t Set BMC RAS action\n"
+	       "  --getbmcrasactionstatus\t\t"
+	       "  [REPAIRENTRYNUMBER][RASACTIONID]\t"
+	       " Get BMC RAS action status\n"
 		);
 }
 
@@ -4886,6 +4932,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	struct dimm_pow_din dimm_din = {0};
 	struct dimm_sb_reg_d_in dimm_reg_din = {0};
 	struct dimm_sb_reg_write dimm_reg_write = {0};
+	struct set_ras_action_data_in set_ras_act_din = {0};
+	struct get_ras_action_data_in get_ras_act_din = {0};
 	uint8_t soc_die_num;
 	uint8_t dimm_addr, type;
 	struct mca_bank mca_dump;
@@ -5056,6 +5104,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 		{"writepcielinkcontrol", 		required_argument,	&flag,	106},
 		{"gpioassertionforasyncalert", 		required_argument,	&flag,	107},
 		{"gpioassertionformailbox", 		required_argument,	&flag,	108},
+		{"setbmcrasaction",	      required_argument,  &flag,  405},
+		{"getbmcrasactionstatus",     required_argument,  &flag,  406},
 		{0,			0,			0,	0},
 	};
 
@@ -5266,7 +5316,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 	    *long_options[long_index].flag == 58 ||
 		*long_options[long_index].flag == 78 ||
 	    *long_options[long_index].flag == 84 ||
-	    *long_options[long_index].flag == 91))) {
+	    *long_options[long_index].flag == 91 ||
+	    *long_options[long_index].flag == 406))) {
 	       if (optind >= argc || *argv[optind] == '-') {
 			printf("\nOption '%s' require TWO arguments\n", argv[optind - 2]);
 			show_usage(argv[0]);
@@ -5284,7 +5335,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 
 	       if ((opt == 'V' || (opt ==  0 && (*long_options[long_index].flag == 78))
 				|| (opt ==  0 && (*long_options[long_index].flag == 84
-				|| *long_options[long_index].flag == 91)))
+				|| *long_options[long_index].flag == 91
+				|| *long_options[long_index].flag == 406)))
 			    && validate_number(argv[optind - 1], 10)){
 			printf("Option '%s' require 1st argument as valid"
 			       " numeric value\n\n", argv[optind - 2]);
@@ -5299,7 +5351,8 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			show_usage(argv[0]);
 			return OOB_SUCCESS;
 		}
-		if (opt ==  0 && (*long_options[long_index].flag == 91)
+		if (opt ==  0 && (*long_options[long_index].flag == 91
+				  || *long_options[long_index].flag == 406)
                     && validate_number(argv[optind], 10)) {
                         printf("Option '%s' require 2nd argument as valid"
                                " numeric value\n\n", argv[optind - 2]);
@@ -5497,6 +5550,30 @@ static oob_status_t parseesb_args(int argc, char **argv)
                 }
 
         }
+	if (opt == 0 && (*long_options[long_index].flag == 405)) {
+		if ((optind + 3) >= argc) {
+			printf("Option '--%s' require 5"
+			       " arguments\n",
+			       long_options[long_index].name);
+			return OOB_SUCCESS;
+		}
+
+		if (validate_number(argv[optind - 1], 0)) {
+			printf("Option '--%s' require argument as"
+			       "valid hex value\n\n",
+			       long_options[long_index].name);
+			return OOB_SUCCESS;
+		}
+		if (validate_number(argv[optind], 10)
+		    || validate_number(argv[optind + 1], 10)
+		    || validate_number(argv[optind + 2], 10)
+		    || validate_number(argv[optind + 3], 10)) {
+			printf("Option '--%s' require argument as"
+			       " valid numeric value\n",
+			       long_options[long_index].name);
+			return OOB_SUCCESS;
+		}
+	}
 
 	if (opt == 'R') {
 		if ((optind + 3) >= argc || *argv[optind] == '-'
@@ -6098,6 +6175,26 @@ static oob_status_t parseesb_args(int argc, char **argv)
 			val1 = input_val1;
 			apml_gpio_assertion_on_mailbox(soc_die_num, val1);
 			break;
+		} else if (*(long_options[long_index].flag) == 405) {
+			/* Set bmc ras action */
+			/* pay load */
+			set_ras_act_din.payload.pay_load = strtol(argv[optind - 1], &end, 0);
+			/* offset */
+			set_ras_act_din.payload.offset = atoi(argv[optind++]);
+			/* repair entry number */
+			set_ras_act_din.payload.repair_entry_num = atoi(argv[optind++]);
+			/* ras action ID */
+			set_ras_act_din.ras_act_id = atoi(argv[optind++]);
+			/* EOM flag */
+			set_ras_act_din.eom_flag = atoi(argv[optind++]);
+			apml_set_ras_action(soc_die_num, set_ras_act_din);
+		} else if (*(long_options[long_index].flag) == 406) {
+			/* Get bmc ras action status */
+			/* Repair entry number */
+			get_ras_act_din.pay_load.repair_entry_num = atoi(argv[optind - 1]);
+			/* ras action id */
+			get_ras_act_din.ras_action_id = atoi(argv[optind++]);
+			apml_get_ras_action_status(soc_die_num, get_ras_act_din);
 		} else if (*(long_options[long_index].flag) == 1201) {
 			uprate = atof(argv[optind - 1]);
 			set_and_verify_apml_socket_uprate(soc_die_num, uprate);
