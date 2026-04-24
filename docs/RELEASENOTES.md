@@ -4,6 +4,20 @@
 Thank you for using AMD APML Library.
 
 # Changes Notes
+## Highlights of minor release v5.4.1
+
+* Add support for run time post package repair
+* Bug fixes:
+  * Fix doxygen comments
+  * API Parameter Correction: Fixed incorrect parameter passed to
+    get_df_pstate_range() API call
+  * Mailbox Command Update: Removed defeatured tool option for
+    mailbox command ID 73h
+  * PCIe Link Training: Updated PCIe Link training command to align
+    with latest PPR specifications
+  * Code Formatting: Corrected tool indentation for consistency
+  * Power Efficiency Mode Input Parameter Validation
+
 ## Highlights of major release v5.3.0
 
 * Add new platform support, Family:0x1A, Model:0x50~0x57

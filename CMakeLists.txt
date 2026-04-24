@@ -29,8 +29,8 @@ set(INC_DIR "include/esmi_oob")
 # Until ABI stabilizes VERSION_MAJOR will be 0. This should be over-ridden
 # by git tags (through "git describe") when they are present.
 set(APML_LIB_VERSION_MAJOR 5)
-set(APML_LIB_VERSION_MINOR 3)
-set(APML_LIB_VERSION_PATCH 0)
+set(APML_LIB_VERSION_MINOR 4)
+set(APML_LIB_VERSION_PATCH 1)
 
 ################# Determine the library version #########################
 ## Setup the package version based on git tags.
