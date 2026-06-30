@@ -59,6 +59,13 @@
 #define MAX_THREAD_REG_V10      	16      //!< Max thread register for rev 10 //
 #define MAX_THREAD_REG_V21_DENSE	48      //!< Max thread register for rev 21 dense platform //
 
+/** @brief Valid SBRMI specification revision values */
+#define SBRMI_REV_V10			0x10 //!< SBRMI Revision v1.0 //
+#define SBRMI_REV_V20			0x20 //!< SBRMI Revision v2.0 //
+#define SBRMI_REV_V21			0x21 //!< SBRMI Revision v2.1 //
+#define SBRMI_REV_V30			0x30 //!< SBRMI Revision v3.0 //
+#define SBRMI_REV_V31			0x31 //!< SBRMI Revision v3.1 //
+
 /**
  * @brief Error codes retured by APML mailbox functions
  */

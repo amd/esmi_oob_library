@@ -40,6 +40,7 @@
  */
 #include <errno.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -55,6 +56,31 @@
 /* Recovery wait time of 1000 micro seconds */
 #define REC_WAIT	1000
 
+static bool is_valid_sbrmi_revision(uint8_t rev)
+{
+	switch (rev) {
+	case SBRMI_REV_V10:
+	case SBRMI_REV_V20:
+	case SBRMI_REV_V21:
+	case SBRMI_REV_V30:
+	case SBRMI_REV_V31:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static bool is_valid_sbtsi_revision(uint8_t rev)
+{
+	switch (rev) {
+	case SBTSI_REV_V4:
+	case SBTSI_REV_V5:
+		return true;
+	default:
+		return false;
+	}
+}
+
 static oob_status_t apml_recover_sbrmi(uint8_t soc_die_num)
 {
 	int retry = MAX_RETRY;
@@ -65,6 +91,8 @@ static oob_status_t apml_recover_sbrmi(uint8_t soc_die_num)
 	ret = read_sbtsi_revision(soc_die_num, &rev);
 	if (ret != OOB_SUCCESS)
 		return ret;
+	if (!is_valid_sbtsi_revision(rev))
+		return OOB_TRY_AGAIN;
 
 	/* Read the curent configuration before writing to bit 0 */
 	ret = read_sbtsi_config(soc_die_num, &config);
@@ -91,11 +119,15 @@ static oob_status_t apml_recover_sbrmi(uint8_t soc_die_num)
 
 	} while (retry--);
 
+	if (config & CONFIG_MASK)
+		return OOB_CMD_TIMEOUT;
+
 	/* Verify if sbrmi is recoverd */
 	ret = read_sbrmi_revision(soc_die_num, &rev);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return ret;
+	if (ret != OOB_SUCCESS || !is_valid_sbrmi_revision(rev))
+		return OOB_TRY_AGAIN;
+
+	return OOB_SUCCESS;
 }
 
 static oob_status_t apml_recover_sbtsi(uint8_t soc_die_num)
@@ -108,6 +140,8 @@ static oob_status_t apml_recover_sbtsi(uint8_t soc_die_num)
 	ret = read_sbrmi_revision(soc_die_num, &rev);
 	if (ret != OOB_SUCCESS)
 		return ret;
+	if (!is_valid_sbrmi_revision(rev))
+		return OOB_TRY_AGAIN;
 
 	/* Read the curent configuration before writing to bit 1 */
 	ret = read_sbrmi_control(soc_die_num, &control);
@@ -133,11 +167,15 @@ static oob_status_t apml_recover_sbtsi(uint8_t soc_die_num)
 
 	} while (retry--);
 
+	if (control & CTRL_MASK)
+		return OOB_CMD_TIMEOUT;
+
 	/* Verify if sbtsi is recoverd */
 	ret = read_sbtsi_revision(soc_die_num, &rev);
-	if (ret != OOB_SUCCESS)
-		return ret;
-	return ret;
+	if (ret != OOB_SUCCESS || !is_valid_sbtsi_revision(rev))
+		return OOB_TRY_AGAIN;
+
+	return OOB_SUCCESS;
 }
 
 oob_status_t apml_recover_dev(uint8_t soc_die_num, uint8_t client)

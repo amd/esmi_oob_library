@@ -85,6 +85,10 @@ typedef enum {
  */
 #define TEMP_INC 0.125
 
+/** @brief Valid SBTSI specification revision values */
+#define SBTSI_REV_V4			0x4 //!< Temperature Sensor Interface Revision 04h //
+#define SBTSI_REV_V5			0x5 //!< Temperature Sensor Interface Revision 05h //
+
 /**
  * @brief Bitfield values to be set for SBTSI confirwr register
  * [7] Alert mask
