@@ -4,6 +4,16 @@
 Thank you for using AMD APML Library.
 
 # Changes Notes
+## Highlights of minor release v5.11.3
+
+* Bug fixes:
+  * APML recovery validates the SBRMI and SBTSI revision on the
+    initial read and again after the soft reset
+  * Return OOB_TRY_AGAIN when the revision is not a supported
+    value or the device is not recovered
+  * Return OOB_CMD_TIMEOUT when the recovery bit is still set
+    after the retry limit
+
 ## Highlights of minor release v5.4.1
 
 * Add support for run time post package repair
